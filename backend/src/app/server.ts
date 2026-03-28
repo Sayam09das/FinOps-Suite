@@ -2,7 +2,7 @@ import app from "./app";
 import { connectToDatabase } from "../config/db";
 import { initShutdown } from "./shutdown";
 
-const PORT = Number(process.env.PORT) || 5000;
+const PORT = Number(process.env.PORT) || 5001;
 
 const startServer = async (): Promise<void> => {
   try {

@@ -1,5 +1,7 @@
 import express from "express";
 import prisma, { pingDatabase } from "../config/db";
+import authIndex from "../modules/auth/index";
+import userRoutes from "../modules/user/user.routes";
 import { healthCheck } from "./health";
 
 const cors = require("cors");
@@ -9,6 +11,11 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+
+app.use("/api", authIndex);
+app.use("/api/user", userRoutes);
+
 
 // Health endpoint
 app.get("/health", healthCheck);

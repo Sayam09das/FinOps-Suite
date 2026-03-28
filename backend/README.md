@@ -42,5 +42,4 @@
 - `src/config/db.ts`: Prisma + MongoDB validation
 - `prisma/schema.prisma`: Models (User, Transaction, Budget)
 
-Hit localhost:5000/health for status.
-
+Hit localhost:5001/health for status.
