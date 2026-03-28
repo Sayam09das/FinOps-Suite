@@ -1,13 +1,33 @@
-# Fix Backend Nodemon / index.js Error
+# Advanced Auth & User System + Common Configs
 
-**Status: In Progress**
+## TODO Steps (Breakdown of approved plan):
 
-## Steps:
-- [x] Understand issue: Malformed nodemon command + missing index.js + no npm scripts.
-- [x] Plan approved by user.
-- [x] 1. Create `backend/src/index.ts` as standard TS entrypoint (merges server.ts logic).
-- [x] 2. Edit `backend/package.json`: Fix "main", add `dev`/`build`/`start` scripts using ts-node-dev.
-- [ ] 3. Test server: `cd backend &amp;&amp; npm run dev` (starts on PORT 5000 with hot reload).
+### 1. Auth Module (Advanced)
+- [x] Populate `backend/src/modules/auth/auth.validation.ts` (Zod schemas)
+- [x] Populate `backend/src/modules/auth/auth.types.ts` (interfaces)
+- [x] Create `backend/src/modules/auth/auth.repository.ts` (Prisma layer)
+- [x] Refactor `backend/src/modules/auth/auth.service.ts` to use repo + validation
+- [x] Update `backend/src/modules/auth/auth.routes.ts` with validation middleware
+- [x] Update `backend/src/modules/auth/index.ts` (export all)
 
-**Next step:** Proceed to step 1 after confirmation.
+### 2. User Module (Complete CRUD)
+- [ ] Create `backend/src/modules/user/user.controller.ts`
+- [ ] Create `backend/src/modules/user/user.service.ts`
+- [ ] Create `backend/src/modules/user/user.repository.ts`
+- [ ] Create `backend/src/modules/user/user.validation.ts`
+- [ ] Create `backend/src/modules/user/user.types.ts`
+- [ ] Create `backend/src/modules/user/index.ts`
+- [ ] Update `backend/src/modules/user/user.routes.ts` with full CRUD
 
+### 3. Common/Config Files
+- [ ] Create `backend/src/config/env.ts` (Zod env validation)
+- [ ] Create `backend/src/common/logger.ts` (Pino logger)
+- [ ] Create `backend/src/common/cors.ts` (CORS config)
+- [ ] Create `backend/src/common/rateLimit.ts` (express-rate-limit)
+- [ ] Create `backend/src/common/constants.ts`
+
+### 4. Integrate & Test
+- [x] Install deps
+- [ ] Update app.ts/server.ts to use new configs
+- [ ] Test all endpoints
+- [ ] ✅ Complete

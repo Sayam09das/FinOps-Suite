@@ -2,11 +2,17 @@ import { Server } from "http";
 import { disconnectFromDatabase } from "../config/db";
 
 let server: Server | null = null;
+let isShuttingDown = false;
 
 export const initShutdown = (httpServer: Server) => {
   server = httpServer;
 
   const gracefulShutdown = async (signal: string) => {
+    if (isShuttingDown) {
+      return;
+    }
+
+    isShuttingDown = true;
     console.log(`Received ${signal}, starting graceful shutdown...`);
 
     // Allow 10s for pending requests
@@ -29,6 +35,7 @@ export const initShutdown = (httpServer: Server) => {
         });
 
         console.log("HTTP server closed");
+        server = null;
       }
 
       await disconnectFromDatabase();

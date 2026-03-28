@@ -1,8 +1,6 @@
-import { Router } from "express";
-import authRoutes from "./auth.routes";
-
-const router = Router();
-
-router.use("/auth", authRoutes);
-
-export default router;
+export { default } from './auth.routes';
+export * from './auth.controller';
+export * from './auth.service';
+export * from './auth.types';
+export * from './auth.repository';
+export * from './auth.validation';

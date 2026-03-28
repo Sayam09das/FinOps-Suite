@@ -1,22 +1,29 @@
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import { registerUser, loginUser } from "./auth.service";
+import { registerUser, loginUser, refreshAccessToken } from "./auth.service";
+import { registerSchema, loginSchema, refreshSchema } from "./auth.validation";
+import { z } from 'zod';
 
 // Register
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-
-    const user = await registerUser(email, password);
+    const validatedData = registerSchema.parse(req.body);
+    const user = await registerUser(validatedData);
 
     res.status(201).json({
       success: true,
       data: user,
     });
-  } catch (error: any) {
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: error.issues,
+      });
+    }
     res.status(400).json({
       success: false,
-      message: error.message,
+      message: (error as Error).message,
     });
   }
 };
@@ -24,47 +31,60 @@ export const register = async (req: Request, res: Response) => {
 // Login
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-
-    const data = await loginUser(email, password);
+    const validatedData = loginSchema.parse(req.body);
+    const data = await loginUser(validatedData);
 
     res.json({
       success: true,
       data,
     });
-  } catch (error: any) {
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: error.issues,
+      });
+    }
     res.status(400).json({
       success: false,
-      message: error.message,
+      message: (error as Error).message,
     });
   }
 };
 
 // Refresh Token
-export const refreshToken = (req: Request, res: Response) => {
-  const { token } = req.body;
-
-  if (!token) {
-    return res.status(401).json({ message: "No refresh token" });
-  }
-
+export const refreshToken = async (req: Request, res: Response) => {
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_REFRESH_SECRET as string
-    ) as any;
-
-    const newAccessToken = jwt.sign(
-      { userId: decoded.userId },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "15m" }
-    );
-
-    return res.json({
-      success: true,
-      accessToken: newAccessToken,
+    const validatedData = refreshSchema.parse(req.body);
+    const { accessToken } = await refreshAccessToken({
+      token: validatedData.token ?? validatedData.refreshToken!,
     });
-  } catch {
-    return res.status(403).json({ message: "Invalid refresh token" });
+
+    res.json({
+      success: true,
+      accessToken,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: error.issues,
+      });
+    }
+    res.status(400).json({
+      success: false,
+      message: (error as Error).message,
+    });
   }
+};
+
+// Logout (stateless - client deletes tokens)
+export const logout = async (req: Request, res: Response) => {
+  // Optional: invalidate server-side if blacklisting implemented
+  res.json({
+    success: true,
+    message: 'Logged out successfully. Clear tokens on client.',
+  });
 };

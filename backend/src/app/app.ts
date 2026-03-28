@@ -1,49 +1,65 @@
-import express from "express";
+import express, { Request, Response } from "express";
+import { corsMiddleware } from "../common/cors";
+import { logger } from "../common/logger";
+import { loginLimiter, createAccountLimiter } from "../common/rateLimit";
+import { API_VERSION } from "../common/constants";
 import prisma, { pingDatabase } from "../config/db";
 import authIndex from "../modules/auth/index";
-import userRoutes from "../modules/user/user.routes";
+import userIndex from "../modules/user/index";
 import { healthCheck } from "./health";
 
-const cors = require("cors");
-
+// Create app
 const app = express();
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(corsMiddleware);
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 
+// Rate limiting
+app.use('/api/auth/register', createAccountLimiter);
+app.use('/api/auth/login', loginLimiter);
 
-app.use("/api", authIndex);
-app.use("/api/user", userRoutes);
-
+// Routes
+app.use("/api/auth", authIndex);
+app.use("/api/user", userIndex);
 
 // Health endpoint
 app.get("/health", healthCheck);
 
-// Health Check Route
-app.get("/", (req, res) => {
-  res.send("Backend API is running 🚀");
+// Root
+app.get("/", (_req: Request, res: Response) => {
+  res.json({
+    message: "FinOps Suite API",
+    version: API_VERSION,
+    status: "healthy",
+  });
 });
 
-// DB test route
-app.get("/test-db", async (req, res) => {
+// DB test
+app.get("/test-db", async (_req: Request, res: Response) => {
   try {
     await pingDatabase();
     const userCount = await prisma.user.count();
-
-    res.status(200).json({
+    res.json({
       status: "OK",
       db: "connected",
       userCount,
     });
   } catch (error) {
-    console.error("DB test route failed:", error);
+    logger.error(error, "DB test failed");
     res.status(503).json({
       status: "ERROR",
       db: "disconnected",
-      error: error instanceof Error ? error.message : "Database query failed",
     });
   }
+});
+
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
 });
 
 export default app;
