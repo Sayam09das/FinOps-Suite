@@ -17,9 +17,10 @@ model User {
 model Transaction {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   amount    Float
-  type      String
+  type      String   // "income" | "expense"
   category  String
-  date      DateTime
+  note      String?
+  date      DateTime @default(now())
   userId    String   @db.ObjectId
 }
 
