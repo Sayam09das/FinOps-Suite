@@ -1,3 +1,9 @@
+import { Router } from "express";
 import dashboardRoutes from "./dashboard.routes";
 
-router.use("/dashboard", dashboardRoutes);
+const router = Router();
+router.use("/", dashboardRoutes);
+
+export default router;
+
+

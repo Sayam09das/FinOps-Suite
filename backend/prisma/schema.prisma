@@ -26,8 +26,8 @@ model Transaction {
 
 model Budget {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  limit     Float
+  amount    Float
   category  String
-  month     String
+  month     String   // "2026-03"
   userId    String   @db.ObjectId
 }

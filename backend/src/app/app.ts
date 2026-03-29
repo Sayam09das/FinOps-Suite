@@ -7,6 +7,7 @@ import prisma, { pingDatabase } from "../config/db";
 import authIndex from "../modules/auth/index";
 import userIndex from "../modules/user/index";
 import transactionIndex from '../modules/transactions/index';
+import dashboardIndex from "../modules/dashboard/index";
 import { healthCheck } from "./health";
 
 // Create app
@@ -25,7 +26,7 @@ app.use('/api/auth/login', loginLimiter);
 app.use("/api/auth", authIndex);
 app.use("/api/user", userIndex);
 app.use("/api/transactions", transactionIndex);
-app.use("api/dashboard", dashboardIndex);
+app.use("/api/dashboard", dashboardIndex);
 
 // Health endpoint
 app.get("/health", healthCheck);

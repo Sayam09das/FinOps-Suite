@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
+import { DashboardData } from "./dashboard.types";
 import { getDashboardData } from "./dashboard.service";
 
-export const getDashboard = async (req: any, res: Response) => {
+export const getDashboard = async (req: Request, res: Response) => {
     try {
-        const userId = req.user.id;
+        const userId = (req as any).user.id;
 
-        const data = await getDashboardData(userId);
+        const data: DashboardData = await getDashboardData(userId);
 
         res.json({
             success: true,
