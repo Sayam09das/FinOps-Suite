@@ -1,7 +1,24 @@
 import prisma from "../../config/db";
+import redis from "../../config/redis";
 
 export const getDashboardData = async (userId: string) => {
-  // 🔹 Get all transactions
+  const cacheKey = `dashboard:${userId}`;
+
+  // 🔥 1. Check cache
+  let cached;
+  try {
+    cached = await redis.get(cacheKey);
+    if (cached) {
+      console.log("⚡ Serving from Redis");
+      return JSON.parse(cached);
+    }
+  } catch (cacheError) {
+    console.log("Redis unavailable, skipping cache");
+  }
+
+  console.log("🐢 Fetching from DB");
+
+  // 🔹 DB logic
   const transactions = await prisma.transaction.findMany({
     where: { userId },
     orderBy: { date: "desc" },
@@ -21,14 +38,12 @@ export const getDashboardData = async (userId: string) => {
     categoryMap[t.category] += t.amount;
   });
 
-  // 🔹 Get budgets (current month)
   const currentMonth = new Date().toISOString().slice(0, 7);
 
   const budgets = await prisma.budget.findMany({
     where: { userId, month: currentMonth },
   });
 
-  // 🔹 Budget calculation
   const budgetMap: any = {};
 
   budgets.forEach((b) => {
@@ -46,13 +61,12 @@ export const getDashboardData = async (userId: string) => {
     budgetMap[t.category].remaining =
       budgetMap[t.category].budget - budgetMap[t.category].spent;
 
-    // 🚨 Alert
     if (budgetMap[t.category].spent > budgetMap[t.category].budget) {
       budgetMap[t.category].alert = "Budget exceeded 🚨";
     }
   });
 
-  return {
+  const result = {
     income,
     expense,
     balance: income - expense,
@@ -60,5 +74,14 @@ export const getDashboardData = async (userId: string) => {
     categoryAnalytics: categoryMap,
     budgets: budgetMap,
   };
+
+  // 🔥 2. Store in cache (TTL = 60 sec)
+  try {
+    await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
+  } catch (cacheError) {
+    console.log("Redis unavailable, skipping cache set");
+  }
+
+  return result;
 };
 

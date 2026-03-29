@@ -8,6 +8,7 @@ import {
   getMonthlySummary,
   getCategoryAnalytics,
 } from "./transaction.service";
+import redis from "../../config/redis";
 
 // Create
 export const addTransaction = async (req: Request, res: Response) => {
@@ -15,6 +16,9 @@ export const addTransaction = async (req: Request, res: Response) => {
     const userId = (req as any).user.id;
 
     const transaction = await createTransaction(req.body, userId);
+
+    // Invalidate dashboard cache
+    await redis.del(`dashboard:${userId}`);
 
     res.status(201).json({
       success: true,
@@ -55,6 +59,9 @@ export const removeTransaction = async (req: Request, res: Response) => {
 
     await deleteTransaction(id, userId);
 
+    // Invalidate dashboard cache
+    await redis.del(`dashboard:${userId}`);
+
     res.json({
       success: true,
       message: "Transaction deleted",
@@ -78,6 +85,9 @@ export const editTransaction = async (req: any, res: any) => {
       userId,
       req.body
     );
+
+    // Invalidate dashboard cache
+    await redis.del(`dashboard:${userId}`);
 
     res.json({
       success: true,
