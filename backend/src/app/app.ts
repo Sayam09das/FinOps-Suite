@@ -9,6 +9,7 @@ import userIndex from "../modules/user/index";
 import transactionIndex from '../modules/transactions/index';
 import dashboardIndex from "../modules/dashboard/index";
 import budgetIndex from "../modules/budgets/index";
+import analyticsIndex from "../modules/analytics";
 import { healthCheck } from "./health";
 
 // Create app
@@ -29,6 +30,7 @@ app.use("/api/user", userIndex);
 app.use("/api/transactions", transactionIndex);
 app.use("/api/dashboard", dashboardIndex);
 app.use("/api", budgetIndex);
+app.use("/api/analytics", analyticsIndex);
 
 // Health endpoint
 app.get("/health", healthCheck);
