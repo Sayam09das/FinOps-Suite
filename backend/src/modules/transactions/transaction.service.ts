@@ -6,10 +6,54 @@ import {
 import type { CreateTransactionInput } from './transaction.types';
 import type { Transaction } from './transaction.types';
 import prisma from "../../config/db";
+import { io } from "../../app/server";
 
 // Basic CRUD (repo-backed)
 export const createTransaction = async (data: CreateTransactionInput, userId: string): Promise<any> => {
-  return createRepo(data, userId);
+  const transaction = await createRepo(data, userId);
+
+  // 🔥 Budget check
+  const currentMonth = new Date().toISOString().slice(0, 7);
+
+  const budget = await prisma.budget.findFirst({
+    where: {
+      userId,
+      category: data.category,
+      month: currentMonth,
+    },
+  });
+
+  if (budget) {
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        userId,
+        category: data.category,
+      },
+    });
+
+    const totalSpent = transactions.reduce(
+      (sum, t) => sum + t.amount,
+      0
+    );
+
+    // ⚠️ Near limit
+    if (totalSpent >= budget.amount * 0.8) {
+      io.emit("alert", {
+        type: "warning",
+        message: `⚠️ Near budget limit for ${data.category}`,
+      });
+    }
+
+    // 🚨 Exceeded
+    if (totalSpent > budget.amount) {
+      io.emit("alert", {
+        type: "danger",
+        message: `🚨 Budget exceeded for ${data.category}`,
+      });
+    }
+  }
+
+  return transaction;
 };
 
 export const getTransactionsBasic = async (userId: string): Promise<any[]> => {

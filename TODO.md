@@ -1,33 +1,24 @@
-# Advanced Auth & User System + Common Configs
+# Socket.io Budget Alerts Implementation
 
-## TODO Steps (Breakdown of approved plan):
+## Steps:
+- [x] 1. Install socket.io in backend
+- [x] 2. Update backend/server.ts with Socket.io server
+- [x] 3. Update backend/src/modules/transactions/transaction.service.ts with budget check logic
+## COMPLETED ✅
 
-### 1. Auth Module (Advanced)
-- [x] Populate `backend/src/modules/auth/auth.validation.ts` (Zod schemas)
-- [x] Populate `backend/src/modules/auth/auth.types.ts` (interfaces)
-- [x] Create `backend/src/modules/auth/auth.repository.ts` (Prisma layer)
-- [x] Refactor `backend/src/modules/auth/auth.service.ts` to use repo + validation
-- [x] Update `backend/src/modules/auth/auth.routes.ts` with validation middleware
-- [x] Update `backend/src/modules/auth/index.ts` (export all)
+Socket.io budget alerts implemented!
 
-### 2. User Module (Complete CRUD)
-- [ ] Create `backend/src/modules/user/user.controller.ts`
-- [ ] Create `backend/src/modules/user/user.service.ts`
-- [ ] Create `backend/src/modules/user/user.repository.ts`
-- [ ] Create `backend/src/modules/user/user.validation.ts`
-- [ ] Create `backend/src/modules/user/user.types.ts`
-- [ ] Create `backend/src/modules/user/index.ts`
-- [ ] Update `backend/src/modules/user/user.routes.ts` with full CRUD
+**Backend Changes:**
+- ✅ socket.io installed
+- ✅ server.ts updated with Socket.io server
+- ✅ transaction.service.ts: budget check + io.emit alerts (warning at 80%, danger when exceeded)
 
-### 3. Common/Config Files
-- [ ] Create `backend/src/config/env.ts` (Zod env validation)
-- [ ] Create `backend/src/common/logger.ts` (Pino logger)
-- [ ] Create `backend/src/common/cors.ts` (CORS config)
-- [ ] Create `backend/src/common/rateLimit.ts` (express-rate-limit)
-- [ ] Create `backend/src/common/constants.ts`
+**Client Test:**
+- ✅ client/test/example.tsx created - import in any page to test
 
-### 4. Integrate & Test
-- [x] Install deps
-- [ ] Update app.ts/server.ts to use new configs
-- [ ] Test all endpoints
-- [ ] ✅ Complete
+**Next Manual Steps:**
+1. `cd backend && npm run dev` - see server start on port 5000
+2. Create budget via API/UI
+3. Create transactions for same category/month
+4. Console will show 🔔 alerts when near/exceeding
+5. Use client example to receive in browser
