@@ -1,5 +1,5 @@
 import prisma from "../../config/db";
-import redis from "../../infrastructure/cache/redis";
+import redis, { ensureRedisConnection } from "../../infrastructure/cache/redis";
 
 export const getDashboardData = async (userId: string) => {
   const cacheKey = `dashboard:${userId}`;
@@ -7,13 +7,15 @@ export const getDashboardData = async (userId: string) => {
   // 🔥 1. Check cache
   let cached;
   try {
-    cached = await redis.get(cacheKey);
-    if (cached) {
-      console.log("⚡ Serving from Redis");
-      return JSON.parse(cached);
+    if (await ensureRedisConnection()) {
+      cached = await redis.get(cacheKey);
+      if (cached) {
+        console.log("⚡ Serving from Redis");
+        return JSON.parse(cached);
+      }
     }
-  } catch (cacheError) {
-    console.log("Redis unavailable, skipping cache");
+  } catch {
+    // Skip cache when Redis is unavailable.
   }
 
   console.log("🐢 Fetching from DB");
@@ -77,11 +79,12 @@ export const getDashboardData = async (userId: string) => {
 
   // 🔥 2. Store in cache (TTL = 60 sec)
   try {
-    await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
-  } catch (cacheError) {
-    console.log("Redis unavailable, skipping cache set");
+    if (await ensureRedisConnection()) {
+      await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
+    }
+  } catch {
+    // Skip cache writes when Redis is unavailable.
   }
 
   return result;
 };
-

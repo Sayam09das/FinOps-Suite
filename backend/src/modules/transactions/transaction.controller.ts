@@ -8,7 +8,7 @@ import {
   getMonthlySummary,
   getCategoryAnalytics,
 } from "./transaction.service";
-import redis from "../../infrastructure/cache/redis";
+import redis, { ensureRedisConnection } from "../../infrastructure/cache/redis";
 
 // Create
 export const addTransaction = async (req: Request, res: Response) => {
@@ -18,7 +18,9 @@ export const addTransaction = async (req: Request, res: Response) => {
     const transaction = await createTransaction(req.body, userId);
 
     // Invalidate dashboard cache
-    await redis.del(`dashboard:${userId}`);
+    if (await ensureRedisConnection()) {
+      await redis.del(`dashboard:${userId}`);
+    }
 
     res.status(201).json({
       success: true,
@@ -60,7 +62,9 @@ export const removeTransaction = async (req: Request, res: Response) => {
     await deleteTransaction(id, userId);
 
     // Invalidate dashboard cache
-    await redis.del(`dashboard:${userId}`);
+    if (await ensureRedisConnection()) {
+      await redis.del(`dashboard:${userId}`);
+    }
 
     res.json({
       success: true,
@@ -87,7 +91,9 @@ export const editTransaction = async (req: any, res: any) => {
     );
 
     // Invalidate dashboard cache
-    await redis.del(`dashboard:${userId}`);
+    if (await ensureRedisConnection()) {
+      await redis.del(`dashboard:${userId}`);
+    }
 
     res.json({
       success: true,

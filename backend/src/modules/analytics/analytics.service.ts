@@ -1,5 +1,5 @@
 import prisma from "../../config/db";
-import redis from "../../infrastructure/cache/redis";
+import redis, { ensureRedisConnection } from "../../infrastructure/cache/redis";
 import type { AnalyticsData } from "./analytics.types";
 
 export const getAnalyticsData = async (userId: string): Promise<AnalyticsData> => {
@@ -7,13 +7,15 @@ export const getAnalyticsData = async (userId: string): Promise<AnalyticsData> =
 
   // 🔥 1. Check cache first (5 min TTL for analytics)
   try {
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      console.log("⚡ Analytics from Redis");
-      return JSON.parse(cached);
+    if (await ensureRedisConnection()) {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        console.log("⚡ Analytics from Redis");
+        return JSON.parse(cached);
+      }
     }
-  } catch (error) {
-    console.log("Redis unavailable for analytics");
+  } catch {
+    // Skip cache when Redis is unavailable.
   }
 
   console.log("📊 Computing analytics from DB");
@@ -98,9 +100,11 @@ export const getAnalyticsData = async (userId: string): Promise<AnalyticsData> =
 
   // 🔥 Cache for 5 min
   try {
-    await redis.set(cacheKey, JSON.stringify(result), "EX", 300);
-  } catch (error) {
-    console.log("Cache set failed");
+    if (await ensureRedisConnection()) {
+      await redis.set(cacheKey, JSON.stringify(result), "EX", 300);
+    }
+  } catch {
+    // Skip cache writes when Redis is unavailable.
   }
 
   return result;

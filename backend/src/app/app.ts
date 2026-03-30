@@ -11,7 +11,8 @@ import transactionIndex from '../modules/transactions/index';
 import dashboardIndex from "../modules/dashboard/index";
 import budgetIndex from "../modules/budgets/index";
 import analyticsIndex from "../modules/analytics";
-import notificationsIndex, { startNotificationWorker } from "../modules/notifications";
+import notificationsIndex from "../modules/notifications";
+import { startNotificationWorker } from "../infrastructure/queue/notification.queue";
 import uploadsIndex from "../modules/uploads/index";
 import { healthCheck } from "./health";
 
@@ -38,7 +39,7 @@ app.use("/api/notifications", notificationsIndex);
 app.use("/api/uploads", uploadsIndex);
 
 // Start notification worker
-startNotificationWorker();
+void startNotificationWorker();
 
 // Health endpoint
 app.get("/health", healthCheck);
