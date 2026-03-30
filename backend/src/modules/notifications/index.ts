@@ -14,7 +14,13 @@ router.get('/', protect, async (req, res) => {
 
 router.patch('/:id/read', protect, async (req, res) => {
   const userId = (req as any).user.id;
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+  if (!id) {
+    res.status(400).json({ success: false, message: 'Notification id is required' });
+    return;
+  }
+
   await markAsRead(id, userId);
   res.json({ success: true, message: 'Marked as read' });
 });
@@ -24,4 +30,3 @@ export { startNotificationWorker, stopNotificationWorker } from './notification.
 export type { NotificationType, CreateNotificationInput, Notification } from './notification.types';
 
 export default router;
-

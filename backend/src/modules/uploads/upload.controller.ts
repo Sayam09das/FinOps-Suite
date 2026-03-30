@@ -23,8 +23,8 @@ export const singleUpload = [
       if (!req.file) throw new Error('No file uploaded');
       const result = await uploadFile(req.file);
       res.json({ success: true, data: result });
-    } catch (error) {
-      logger.error('Single upload error', error);
+    } catch (error: unknown) {
+      logger.error({ error }, 'Single upload error');
       res.status(400).json({ success: false, message: (error as Error).message });
     }
   },
@@ -39,10 +39,9 @@ export const multipleUpload = [
       }
       const result = await uploadMultiple(req.files as Express.Multer.File[]);
       res.json({ success: true, data: result });
-    } catch (error) {
-      logger.error('Multiple upload error', error);
+    } catch (error: unknown) {
+      logger.error({ error }, 'Multiple upload error');
       res.status(400).json({ success: false, message: (error as Error).message });
     }
   },
 ];
-

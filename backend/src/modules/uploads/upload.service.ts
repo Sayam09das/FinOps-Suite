@@ -1,8 +1,9 @@
+import type { Express } from 'express';
 import cloudinary from '../../config/cloudinary';
 import type { UploadResult, MultiUploadResult } from './upload.types';
 import { logger } from '../../common/logger';
 
-export const uploadFile = async (file: any): Promise<UploadResult> => {
+export const uploadFile = async (file: Express.Multer.File): Promise<UploadResult> => {
   try {
     const result = await new Promise<any>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
@@ -25,13 +26,13 @@ export const uploadFile = async (file: any): Promise<UploadResult> => {
       secure_url: result.secure_url,
       original_filename: file.originalname,
     };
-  } catch (error) {
-    logger.error('Upload failed', error);
+  } catch (error: unknown) {
+    logger.error({ error, fileName: file.originalname }, 'Upload failed');
     throw new Error('File upload failed');
   }
 };
 
-export const uploadMultiple = async (files: any[]): Promise<MultiUploadResult> => {
+export const uploadMultiple = async (files: Express.Multer.File[]): Promise<MultiUploadResult> => {
   const results = await Promise.all(files.map(uploadFile));
   return { files: results, count: results.length };
 };
@@ -39,4 +40,3 @@ export const uploadMultiple = async (files: any[]): Promise<MultiUploadResult> =
 export const deleteFile = async (publicId: string): Promise<void> => {
   await cloudinary.uploader.destroy(publicId);
 };
-

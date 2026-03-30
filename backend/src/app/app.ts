@@ -3,6 +3,7 @@ import { corsMiddleware } from "../common/cors";
 import { logger } from "../common/logger";
 import { loginLimiter, createAccountLimiter } from "../common/rateLimit";
 import { API_VERSION } from "../common/constants";
+import { AppError } from "../common/errors";
 import prisma, { pingDatabase } from "../config/db";
 import authIndex from "../modules/auth/index";
 import userIndex from "../modules/user/index";
@@ -70,9 +71,31 @@ app.get("/test-db", async (_req: Request, res: Response) => {
   }
 });
 
+
+
+// Global error handler
+app.use((error: any, req: Request, res: Response, next: any) => {
+  logger.error(error, `Error occurred at ${req.method} ${req.path}`);
+
+  if (error instanceof AppError) {
+    res.status(error.statusCode).json({
+      success: false,
+      ...error.toJSON(),
+    });
+  } else {
+    res.status(500).json({
+      success: false,
+      errorCode: 'GENERAL_002',
+      message: 'Internal server error',
+    });
+  }
+});
+
+// 404 handler
 app.use((_req: Request, res: Response) => {
   res.status(404).json({
     success: false,
+    errorCode: 'GENERAL_001',
     message: "Route not found",
   });
 });
