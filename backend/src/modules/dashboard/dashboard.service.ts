@@ -1,5 +1,5 @@
 import prisma from "../../config/db";
-import redis from "../../config/redis";
+import redis from "../../cache/redis";
 
 export const getDashboardData = async (userId: string) => {
   const cacheKey = `dashboard:${userId}`;

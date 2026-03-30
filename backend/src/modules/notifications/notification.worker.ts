@@ -11,7 +11,6 @@ export const startNotificationWorker = () => {
   // 🕐 Run every 5 minutes
   workerInterval = setInterval(async () => {
     logger.info('🔄 Running notification worker...');
-
     const currentMonth = new Date().toISOString().slice(0, 7);
 
     // 1. Check budget exceeded
