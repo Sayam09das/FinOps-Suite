@@ -8,7 +8,7 @@ import {
   getMonthlySummary,
   getCategoryAnalytics,
 } from "./transaction.service";
-import redis from "../../cache/redis";
+import redis from "../../infrastructure/cache/redis";
 
 // Create
 export const addTransaction = async (req: Request, res: Response) => {

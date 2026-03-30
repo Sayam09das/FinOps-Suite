@@ -1,5 +1,5 @@
 import prisma from "../../config/db";
-import redis from "../../cache/redis";
+import redis from "../../infrastructure/cache/redis";
 import type { AnalyticsData } from "./analytics.types";
 
 export const getAnalyticsData = async (userId: string): Promise<AnalyticsData> => {
