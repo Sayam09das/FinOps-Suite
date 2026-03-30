@@ -10,6 +10,8 @@ import transactionIndex from '../modules/transactions/index';
 import dashboardIndex from "../modules/dashboard/index";
 import budgetIndex from "../modules/budgets/index";
 import analyticsIndex from "../modules/analytics";
+import notificationsIndex, { startNotificationWorker } from "../modules/notifications";
+import uploadsIndex from "../modules/uploads/index";
 import { healthCheck } from "./health";
 
 // Create app
@@ -31,6 +33,11 @@ app.use("/api/transactions", transactionIndex);
 app.use("/api/dashboard", dashboardIndex);
 app.use("/api", budgetIndex);
 app.use("/api/analytics", analyticsIndex);
+app.use("/api/notifications", notificationsIndex);
+app.use("/api/uploads", uploadsIndex);
+
+// Start notification worker
+startNotificationWorker();
 
 // Health endpoint
 app.get("/health", healthCheck);

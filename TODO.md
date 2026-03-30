@@ -1,28 +1,22 @@
-# Analytics Module - COMPLETED ✅
+# Uploads Module w/ Cloudinary - Setup Complete
 
-## Files Created:
-- ✅ backend/src/modules/analytics/analytics.types.ts
-- ✅ backend/src/modules/analytics/analytics.service.ts  
-- ✅ backend/src/modules/analytics/analytics.controller.ts
-- ✅ backend/src/modules/analytics/analytics.routes.ts
-- ✅ backend/src/modules/analytics/index.ts
+**Files:**
+- ✅ config/cloudinary.ts
+- ✅ config/env.ts (add keys to .env)
+- ✅ modules/uploads/* (service, controller, routes, index, types)
 
-## Features:
-📊 **Overview** (current month): income/expense/balance + category breakdown (%)
-📈 **Trends**: Last 6 months data
-💰 **Budget Compliance**: vs actual spend, status (OK/WARNING/EXCEEDED)
-🔮 **Forecast**: Next month projection + trend (simple avg)
-⭐ **Top Categories**
+**Endpoints (protected):**
+- POST /api/uploads/single – single image/PDF → URL
+- POST /api/uploads/multiple – up to 5 files → array URLs
 
-✅ **Redis caching** (5min TTL), user-scoped queries, `protect` auth
+**Next:**
+1. Add to backend/.env:
+```
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_secret
+```
+2. `npm run dev` – test with Postman (form-data 'files')
+3. Mount `app.use('/api/uploads', uploadsIndex);` in app.ts if needed
 
-## Next Manual Steps:
-1. **Mount routes**: Add to `backend/src/app/app.ts`:
-   ```
-   import analyticsIndex from "../modules/analytics";
-   app.use("/api/analytics", analyticsIndex);
-   ```
-2. `cd backend && npm run dev`
-3. **Test**: Authenticate → `GET /api/analytics/overview` 
-   - Returns full AnalyticsData
-4. Frontend: Call from React → display charts/tables
+Ready – add your Cloudinary keys! ☁️

@@ -12,6 +12,7 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
+  notifications Notification[]
 }
 
 model Transaction {
@@ -30,4 +31,18 @@ model Budget {
   category  String
   month     String   // "2026-03"
   userId    String   @db.ObjectId
+}
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@map("notifications")
 }

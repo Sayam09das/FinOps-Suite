@@ -1,0 +1,27 @@
+import { Router } from 'express';
+import { protect } from '../../common/middleware/auth.middleware';
+import { getNotifications, markAsRead, getUnreadCount } from './notification.service';
+
+const router = Router();
+
+// 📧 Notification API
+router.get('/', protect, async (req, res) => {
+  const userId = (req as any).user.id;
+  const notifications = await getNotifications(userId);
+  const unreadCount = await getUnreadCount(userId);
+  res.json({ success: true, data: notifications, unreadCount });
+});
+
+router.patch('/:id/read', protect, async (req, res) => {
+  const userId = (req as any).user.id;
+  const { id } = req.params;
+  await markAsRead(id, userId);
+  res.json({ success: true, message: 'Marked as read' });
+});
+
+export { createNotification, getNotifications, markAsRead, getUnreadCount } from './notification.service';
+export { startNotificationWorker, stopNotificationWorker } from './notification.worker';
+export type { NotificationType, CreateNotificationInput, Notification } from './notification.types';
+
+export default router;
+
