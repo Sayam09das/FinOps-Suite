@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express";
-import { corsMiddleware } from "../common/cors";
+import { corsMiddleware } from "../config/cors";
 import { logger } from "../common/logger";
-import { loginLimiter, createAccountLimiter } from "../common/rateLimit";
-import { API_VERSION } from "../common/constants";
+import { loginLimiter, createAccountLimiter } from "../config/rateLimit";
+import { API_VERSION } from "../config/constants";
 import { AppError } from "../common/errors";
 import prisma, { pingDatabase } from "../config/db";
 import authIndex from "../modules/auth/index";
