@@ -1,8 +1,12 @@
-# Health Module Fix Progress
+# Cron Jobs Implementation Progress
 
-- [x] 1. Populate backend/src/modules/health/health.controller.ts with healthCheck handler
-- [x] 2. Populate backend/src/modules/health/health.routes.ts with router
-- [x] 3. Populate backend/src/modules/health/index.ts with exports
-- [x] 4. Empty backend/src/app/health.ts (logic moved)
-- [x] 5. Update backend/src/app/app.ts: add health module mount, remove standalone /health
-- [x] 6. Test /api/health endpoint
+**Previous: Health module - complete ✓**
+
+**Current: Jobs directory**
+
+- [x] 1. Create backend/src/jobs/index.ts - BullMQ queue and scheduler
+- [x] 2. Populate backend/src/jobs/budgetAlerts.job.ts
+- [x] 3. Populate backend/src/jobs/recurringTransactions.job.ts
+- [x] 4. Populate backend/src/jobs/cleanup.job.ts
+- [x] 5. Update backend/src/app/app.ts to start job scheduler
+- [ ] 6. Test logs for scheduled jobs
