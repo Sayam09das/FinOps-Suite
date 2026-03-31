@@ -1,7 +1,10 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { uploadFile, uploadMultiple } from './upload.service';
 import multer from 'multer';
 import { logger } from '../../config/logger';
+import { asyncHandler } from '../../common/utils/asyncHandler';
+import { ApiResponse } from '../../common/utils/apiResponse';
+import type { Express } from 'express';
 
 // Multer memory storage (no disk)
 const upload = multer({
@@ -18,30 +21,20 @@ const upload = multer({
 
 export const singleUpload = [
   upload.single('file'),
-  async (req: Request, res: Response) => {
-    try {
-      if (!req.file) throw new Error('No file uploaded');
-      const result = await uploadFile(req.file);
-      res.json({ success: true, data: result });
-    } catch (error: unknown) {
-      logger.error({ error }, 'Single upload error');
-      res.status(400).json({ success: false, message: (error as Error).message });
-    }
-  },
+  asyncHandler(async (req: Request, res: Response) => {
+    if (!req.file) throw new Error('No file uploaded');
+    const result = await uploadFile(req.file);
+    ApiResponse.success(result, res);
+  }),
 ];
 
 export const multipleUpload = [
   upload.array('files', 5), // max 5 files
-  async (req: Request, res: Response) => {
-    try {
-      if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
-        throw new Error('No files uploaded');
-      }
-      const result = await uploadMultiple(req.files as Express.Multer.File[]);
-      res.json({ success: true, data: result });
-    } catch (error: unknown) {
-      logger.error({ error }, 'Multiple upload error');
-      res.status(400).json({ success: false, message: (error as Error).message });
+  asyncHandler(async (req: Request, res: Response) => {
+    if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
+      throw new Error('No files uploaded');
     }
-  },
+    const result = await uploadMultiple(req.files as Express.Multer.File[]);
+    ApiResponse.success(result, res);
+  }),
 ];

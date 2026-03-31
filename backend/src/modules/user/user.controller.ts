@@ -10,6 +10,8 @@ type AuthenticatedRequest = Request & {
     createdAt: Date;
   };
 };
+import { asyncHandler } from "../../common/utils/asyncHandler";
+import { ApiResponse } from "../../common/utils/apiResponse";
 
 // Get current user profile
 export const getProfile = async (req: Request, res: Response) => {

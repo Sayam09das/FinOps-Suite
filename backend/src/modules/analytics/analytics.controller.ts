@@ -1,21 +1,12 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import type { AnalyticsData } from "./analytics.types";
 import { getAnalyticsData } from "./analytics.service";
+import { asyncHandler } from "../../common/utils/asyncHandler";
+import { ApiResponse } from "../../common/utils/apiResponse";
 
-export const getAnalytics = async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user.id;
-    const data: AnalyticsData = await getAnalyticsData(userId);
+export const getAnalytics = asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const data: AnalyticsData = await getAnalyticsData(userId);
 
-    res.json({
-      success: true,
-      data,
-    });
-  } catch (error: any) {
-    console.error("Analytics error:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message || "Failed to fetch analytics",
-    });
-  }
-};
+  ApiResponse.success(data, res);
+});

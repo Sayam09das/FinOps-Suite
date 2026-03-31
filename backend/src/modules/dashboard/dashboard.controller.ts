@@ -1,20 +1,13 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { DashboardData } from "./dashboard.types";
 import { getDashboardData } from "./dashboard.service";
+import { asyncHandler } from "../../common/utils/asyncHandler";
+import { ApiResponse } from "../../common/utils/apiResponse";
 
-export const getDashboard = async (req: Request, res: Response) => {
-    try {
-        const userId = (req as any).user.id;
+export const getDashboard = asyncHandler(async (req: Request, res: Response) => {
+    const userId = (req as any).user.id;
 
-        const data: DashboardData = await getDashboardData(userId);
+    const data: DashboardData = await getDashboardData(userId);
 
-        res.json({
-            success: true,
-            data,
-        });
-    } catch (error: any) {
-        res.status(500).json({
-            message: error.message,
-        });
-    }
-};
+    ApiResponse.success(data, res);
+});

@@ -5,8 +5,10 @@ import {
 } from './transaction.repository';
 import type { CreateTransactionInput } from './transaction.types';
 import type { Transaction } from './transaction.types';
+import type { Prisma } from '@prisma/client';
 import prisma from "../../config/db";
 import { io } from "../../app/server";
+import { createPagination } from "../../common/utils/pagination";
 
 // Basic CRUD (repo-backed)
 export const createTransaction = async (data: CreateTransactionInput, userId: string): Promise<any> => {
@@ -68,7 +70,7 @@ export const deleteTransaction = async (id: string, userId: string): Promise<any
 export const getTransactions = async (userId: string, query: any) => {
   const { type, category, startDate, endDate, page = 1, limit = 10 } = query;
 
-  const filters: any = { userId };
+  const filters: Prisma.TransactionWhereInput = { userId };
 
   if (type) filters.type = type;
   if (category) filters.category = category;
@@ -80,23 +82,20 @@ export const getTransactions = async (userId: string, query: any) => {
     };
   }
 
-  const skip = (page - 1) * limit;
+  const { page: currentPage, limit: currentLimit, args } = createPagination({ page, limit, where: filters }, prisma.transaction);
 
   const [data, total] = await Promise.all([
-    prisma.transaction.findMany({
-      where: filters,
-      orderBy: { date: "desc" },
-      skip: Number(skip),
-      take: Number(limit),
-    }),
+    prisma.transaction.findMany(args),
     prisma.transaction.count({ where: filters }),
   ]);
+
+  const totalPages = Math.ceil(total / currentLimit);
 
   return {
     data,
     total,
-    page: Number(page),
-    totalPages: Math.ceil(total / limit),
+    page: currentPage,
+    totalPages,
   };
 };
 

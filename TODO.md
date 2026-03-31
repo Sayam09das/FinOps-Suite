@@ -1,16 +1,16 @@
-# Queue Implementation TODO - FinOps Suite
+# FinOps Suite - Utils Refactor & Code Fixes
 
-## Completed
-- [x] 1. Install dependencies: `cd backend && npm install bullmq`
-- [x] 2. Implement `backend/src/infrastructure/queue/index.ts` (Queue registration)
-- [x] 3. Implement `backend/src/infrastructure/queue/notification.queue.ts` (Jobs + Worker)
-- [x] 4. Update `backend/src/app/app.ts` (Start queue worker)
+## Current Progress
+Completed:
+- [x] 1. Created/populated utils: asyncHandler.ts, apiResponse.ts, pagination.ts, date.ts
 
-## Pending (Bonus integrations)
-- [ ] 5. Update notifications service to use queue.add()
-- [ ] 6. Remove old notification.worker.ts
-- [ ] 7. Test queue
+Pending:
+- [x] 2. Refactor budget.controller.ts to use asyncHandler & ApiResponse
+- [x] 3. Refactor transaction.controller.ts to use asyncHandler & ApiResponse
+- [x] 4. Refactor upload.controller.ts (special multer array handling)
+- [x] 5. Refactor auth.controller.ts, user.controller.ts, dashboard.controller.ts, analytics.controller.ts
+- [x] 6. Update transaction.service.ts to use pagination util
+- [ ] 7. Verify all controllers, test server, complete
 
-**Queue files complete! Run `cd backend && npm run dev` (Redis required).**
+**Next:** Refactor controllers step-by-step.
 
-Test endpoint example: Add POST /api/queue/test-job {userId, title, etc} using addNotificationJob
