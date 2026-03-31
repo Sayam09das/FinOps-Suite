@@ -14,7 +14,7 @@ import analyticsIndex from "../modules/analytics";
 import notificationsIndex from "../modules/notifications";
 import { startNotificationWorker } from "../infrastructure/queue/notification.queue";
 import uploadsIndex from "../modules/uploads/index";
-import { healthCheck } from "./health";
+import healthIndex from "../modules/health";
 
 // Create app
 const app = express();
@@ -42,7 +42,7 @@ app.use("/api/uploads", uploadsIndex);
 void startNotificationWorker();
 
 // Health endpoint
-app.get("/health", healthCheck);
+app.use("/api/health", healthIndex);
 
 // Root
 app.get("/", (_req: Request, res: Response) => {
