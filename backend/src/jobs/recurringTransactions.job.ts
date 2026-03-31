@@ -16,7 +16,7 @@ export async function processRecurringTransactions(job?: Job<RecurringTransactio
         userId: budget.userId,
         amount: budget.amount,
         category: budget.category,
-        type: 'EXPENSE',
+        type: 'expense',
         note: `Recurring budget for ${budget.category} - ${budget.month}`,
         date: new Date()
       }

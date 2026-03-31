@@ -1,53 +1,56 @@
 import { Job } from 'bullmq';
-import { prisma } from '../config/db';
+import prisma from '../config/db';
 import { logger } from '../config/logger';
 import { sendEmail } from '../infrastructure/mail/mailer';
 
 export interface BudgetAlertsData {}
 
 export async function processBudgetAlerts(job?: Job<BudgetAlertsData>): Promise<void> {
-  logger.info('Running budget alerts job', { jobId: job?.id });
+  logger.info({ jobId: job?.id }, 'Running budget alerts job');
 
   const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const currentMonth = startOfMonth.toISOString().slice(0, 7);
 
   const budgets = await prisma.budget.findMany({
-    where: { 
-      isActive: true 
+    where: {
+      month: currentMonth,
     },
-    include: {
-      transactions: {
-        where: {
-          createdAt: {
-            gte: startOfMonth
-          }
-        },
-        select: {
-          amount: true
-        }
-      },
-      user: {
-        select: {
-          email: true,
-          name: true
-        }
-      }
-    }
   });
 
   for (const budget of budgets) {
-    const monthlySpend: number = budget.transactions.reduce((sum: number, tx: { amount: number }) => sum + tx.amount, 0);
-    if (monthlySpend > budget.limit) {
+    const [user, spent] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: budget.userId },
+        select: { email: true },
+      }),
+      prisma.transaction.aggregate({
+        where: {
+          userId: budget.userId,
+          category: budget.category,
+          type: 'expense',
+          date: {
+            gte: startOfMonth,
+          },
+        },
+        _sum: {
+          amount: true,
+        },
+      }),
+    ]);
+
+    const monthlySpend = spent._sum.amount ?? 0;
+
+    if (user && monthlySpend > budget.amount) {
       await sendEmail({
-        to: budget.user.email,
-        subject: `Budget Alert: ${budget.name} exceeded`,
+        to: user.email,
+        subject: `Budget Alert: ${budget.category} exceeded`,
         html: `
           <h1>Budget Alert</h1>
-          <p>Hi ${budget.user.name},</p>
-          <p>Your '${budget.name}' budget of $${budget.limit} has been exceeded this month.</p>
+          <p>Your '${budget.category}' budget of $${budget.amount} has been exceeded this month.</p>
           <p>Current spend: $${monthlySpend.toFixed(2)}</p>
         `
       });
-      logger.info(`Budget alert sent for budget ${budget.id}`);
+      logger.info({ budgetId: budget.id }, 'Budget alert sent');
     }
   }
 
