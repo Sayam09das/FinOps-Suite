@@ -3,18 +3,18 @@ import { Prisma } from '@prisma/client';
 interface PaginationOptions {
   page?: number | string;
   limit?: number | string;
-  where?: Prisma.TransactionWhereInput; // Generic Prisma where
+  where?: any;
 }
 
-export interface PaginationResult<T> {
-  data: T[];
+export interface PaginationResult {
+  data: any[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
 }
 
-export const createPagination = <T>(options: PaginationOptions, prismaModel: any) => {
+export const createPagination = (options: PaginationOptions, prismaModel: any) => {
   const page = Math.max(1, Number(options.page || 1));
   const limit = Math.max(1, Math.min(50, Number(options.limit || 10))); // Max 50
   const skip = (page - 1) * limit;
