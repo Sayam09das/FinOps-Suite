@@ -1,6 +1,6 @@
 import { Worker, Job } from 'bullmq';
 import redis, { ensureRedisConnection } from '../cache/redis';
-import { logger } from '../../common/logger';
+import { logger } from '../../config/logger';
 import type { CreateNotificationInput } from '../../modules/notifications/notification.types';
 
 let notificationWorker: Worker | null = null;

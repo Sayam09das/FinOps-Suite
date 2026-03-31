@@ -1,7 +1,7 @@
 import prisma from '../../config/db';
 import { createNotification } from './notification.service';
 import { NotificationType } from './notification.types';
-import { logger } from '../../common/logger';
+import { logger } from '../../config/logger';
 
 let workerInterval: NodeJS.Timeout | null = null;
 

@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { corsMiddleware } from "../config/cors";
-import { logger } from "../common/logger";
+import { logger } from "../config/logger";
 import { loginLimiter, createAccountLimiter } from "../config/rateLimit";
 import { API_VERSION } from "../config/constants";
 import { AppError } from "../common/errors";

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { uploadFile, uploadMultiple } from './upload.service';
 import multer from 'multer';
-import { logger } from '../../common/logger';
+import { logger } from '../../config/logger';
 
 // Multer memory storage (no disk)
 const upload = multer({

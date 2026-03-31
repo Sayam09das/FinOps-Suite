@@ -1,7 +1,7 @@
 import prisma from '../../config/db';
 import { io } from '../../app/server';
 import type { CreateNotificationInput, NotificationType, Notification } from './notification.types';
-import { logger } from '../../common/logger';
+import { logger } from '../../config/logger';
 
 export const createNotification = async (input: CreateNotificationInput): Promise<Notification> => {
   const notification = await prisma.notification.create({

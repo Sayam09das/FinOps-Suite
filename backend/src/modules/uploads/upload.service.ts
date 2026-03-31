@@ -1,7 +1,7 @@
 import type { Express } from 'express';
 import cloudinary from '../../config/cloudinary';
 import type { UploadResult, MultiUploadResult } from './upload.types';
-import { logger } from '../../common/logger';
+import { logger } from '../../config/logger';
 
 export const uploadFile = async (file: Express.Multer.File): Promise<UploadResult> => {
   try {

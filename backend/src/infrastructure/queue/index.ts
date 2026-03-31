@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import redis, { ensureRedisConnection } from '../cache/redis';
-import { logger } from '../../common/logger';
+import { logger } from '../../config/logger';
 
 let notificationQueue: Queue | null = null;
 
@@ -30,7 +30,7 @@ export const addNotificationJob = async (data: unknown) => {
       logger.warn('Skipping notification job because Redis is unavailable');
       return null;
     }
-    
+
     const job = await queue.add('sendNotification', data);
     logger.info({ jobId: job.id }, 'Notification job added to queue');
     return job;
