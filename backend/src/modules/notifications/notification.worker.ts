@@ -69,4 +69,3 @@ export const stopNotificationWorker = () => {
     logger.info('🛑 Notification worker stopped');
   }
 };
-
