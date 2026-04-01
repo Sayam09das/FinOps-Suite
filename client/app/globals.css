@@ -1,15 +1,68 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Gilroy";
+  src: url("/fonts/Gilroy-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("/fonts/Gilroy-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #121212;
+
+  --primary: #500cb0;
+  --secondary: #b264ff;
+  --accent: #84cc16;
+  --dark: #0b0f1a;
+
+  --text-primary: #121212;
+  --text-secondary: #6b7280;
+
+  --font-sans: "Gilroy", Arial, Helvetica, sans-serif;
+
+  --h1-size: 80px;
+  --h1-line: 92px;
+
+  --h2-size: 64px;
+  --h2-line: 72px;
+
+  --h3-size: 50px;
+  --h3-line: 56px;
+
+  --h4-size: 32px;
+  --h4-line: 40px;
+
+  --h5-size: 24px;
+  --h5-line: 28px;
+
+  --body1-size: 16px;
+  --body1-line: 24px;
+
+  --body2-size: 14px;
+  --body2-line: 22px;
+
+  --caption-size: 12px;
+  --caption-line: 18px;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-dark: var(--dark);
+
+  --font-sans: var(--font-sans);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +75,52 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  font-size: var(--h1-size);
+  line-height: var(--h1-line);
+  font-weight: 400;
+}
+
+h2 {
+  font-size: var(--h2-size);
+  line-height: var(--h2-line);
+  font-weight: 400;
+}
+
+h3 {
+  font-size: var(--h3-size);
+  line-height: var(--h3-line);
+  font-weight: 400;
+}
+
+h4 {
+  font-size: var(--h4-size);
+  line-height: var(--h4-line);
+  font-weight: 400;
+}
+
+h5 {
+  font-size: var(--h5-size);
+  line-height: var(--h5-line);
+  font-weight: 400;
+}
+
+p {
+  font-size: var(--body1-size);
+  line-height: var(--body1-line);
+}
+
+.small {
+  font-size: var(--body2-size);
+  line-height: var(--body2-line);
+}
+
+.caption {
+  font-size: var(--caption-size);
+  line-height: var(--caption-line);
 }
