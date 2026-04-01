@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 
 export default function SocketTest() {
   useEffect(() => {
-    const socket = io("http://localhost:5000");
+    const socket = io("http://localhost:5001");
 
     socket.on("alert", (data) => {
       console.log("🔔 ALERT:", data);
