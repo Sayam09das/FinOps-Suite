@@ -23,7 +23,7 @@ export const createPagination = (options: PaginationOptions, prismaModel: any) =
     where: options.where,
     skip,
     take: limit,
-    orderBy: { date: 'desc' } as any, // Default, override if needed
+    orderBy: { createdAt: 'desc' } as any,
   };
 
   return { page, limit, skip, args };
@@ -33,4 +33,3 @@ export const getPaginationMeta = async <T>(prismaModel: any, where: Prisma.Trans
   const total = await prismaModel.count({ where });
   return { total };
 };
-

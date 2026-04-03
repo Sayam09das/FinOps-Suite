@@ -1,17 +1,9 @@
-import { Prisma } from '@prisma/client';
+export type AppUserRole = 'USER' | 'ADMIN';
 
-export interface UpdateUserInput {
-  email?: string;
-}
-
-export type ProfileUser = {
+export interface CurrentUser {
   id: string;
+  clerkId: string;
   email: string;
-  createdAt: Date;
-};
-
-export interface GetProfileResponse {
-  id: string;
-  email: string;
+  role: AppUserRole;
   createdAt: Date;
 }

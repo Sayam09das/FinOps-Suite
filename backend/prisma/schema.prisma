@@ -8,11 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId       String         @unique
+  email         String         @unique
+  role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
+  budgets       Budget[]
   notifications Notification[]
+  transactions  Transaction[]
 }
 
 model Transaction {
@@ -22,7 +25,12 @@ model Transaction {
   category  String
   note      String?
   date      DateTime @default(now())
+  createdAt DateTime @default(now())
   userId    String   @db.ObjectId
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Budget {
@@ -31,6 +39,11 @@ model Budget {
   category  String
   month     String   // "2026-03"
   userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, month])
 }
 
 model Notification {
@@ -45,4 +58,9 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id])
   
   @@map("notifications")
+}
+
+enum Role {
+  USER
+  ADMIN
 }

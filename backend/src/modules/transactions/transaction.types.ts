@@ -4,6 +4,7 @@ export interface CreateTransactionInput {
   category: string;
   note?: string;
   date?: string;
+  createdAt?: string;
 }
 
 export interface Transaction {
@@ -12,6 +13,7 @@ export interface Transaction {
   type: string;
   category: string;
   note: string | null;
+  createdAt: Date;
   date: Date;
   userId: string;
 }

@@ -1,70 +1,28 @@
-import { Request, Response } from "express";
-import { getUserProfile, updateUserProfile } from "./user.service";
-import { updateUserSchema } from "./user.validation";
-import { z } from 'zod';
+import type { Request, Response } from 'express';
+import { asyncHandler } from '../../common/utils/asyncHandler';
+import { ApiResponse } from '../../common/utils/apiResponse';
+import { getUserProfile } from './user.service';
 
-type AuthenticatedRequest = Request & {
-  user?: {
-    id: string;
-    email: string;
-    createdAt: Date;
-  };
-};
-import { asyncHandler } from "../../common/utils/asyncHandler";
-import { ApiResponse } from "../../common/utils/apiResponse";
+export const getProfile = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
 
-// Get current user profile
-export const getProfile = async (req: Request, res: Response) => {
-  try {
-    const { user } = req as AuthenticatedRequest;
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Unauthorized',
-      });
-    }
-    const profile = await getUserProfile(user.id);
-
-    res.json({
-      success: true,
-      data: profile,
-    });
-  } catch (error) {
-    res.status(404).json({
-      success: false,
-      message: (error as Error).message,
-    });
+  if (!userId) {
+    ApiResponse.error('Unauthorized', res, 401);
+    return;
   }
-};
 
-// Update current user profile
-export const updateProfile = async (req: Request, res: Response) => {
-  try {
-    const validatedData = updateUserSchema.parse(req.body);
-    const { user } = req as AuthenticatedRequest;
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Unauthorized',
-      });
-    }
-    const profile = await updateUserProfile(user.id, validatedData);
+  const profile = await getUserProfile(userId);
+  ApiResponse.success(profile, res, 200, 'Current user loaded');
+});
 
-    res.json({
-      success: true,
-      data: profile,
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        success: false,
-        message: "Validation error",
-        errors: error.issues,
-      });
-    }
-    res.status(400).json({
-      success: false,
-      message: (error as Error).message,
-    });
-  }
-};
+export const getAdminAccess = asyncHandler(async (req: Request, res: Response) => {
+  ApiResponse.success(
+    {
+      role: req.user?.role,
+      message: 'Admin access granted.',
+    },
+    res,
+    200,
+    'Admin access granted',
+  );
+});

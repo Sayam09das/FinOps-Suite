@@ -5,7 +5,7 @@ import { Transaction } from "@prisma/client";
 export const getDashboardDataRepo = async (userId: string): Promise<DashboardData> => {
   const transactions: Transaction[] = await prisma.transaction.findMany({
     where: { userId },
-    orderBy: { date: "desc" },
+    orderBy: { createdAt: "desc" },
   });
 
   let income = 0;

@@ -2,12 +2,18 @@ import prisma from '../../config/db';
 import type { CreateTransactionInput, Transaction } from './transaction.types';
 
 export const createTransaction = async (data: CreateTransactionInput, userId: string): Promise<any> => {
+  const timestamp = data.createdAt ?? data.date;
   const createData: any = {
-    ...data,
+    amount: data.amount,
+    type: data.type,
+    category: data.category,
+    note: data.note,
+    date: timestamp ? new Date(timestamp) : undefined,
+    createdAt: timestamp ? new Date(timestamp) : undefined,
     userId,
   };
 
-  // Omit undefined fields for Prisma compatibility (e.g., date/note optional)
+  // Omit undefined fields for Prisma compatibility.
   Object.keys(createData).forEach(key => {
     if (createData[key] === undefined || createData[key] === null) {
       delete createData[key];
@@ -22,7 +28,7 @@ export const createTransaction = async (data: CreateTransactionInput, userId: st
 export const getTransactions = async (userId: string): Promise<any[]> => {
   return prisma.transaction.findMany({
     where: { userId },
-    orderBy: { date: 'desc' },
+    orderBy: { createdAt: 'desc' },
   });
 };
 

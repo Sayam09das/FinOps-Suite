@@ -23,7 +23,7 @@ export const getDashboardData = async (userId: string) => {
   // 🔹 DB logic
   const transactions = await prisma.transaction.findMany({
     where: { userId },
-    orderBy: { date: "desc" },
+    orderBy: { createdAt: "desc" },
   });
 
   let income = 0;

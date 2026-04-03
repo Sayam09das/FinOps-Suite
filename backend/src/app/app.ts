@@ -1,7 +1,7 @@
+import { clerkMiddleware } from '@clerk/express';
 import express, { Request, Response } from "express";
 import { corsMiddleware } from "../config/cors";
 import { logger } from "../config/logger";
-import { loginLimiter, createAccountLimiter } from "../config/rateLimit";
 import { API_VERSION } from "../config/constants";
 import { AppError } from "../common/errors";
 import prisma, { pingDatabase } from "../config/db";
@@ -23,10 +23,7 @@ const app = express();
 app.use(corsMiddleware);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-
-// Rate limiting
-app.use('/api/auth/register', createAccountLimiter);
-app.use('/api/auth/login', loginLimiter);
+app.use(clerkMiddleware());
 
 // Routes
 app.use("/api/auth", authIndex);

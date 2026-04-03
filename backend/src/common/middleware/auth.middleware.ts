@@ -1,38 +1,40 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import prisma from "../../config/db";
-
-const JWT_SECRET = process.env.JWT_SECRET as string;
+import { getAuth } from '@clerk/express';
+import type { NextFunction, Request, Response } from 'express';
+import { syncUserFromClerk } from '../../modules/user/user.service';
+import { ApiResponse } from '../utils/apiResponse';
 
 export const protect = async (
   req: Request,
   res: Response,
-  next: NextFunction
-) => {
+  next: NextFunction,
+): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization;
+    const auth = getAuth(req);
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "No token provided" });
+    if (!auth.userId) {
+      ApiResponse.error('Unauthorized', res, 401);
+      return;
     }
 
-    const token = authHeader.split(" ")[1];
-
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-
-    // 🔥 Fetch real user
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    (req as any).user = user;
-
+    req.user = await syncUserFromClerk(auth.userId);
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid token" });
+    next(error);
   }
+};
+
+export const requireRole = (...roles: Array<'USER' | 'ADMIN'>) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      ApiResponse.error('Unauthorized', res, 401);
+      return;
+    }
+
+    if (!roles.includes(req.user.role)) {
+      ApiResponse.error('Forbidden', res, 403);
+      return;
+    }
+
+    next();
+  };
 };
