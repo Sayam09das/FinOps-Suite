@@ -1,9 +1,10 @@
 'use client';
 
-import { Show, UserButton } from '@clerk/nextjs';
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useAuthStore } from '@/app/store/auth.store';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -11,8 +12,14 @@ const navLinks = [
 ] as const;
 
 export default function LandingNavbar() {
+  const router = useRouter();
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+  const currentUser = useAuthStore((state) => state.currentUser);
+  const logout = useAuthStore((state) => state.logout);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const isAuthenticated = Boolean(currentUser);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,6 +30,12 @@ export default function LandingNavbar() {
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    setIsMobileMenuOpen(false);
+    router.refresh();
+  };
 
   return (
     <motion.nav
@@ -38,7 +51,7 @@ export default function LandingNavbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Link href="/" className="flex items-center gap-3 group">
+            <Link href="/" className="group flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-secondary to-accent shadow-lg transition-shadow duration-300 group-hover:shadow-xl">
                 <svg
                   className="h-6 w-6 text-white"
@@ -81,37 +94,48 @@ export default function LandingNavbar() {
           </div>
 
           <div className="hidden items-center gap-4 lg:flex">
-            <Show when="signed-out">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  href="/sign-in"
-                  className="px-5 py-2.5 text-[15px] font-medium text-dark transition-colors duration-300 hover:text-primary"
+            {!hasHydrated || !isAuthenticated ? (
+              <>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    href="/login"
+                    className="px-5 py-2.5 text-[15px] font-medium text-dark transition-colors duration-300 hover:text-primary"
+                  >
+                    Sign In
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    href="/register"
+                    className="rounded-2xl bg-dark px-6 py-2.5 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-primary hover:shadow-2xl hover:shadow-primary/30"
+                  >
+                    Create Account
+                  </Link>
+                </motion.div>
+              </>
+            ) : (
+              <>
+                <span className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600">
+                  {currentUser?.email ?? 'Signed in'}
+                </span>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    href="/dashboard"
+                    prefetch={false}
+                    className="rounded-2xl border border-slate-200 px-5 py-2.5 text-[15px] font-semibold text-dark transition-all duration-300 hover:border-primary hover:text-primary"
+                  >
+                    Open Dashboard
+                  </Link>
+                </motion.div>
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
+                  className="rounded-2xl bg-dark px-5 py-2.5 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-primary"
                 >
-                  Sign In
-                </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  href="/sign-up"
-                  className="rounded-2xl bg-dark px-6 py-2.5 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-primary hover:shadow-2xl hover:shadow-primary/30"
-                >
-                  Create Account
-                </Link>
-              </motion.div>
-            </Show>
-
-            <Show when="signed-in">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  href="/dashboard"
-                  prefetch={false}
-                  className="rounded-2xl border border-slate-200 px-5 py-2.5 text-[15px] font-semibold text-dark transition-all duration-300 hover:border-primary hover:text-primary"
-                >
-                  Open Dashboard
-                </Link>
-              </motion.div>
-              <UserButton />
-            </Show>
+                  Log Out
+                </button>
+              </>
+            )}
           </div>
 
           <motion.button
@@ -174,33 +198,45 @@ export default function LandingNavbar() {
               ))}
 
               <div className="space-y-3 border-t border-gray-100 pt-4">
-                <Show when="signed-out">
-                  <Link
-                    href="/sign-in"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block rounded-xl border-2 border-gray-200 px-4 py-3 text-center text-base font-medium text-dark transition-all duration-300 hover:border-primary hover:text-primary"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/sign-up"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block rounded-xl bg-dark px-4 py-3 text-center text-base font-semibold text-white transition-all duration-300 hover:bg-primary hover:shadow-xl"
-                  >
-                    Create Account
-                  </Link>
-                </Show>
-
-                <Show when="signed-in">
-                  <Link
-                    href="/dashboard"
-                    prefetch={false}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block rounded-xl bg-dark px-4 py-3 text-center text-base font-semibold text-white transition-all duration-300 hover:bg-primary hover:shadow-xl"
-                  >
-                    Open Dashboard
-                  </Link>
-                </Show>
+                {!hasHydrated || !isAuthenticated ? (
+                  <>
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block rounded-xl px-4 py-3 text-center text-base font-medium text-dark transition-all duration-300 hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5 hover:text-primary"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block rounded-xl bg-dark px-4 py-3 text-center text-base font-semibold text-white transition-all duration-300 hover:bg-primary hover:shadow-xl"
+                    >
+                      Create Account
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-center text-sm font-medium text-slate-600">
+                      {currentUser?.email ?? 'Signed in'}
+                    </div>
+                    <Link
+                      href="/dashboard"
+                      prefetch={false}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block rounded-xl bg-dark px-4 py-3 text-center text-base font-semibold text-white transition-all duration-300 hover:bg-primary hover:shadow-xl"
+                    >
+                      Open Dashboard
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => void handleLogout()}
+                      className="block w-full rounded-xl border border-slate-200 px-4 py-3 text-center text-base font-semibold text-dark transition-all duration-300 hover:border-primary hover:text-primary"
+                    >
+                      Log Out
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

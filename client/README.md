@@ -7,21 +7,20 @@ Next.js App Router frontend for the FinOps Suite authentication flow.
 - Next.js 16
 - TypeScript
 - Tailwind CSS 4
-- Clerk
+- Zustand
 - Framer Motion
 
 ## Auth Features
 
-- `ClerkProvider` configured in `app/layout.tsx`
-- Clerk route protection through `proxy.ts`
-- Prebuilt Clerk sign-in and sign-up pages
+- Custom sign-in and sign-up pages at `/sign-in` and `/sign-up`
+- Persisted client auth store backed by JWT access + refresh tokens
 - Protected dashboard at `/dashboard`
 - Authenticated API service layer under `lib/api`
-- Bearer-token requests using `useAuth().getToken()`
+- Bearer-token requests using the stored access token
 
 ## Environment Variables
 
-Copy the example file and add your Clerk values:
+Copy the example file and add your API URL:
 
 ```bash
 cp .env.example .env.local
@@ -31,11 +30,6 @@ Required variables:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5001
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
-NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
 ```
 
 ## Run Locally

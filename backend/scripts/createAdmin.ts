@@ -26,7 +26,7 @@ async function createAdmin() {
     });
 
     console.log(`Seed user created/updated: ${admin.email}`);
-    console.log('Note: the current Prisma schema has no role field, so this script creates a privileged seed user placeholder only.');
+    console.log('Seeded admin credentials are ready for the custom JWT auth flow.');
   } catch (error) {
     console.error('Error creating admin:', error);
   } finally {

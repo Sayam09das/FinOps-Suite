@@ -211,7 +211,7 @@ export default function CTASection() {
             whileTap={{ scale: 0.97 }}
           >
             <Link
-              href="/sign-up"
+              href="/register"
               prefetch={false}
               className="inline-flex rounded-full px-8 py-3.5 text-sm text-white shadow-lg"
               style={{ background: "#4DA8FF", fontWeight: 600, boxShadow: "0 8px 32px rgba(77,168,255,0.45)" }}

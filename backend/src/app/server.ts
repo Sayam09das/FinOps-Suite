@@ -1,4 +1,7 @@
 import app from "./app";
+import cookieParser from 'cookie-parser';
+
+app.use(cookieParser());
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { connectToDatabase } from "../config/db";

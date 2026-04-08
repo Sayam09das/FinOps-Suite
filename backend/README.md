@@ -8,18 +8,23 @@ Express + TypeScript API for the FinOps Suite authentication and finance workflo
 - TypeScript
 - Prisma ORM
 - MongoDB
-- Clerk Express SDK
+- JWT auth
+- bcrypt
 
 ## Auth Architecture
 
-- `@clerk/express` middleware is mounted globally in `src/app/app.ts`
+- `POST /api/auth/register` creates a local account with a hashed password
+- `POST /api/auth/login` returns access and refresh tokens
+- `POST /api/auth/refresh` refreshes an expired access token
 - Protected routes use `protect` from `src/common/middleware/auth.middleware.ts`
-- Clerk `userId` values are synced to the local MongoDB `User` model through `clerkId`
 - Role assignment supports `USER` and `ADMIN`
 - Protected API routes return `401` when the request is not authenticated
 
 ## Key Routes
 
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
 - `GET /api/auth/me`
 - `GET /api/user`
 - `GET /api/user/admin`
@@ -32,8 +37,8 @@ Express + TypeScript API for the FinOps Suite authentication and finance workflo
 ### `User`
 
 - `id`
-- `clerkId`
 - `email`
+- `password`
 - `role`
 - `createdAt`
 
@@ -62,11 +67,11 @@ Required variables:
 NODE_ENV=development
 PORT=5001
 DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/finops_suite?retryWrites=true&w=majority
-CLERK_SECRET_KEY=sk_test_...
+JWT_ACCESS_SECRET=replace-me
+JWT_REFRESH_SECRET=replace-me
 FRONTEND_URL=http://localhost:3000
 FRONTEND_URLS=http://localhost:3000
-CLERK_ADMIN_IDS=
-CLERK_ADMIN_EMAILS=
+ADMIN_EMAILS=
 ```
 
 ## Setup

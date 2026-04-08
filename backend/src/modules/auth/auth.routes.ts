@@ -1,9 +1,19 @@
 import { Router } from 'express';
 import { protect } from '../../common/middleware/auth.middleware';
-import { getSession } from './auth.controller';
+import { createAccountLimiter, loginLimiter } from '../../config/rateLimit';
+import { validateRequest } from '../../common/middleware/validation.middleware';
+import { getSession, login, refresh, register } from './auth.controller';
+import { oauthHandler } from './oauth.controller';
+import { loginSchema, refreshSchema, registerSchema } from './auth.validation';
+import { logout as logoutHandler } from './logout.controller';
 
 const router = Router();
 
+router.post('/register', createAccountLimiter, validateRequest(registerSchema), register);
+router.post('/login', loginLimiter, validateRequest(loginSchema), login);
+router.post('/refresh', validateRequest(refreshSchema), refresh);
+router.post('/logout', logoutHandler);
+router.post('/oauth', oauthHandler);
 router.get('/me', protect, getSession);
 
 export default router;

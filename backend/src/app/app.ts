@@ -1,5 +1,5 @@
-import { clerkMiddleware } from '@clerk/express';
 import express, { Request, Response } from "express";
+import cookieParser from 'cookie-parser';
 import { corsMiddleware } from "../config/cors";
 import { logger } from "../config/logger";
 import { API_VERSION } from "../config/constants";
@@ -21,9 +21,9 @@ const app = express();
 
 // Middleware
 app.use(corsMiddleware);
+app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use(clerkMiddleware());
 
 // Routes
 app.use("/api/auth", authIndex);

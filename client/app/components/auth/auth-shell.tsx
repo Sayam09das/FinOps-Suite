@@ -1,130 +1,67 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { LockKeyhole, ShieldCheck, Wallet2 } from 'lucide-react';
 
 type AuthShellProps = Readonly<{
-  title: string;
-  subtitle: string;
-  alternateCta: string;
-  alternateHref: string;
-  alternateLabel: string;
   children: ReactNode;
 }>;
 
-const features = [
-  {
-    icon: ShieldCheck,
-    title: 'Clerk-secured sessions',
-    description: 'Production-ready auth with session verification on both the client and API.',
-  },
-  {
-    icon: Wallet2,
-    title: 'Mongo-backed identity',
-    description: 'Every Clerk account is synced to Prisma so app data stays relational and queryable.',
-  },
-  {
-    icon: LockKeyhole,
-    title: 'Protected dashboard flow',
-    description: 'Only signed-in users can reach the dashboard and issue authenticated backend requests.',
-  },
-] as const;
+const entranceEase = [0.22, 1, 0.36, 1] as const;
 
-export function AuthShell({
-  title,
-  subtitle,
-  alternateCta,
-  alternateHref,
-  alternateLabel,
-  children,
-}: AuthShellProps) {
+function FloatingAccent({
+  className,
+  delay,
+}: Readonly<{
+  className: string;
+  delay: number;
+}>) {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#f8f5ff_0%,#ffffff_45%,#eef7ff_100%)] px-4 py-8 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(178,100,255,0.15),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(132,204,22,0.14),transparent_30%)]" />
+    <motion.div
+      aria-hidden
+      className={`pointer-events-none absolute rounded-full blur-3xl ${className}`}
+      animate={{
+        x: [0, 24, -12, 0],
+        y: [0, -18, 16, 0],
+        scale: [1, 1.06, 0.96, 1],
+      }}
+      transition={{
+        duration: 14,
+        delay,
+        repeat: Infinity,
+        repeatType: 'mirror',
+        ease: entranceEase,
+      }}
+    />
+  );
+}
 
-      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <motion.section
-          initial={{ opacity: 0, y: 32 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-[2rem] border border-white/60 bg-dark p-8 text-white shadow-[0_35px_90px_rgba(15,23,42,0.18)] sm:p-10"
+export function AuthShell({ children }: AuthShellProps) {
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-background px-4 py-6 text-foreground sm:px-6 lg:px-8">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(180deg, color-mix(in srgb, var(--background) 90%, var(--secondary) 10%) 0%, color-mix(in srgb, var(--background) 95%, var(--primary) 5%) 48%, var(--background) 100%)',
+        }}
+      />
+
+      <FloatingAccent className="left-[-5rem] top-10 h-40 w-40 bg-primary/12" delay={0} />
+      <FloatingAccent className="right-[-4rem] top-24 h-44 w-44 bg-secondary/14" delay={1.1} />
+      <FloatingAccent className="bottom-[-4rem] left-1/3 h-36 w-36 bg-accent/12" delay={2} />
+
+      <div className="relative mx-auto flex min-h-[calc(100vh-3rem)] max-w-7xl items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 26, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.65, ease: entranceEase }}
+          className="w-full rounded-[2rem] border border-primary/10 bg-background/95 p-4 shadow-[0_24px_80px_color-mix(in_srgb,var(--dark)_14%,transparent)] backdrop-blur-xl sm:p-5"
         >
-          <Link
-            href="/"
-            className="inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/15"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15">
-              FS
-            </span>
-            FinOps Suite
-          </Link>
-
-          <div className="mt-10 max-w-xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-accent">
-              Authentication Platform
-            </p>
-            <h1 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">
-              {title}
-            </h1>
-            <p className="mt-5 max-w-lg text-base leading-7 text-white/72 sm:text-lg">
-              {subtitle}
-            </p>
-          </div>
-
-          <div className="mt-10 space-y-4">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-
-              return (
-                <motion.article
-                  key={feature.title}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.18 + index * 0.12, duration: 0.5 }}
-                  className="rounded-3xl border border-white/10 bg-white/6 p-5 backdrop-blur-sm"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
-                      <Icon className="h-5 w-5 text-accent" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold text-white">{feature.title}</h2>
-                      <p className="mt-1 text-sm leading-6 text-white/68">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                </motion.article>
-              );
-            })}
-          </div>
-        </motion.section>
-
-        <motion.section
-          initial={{ opacity: 0, y: 32 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-[0_30px_80px_rgba(80,12,176,0.12)] backdrop-blur-xl sm:p-8"
-        >
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-primary">{alternateLabel}</p>
-              <p className="mt-1 text-sm text-slate-600">{alternateCta}</p>
-            </div>
-            <Link
-              href={alternateHref}
-              className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-primary hover:text-primary"
-            >
-              Switch
-            </Link>
-          </div>
-
-          <div className="rounded-[1.75rem] border border-slate-100 bg-white p-2 shadow-inner shadow-slate-100">
+          <div className="rounded-[1.5rem] border border-primary/8 bg-background p-4 sm:p-5 lg:p-6">
             {children}
           </div>
-        </motion.section>
+        </motion.div>
       </div>
     </main>
   );

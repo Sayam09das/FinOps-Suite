@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import './globals.css';
 import { Providers } from './providers';
 
+
 const gilroy = localFont({
   src: [
     {
@@ -87,7 +88,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <Providers>
+ <Providers>
           <div className="flex min-h-screen flex-col">{children}</div>
         </Providers>
       </body>

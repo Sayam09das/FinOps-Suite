@@ -1,64 +1,63 @@
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5001'
-).replace(/\/$/, '');
+import type { ApiEnvelope } from './types';
+
+type ApiRequestOptions = Omit<RequestInit, 'credentials'>;
 
 export class ApiError extends Error {
   constructor(
     message: string,
     public readonly status: number,
-    public readonly details?: unknown,
+    public readonly payload?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
   }
 }
 
-type ApiRequestOptions = Omit<RequestInit, 'headers'> & {
-  token?: string | null;
-  headers?: HeadersInit;
-};
+const parseResponsePayload = async <T>(
+  response: Response,
+): Promise<ApiEnvelope<T> | null> => {
+  const raw = await response.text();
 
-export async function apiRequest<T>(
-  path: string,
-  { token, headers, ...init }: ApiRequestOptions = {},
-): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    cache: 'no-store',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-  });
-
-  let payload: unknown = null;
-
-  try {
-    payload = await response.json();
-  } catch {
-    payload = null;
+  if (!raw) {
+    return null;
   }
 
-  if (!response.ok) {
-    const message =
-      typeof payload === 'object' &&
-      payload !== null &&
-      'message' in payload &&
-      typeof payload.message === 'string'
-        ? payload.message
-        : 'Something went wrong while talking to the API.';
+  try {
+    return JSON.parse(raw) as ApiEnvelope<T>;
+  } catch {
+    return null;
+  }
+};
 
+export const apiRequest = async <T>(
+  input: string,
+  init: ApiRequestOptions = {},
+): Promise<T> => {
+  const headers = new Headers(init.headers);
+
+  if (!headers.has('Accept')) {
+    headers.set('Accept', 'application/json');
+  }
+
+  if (init.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  const response = await fetch(input, {
+    ...init,
+    credentials: 'include',
+    cache: 'no-store',
+    headers,
+  });
+
+  const payload = await parseResponsePayload<T>(response);
+  const message =
+    payload?.message ||
+    (response.ok ? 'Request completed successfully.' : 'Request failed.');
+
+  if (!response.ok || payload?.success === false) {
     throw new ApiError(message, response.status, payload);
   }
 
-  if (
-    typeof payload === 'object' &&
-    payload !== null &&
-    'data' in payload
-  ) {
-    return payload.data as T;
-  }
-
-  return payload as T;
-}
+  return (payload?.data ?? null) as T;
+};

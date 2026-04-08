@@ -2,9 +2,8 @@ import { apiRequest } from './client';
 import type { CurrentUser } from './types';
 
 export const userService = {
-  getCurrent: (token: string) =>
+  getCurrent: () =>
     apiRequest<CurrentUser>('/api/user', {
-      token,
       method: 'GET',
     }),
 };

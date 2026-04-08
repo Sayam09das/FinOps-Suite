@@ -6,15 +6,13 @@ import type {
 } from './types';
 
 export const transactionService = {
-  list: (token: string) =>
+  list: () =>
     apiRequest<PaginatedTransactions>('/api/transactions?limit=8', {
-      token,
       method: 'GET',
     }),
 
-  create: (token: string, payload: CreateTransactionPayload) =>
+  create: (payload: CreateTransactionPayload) =>
     apiRequest<Transaction>('/api/transactions', {
-      token,
       method: 'POST',
       body: JSON.stringify(payload),
     }),
