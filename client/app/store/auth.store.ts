@@ -50,11 +50,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const user = await authService.getSession();
       set({
-        currentUser: user,
+        currentUser: user ?? null,
         hasHydrated: true,
         isHydrating: false,
       });
-      return user;
+      return user ?? null;
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         set({

@@ -125,7 +125,10 @@ const FinancialDashboard = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-8 overflow-hidden">
+        <section
+            id="dashboard-preview"
+            className="min-h-screen scroll-mt-24 bg-gradient-to-br from-blue-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-8 overflow-hidden"
+        >
             {/* Animated background elements */}
             <div className="fixed inset-0 -z-10 pointer-events-none">
                 <motion.div
@@ -399,7 +402,7 @@ const FinancialDashboard = () => {
             >
                 <p>© 2026 Financial Dashboard. All rights reserved. | Secure • Fast • Reliable</p>
             </motion.footer>
-        </div>
+        </section>
     );
 };
 

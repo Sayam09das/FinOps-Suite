@@ -18,7 +18,7 @@ export const authService = {
   completeOAuth: (payload: OAuthExchangePayload) =>
     apiClient.post<AuthUser>(apiEndpoints.auth.oauth, payload),
 
-  getSession: () => apiClient.get<CurrentUser>(apiEndpoints.auth.session),
+  getSession: () => apiClient.get<CurrentUser | null>(apiEndpoints.auth.session),
 
   logout: () => apiClient.post<null>(apiEndpoints.auth.logout),
 };

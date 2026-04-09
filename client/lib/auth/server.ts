@@ -30,6 +30,17 @@ type OAuthBridgePayload = {
   providerId: string;
 };
 
+export class BackendRequestError extends Error {
+  constructor(
+    message = 'Unable to reach the backend service right now.',
+    public readonly status = 503,
+    public readonly cause?: unknown,
+  ) {
+    super(message);
+    this.name = 'BackendRequestError';
+  }
+}
+
 const buildBackendUrl = (path: string) => new URL(path, apiUrl).toString();
 
 export const readApiEnvelope = async <T>(
@@ -58,11 +69,19 @@ export const requestBackend = async (
     headers.set('Accept', 'application/json');
   }
 
-  return fetch(buildBackendUrl(path), {
-    ...init,
-    cache: 'no-store',
-    headers,
-  });
+  try {
+    return await fetch(buildBackendUrl(path), {
+      ...init,
+      cache: 'no-store',
+      headers,
+    });
+  } catch (error) {
+    throw new BackendRequestError(
+      `Unable to connect to the backend at ${apiUrl}.`,
+      503,
+      error,
+    );
+  }
 };
 
 export const setAuthCookies = async (
@@ -191,4 +210,19 @@ export const exchangeOAuthWithBackend = async (
   }
 
   return extractAuthUser(envelope.data);
+};
+
+export const getBackendErrorMessage = (
+  error: unknown,
+  fallback: string,
+): string => {
+  if (error instanceof BackendRequestError) {
+    return error.message;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
 };

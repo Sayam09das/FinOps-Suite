@@ -331,14 +331,14 @@ export default function FinSuiteHero() {
 
                     <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4">
                         <Link
-                            href="/get-started"
+                            href="/register"
                             className="group inline-flex items-center gap-2.5 rounded-full bg-gray-950 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-gray-950/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-gray-950/30 active:translate-y-0"
                         >
                             Get Started
                             <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
                         </Link>
                         <Link
-                            href="/demo"
+                            href="/#dashboard-preview"
                             className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 transition-colors hover:text-gray-900"
                         >
                             <span className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-100 bg-white text-sm text-gray-700 shadow-md">

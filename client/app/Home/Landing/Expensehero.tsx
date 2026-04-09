@@ -85,6 +85,7 @@ export default function ExpenseHero() {
     const [toggled, setToggled] = useState(true);
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const [count, setCount] = useState(0);
+    const [chartsReady, setChartsReady] = useState(false);
 
     useEffect(() => {
         let frame: number;
@@ -105,6 +106,10 @@ export default function ExpenseHero() {
             clearTimeout(t);
             cancelAnimationFrame(frame);
         };
+    }, []);
+
+    useEffect(() => {
+        setChartsReady(true);
     }, []);
 
     return (
@@ -326,28 +331,32 @@ export default function ExpenseHero() {
 
                                 {/* Donut */}
                                 <div className="relative w-24 h-24 flex-shrink-0">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={categories}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={28}
-                                                outerRadius={42}
-                                                dataKey="value"
-                                                strokeWidth={2}
-                                                stroke="#fff"
-                                            >
-                                                {categories.map((_, i) => (
-                                                    <Cell
-                                                        key={i}
-                                                        fill={COLORS[i]}
-                                                        opacity={activeIndex === null || activeIndex === i ? 1 : 0.4}
-                                                    />
-                                                ))}
-                                            </Pie>
-                                        </PieChart>
-                                    </ResponsiveContainer>
+                                    {chartsReady ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={categories}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={28}
+                                                    outerRadius={42}
+                                                    dataKey="value"
+                                                    strokeWidth={2}
+                                                    stroke="#fff"
+                                                >
+                                                    {categories.map((_, i) => (
+                                                        <Cell
+                                                            key={i}
+                                                            fill={COLORS[i]}
+                                                            opacity={activeIndex === null || activeIndex === i ? 1 : 0.4}
+                                                        />
+                                                    ))}
+                                                </Pie>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="h-full w-full animate-pulse rounded-full bg-gradient-to-br from-violet-100 via-white to-blue-100" />
+                                    )}
                                     {/* Center label */}
                                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                         <span className="text-[10px] font-700 text-slate-900 leading-tight" style={{ fontWeight: 700 }}>

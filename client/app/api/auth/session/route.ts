@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import {
+  BackendRequestError,
   clearAuthCookies,
+  getBackendErrorMessage,
   getAccessToken,
   readApiEnvelope,
   refreshAuthSession,
@@ -8,73 +10,90 @@ import {
 } from '@/lib/auth/server';
 import type { CurrentUser } from '@/lib/api/types';
 
-export async function GET() {
-  const accessToken = await getAccessToken();
-
-  if (!accessToken) {
-    const refreshedUser = await refreshAuthSession();
-
-    if (!refreshedUser) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Unauthorized',
-        },
-        { status: 401 },
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: refreshedUser,
-        message: 'Session restored',
-      },
-      { status: 200 },
-    );
-  }
-
-  let response = await requestBackend('/api/auth/me', {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
+const emptySessionResponse = (message = 'No active session') =>
+  NextResponse.json(
+    {
+      success: true,
+      data: null,
+      message,
     },
-  });
+    { status: 200 },
+  );
 
-  if (response.status === 401) {
-    const refreshedUser = await refreshAuthSession();
+export async function GET() {
+  try {
+    const accessToken = await getAccessToken();
 
-    if (!refreshedUser) {
-      await clearAuthCookies();
+    if (!accessToken) {
+      const refreshedUser = await refreshAuthSession();
+
+      if (!refreshedUser) {
+        return emptySessionResponse();
+      }
+
       return NextResponse.json(
         {
-          success: false,
-          message: 'Unauthorized',
+          success: true,
+          data: refreshedUser,
+          message: 'Session restored',
         },
-        { status: 401 },
+        { status: 200 },
       );
     }
 
-    response = await requestBackend('/api/auth/me', {
+    let response = await requestBackend('/api/auth/me', {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${await getAccessToken()}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
-  }
 
-  const payload = await readApiEnvelope<CurrentUser>(response);
+    if (response.status === 401) {
+      const refreshedUser = await refreshAuthSession();
 
-  if (!response.ok || !payload?.data) {
-    await clearAuthCookies();
+      if (!refreshedUser) {
+        await clearAuthCookies();
+        return emptySessionResponse();
+      }
+
+      response = await requestBackend('/api/auth/me', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${await getAccessToken()}`,
+        },
+      });
+    }
+
+    const payload = await readApiEnvelope<CurrentUser>(response);
+
+    if (!response.ok || !payload?.data) {
+      await clearAuthCookies();
+
+      if (response.status === 401) {
+        return emptySessionResponse();
+      }
+
+      return NextResponse.json(
+        payload ?? {
+          success: false,
+          message: 'Unable to load the current session.',
+        },
+        { status: response.status || 500 },
+      );
+    }
+
+    return NextResponse.json(payload, { status: response.status });
+  } catch (error) {
+    const status = error instanceof BackendRequestError ? error.status : 500;
     return NextResponse.json(
-      payload ?? {
+      {
         success: false,
-        message: 'Unauthorized',
+        message: getBackendErrorMessage(
+          error,
+          'Unable to load the current session.',
+        ),
       },
-      { status: response.status || 401 },
+      { status },
     );
   }
-
-  return NextResponse.json(payload, { status: response.status });
 }
