@@ -4,7 +4,7 @@ export type OAuthProvider = 'google' | 'apple' | 'facebook';
 
 export type ApiEnvelope<T> = {
   success: boolean;
-  data: T;
+  data?: T;
   message?: string;
   meta?: unknown;
 };
@@ -94,6 +94,8 @@ export type CreateTransactionPayload = {
   createdAt?: string;
   date?: string;
 };
+
+export type UpdateTransactionPayload = Partial<CreateTransactionPayload>;
 
 export const extractAuthUser = (payload: AuthResponseData): AuthUser => {
   const candidate = payload.user ?? payload;

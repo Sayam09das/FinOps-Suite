@@ -1,4 +1,5 @@
-import { apiRequest } from './client';
+import { apiClient } from './client';
+import { apiEndpoints } from './endpoints';
 import type {
   AuthUser,
   CurrentUser,
@@ -9,30 +10,15 @@ import type {
 
 export const authService = {
   login: (payload: LoginPayload) =>
-    apiRequest<AuthUser>('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }),
+    apiClient.post<AuthUser>(apiEndpoints.auth.login, payload),
 
   register: (payload: RegisterPayload) =>
-    apiRequest<AuthUser>('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }),
+    apiClient.post<AuthUser>(apiEndpoints.auth.register, payload),
 
   completeOAuth: (payload: OAuthExchangePayload) =>
-    apiRequest<AuthUser>('/api/auth/oauth', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }),
+    apiClient.post<AuthUser>(apiEndpoints.auth.oauth, payload),
 
-  getSession: () =>
-    apiRequest<CurrentUser>('/api/auth/session', {
-      method: 'GET',
-    }),
+  getSession: () => apiClient.get<CurrentUser>(apiEndpoints.auth.session),
 
-  logout: () =>
-    apiRequest<null>('/api/auth/logout', {
-      method: 'POST',
-    }),
+  logout: () => apiClient.post<null>(apiEndpoints.auth.logout),
 };

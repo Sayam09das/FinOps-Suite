@@ -1,9 +1,7 @@
-import { apiRequest } from './client';
+import { apiClient } from './client';
+import { apiEndpoints } from './endpoints';
 import type { CurrentUser } from './types';
 
 export const userService = {
-  getCurrent: () =>
-    apiRequest<CurrentUser>('/api/user', {
-      method: 'GET',
-    }),
+  getCurrent: () => apiClient.get<CurrentUser>(apiEndpoints.user.current),
 };

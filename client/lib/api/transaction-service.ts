@@ -1,19 +1,21 @@
-import { apiRequest } from './client';
+import { apiClient } from './client';
+import { apiEndpoints } from './endpoints';
 import type {
   CreateTransactionPayload,
   PaginatedTransactions,
   Transaction,
+  UpdateTransactionPayload,
 } from './types';
 
 export const transactionService = {
-  list: () =>
-    apiRequest<PaginatedTransactions>('/api/transactions?limit=8', {
-      method: 'GET',
-    }),
+  list: () => apiClient.get<PaginatedTransactions>(apiEndpoints.transactions.list),
 
   create: (payload: CreateTransactionPayload) =>
-    apiRequest<Transaction>('/api/transactions', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }),
+    apiClient.post<Transaction>(apiEndpoints.transactions.root, payload),
+
+  update: (id: string, payload: UpdateTransactionPayload) =>
+    apiClient.put<Transaction>(apiEndpoints.transactions.byId(id), payload),
+
+  remove: (id: string) =>
+    apiClient.delete<null>(apiEndpoints.transactions.byId(id)),
 };

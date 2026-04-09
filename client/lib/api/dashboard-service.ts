@@ -1,9 +1,7 @@
-import { apiRequest } from './client';
+import { apiClient } from './client';
+import { apiEndpoints } from './endpoints';
 import type { DashboardData } from './types';
 
 export const dashboardService = {
-  get: () =>
-    apiRequest<DashboardData>('/api/dashboard', {
-      method: 'GET',
-    }),
+  get: () => apiClient.get<DashboardData>(apiEndpoints.dashboard.root),
 };
