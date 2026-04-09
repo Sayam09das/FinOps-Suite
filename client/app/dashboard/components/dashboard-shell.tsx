@@ -66,6 +66,7 @@ export function DashboardShell() {
   const router = useRouter();
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const currentUser = useAuthStore((state) => state.currentUser);
+  const currentUserId = currentUser?.id ?? null;
   const updateCurrentUser = useAuthStore((state) => state.updateCurrentUser);
   const clearSession = useAuthStore((state) => state.clearSession);
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
@@ -136,13 +137,13 @@ export function DashboardShell() {
       return;
     }
 
-    if (!currentUser) {
+    if (!currentUserId) {
       router.replace('/login');
       return;
     }
 
     void loadDashboard();
-  }, [currentUser, hasHydrated, loadDashboard, router]);
+  }, [currentUserId, hasHydrated, loadDashboard, router]);
 
   const handleCreateTransaction = async (
     event: FormEvent<HTMLFormElement>,

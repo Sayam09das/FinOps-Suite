@@ -12,6 +12,7 @@ import { extractAuthUser } from '@/lib/api/types';
 
 export const ACCESS_COOKIE_NAME = 'finops.access-token';
 export const REFRESH_COOKIE_NAME = 'finops.refresh-token';
+const backendRequestTimeoutMs = 12000;
 
 const accessCookieMaxAge = 60 * 60 * 24 * 7;
 const refreshCookieMaxAge = 60 * 60 * 24 * 30;
@@ -64,6 +65,14 @@ export const requestBackend = async (
   init: RequestInit = {},
 ): Promise<Response> => {
   const headers = new Headers(init.headers);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort(
+      new Error(
+        `Backend request timed out after ${backendRequestTimeoutMs}ms.`,
+      ),
+    );
+  }, backendRequestTimeoutMs);
 
   if (!headers.has('Accept')) {
     headers.set('Accept', 'application/json');
@@ -73,14 +82,28 @@ export const requestBackend = async (
     return await fetch(buildBackendUrl(path), {
       ...init,
       cache: 'no-store',
+      signal: init.signal ?? controller.signal,
       headers,
     });
   } catch (error) {
+    if (
+      error instanceof DOMException &&
+      error.name === 'AbortError'
+    ) {
+      throw new BackendRequestError(
+        `The backend at ${apiUrl} is taking too long to respond. It may be waking up or unavailable.`,
+        504,
+        error,
+      );
+    }
+
     throw new BackendRequestError(
       `Unable to connect to the backend at ${apiUrl}.`,
       503,
       error,
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 };
 
@@ -226,3 +249,11 @@ export const getBackendErrorMessage = (
 
   return fallback;
 };
+
+export const createRouteErrorBody = (
+  error: unknown,
+  fallback: string,
+) => ({
+  success: false as const,
+  message: getBackendErrorMessage(error, fallback),
+});
