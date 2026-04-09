@@ -56,7 +56,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
       return user ?? null;
     } catch (error) {
-      if (error instanceof ApiError && error.status === 401) {
+      if (
+        error instanceof ApiError &&
+        (error.status === 401 || error.status === 503 || error.status === 504)
+      ) {
         set({
           currentUser: null,
           hasHydrated: true,

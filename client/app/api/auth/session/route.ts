@@ -20,6 +20,9 @@ const emptySessionResponse = (message = 'No active session') =>
     { status: 200 },
   );
 
+const temporarySessionFailureMessage =
+  'Session check is temporarily unavailable. Please try again shortly.';
+
 export async function GET() {
   try {
     const accessToken = await getAccessToken();
@@ -67,10 +70,13 @@ export async function GET() {
     const payload = await readApiEnvelope<CurrentUser>(response);
 
     if (!response.ok || !payload?.data) {
-      await clearAuthCookies();
-
       if (response.status === 401) {
+        await clearAuthCookies();
         return emptySessionResponse();
+      }
+
+      if (response.status >= 500) {
+        return emptySessionResponse(temporarySessionFailureMessage);
       }
 
       return NextResponse.json(
@@ -84,7 +90,10 @@ export async function GET() {
 
     return NextResponse.json(payload, { status: response.status });
   } catch (error) {
-    const status = error instanceof BackendRequestError ? error.status : 500;
+    if (error instanceof BackendRequestError) {
+      return emptySessionResponse(temporarySessionFailureMessage);
+    }
+
     return NextResponse.json(
       {
         success: false,
@@ -93,7 +102,7 @@ export async function GET() {
           'Unable to load the current session.',
         ),
       },
-      { status },
+      { status: 500 },
     );
   }
 }

@@ -17,7 +17,7 @@ export function AppProvider({ children }: AppProviderProps) {
     }
 
     initializedRef.current = true;
-    void hydrateSession();
+    void hydrateSession().catch(() => undefined);
   }, [hydrateSession]);
 
   return <>{children}</>;
