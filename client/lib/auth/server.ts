@@ -33,7 +33,7 @@ type OAuthBridgePayload = {
 
 export class BackendRequestError extends Error {
   constructor(
-    message = 'Unable to reach the backend service right now.',
+    message = 'Backend service is temporarily unavailable. Please try again shortly.',
     public readonly status = 503,
     public readonly cause?: unknown,
   ) {
@@ -91,14 +91,14 @@ export const requestBackend = async (
       error.name === 'AbortError'
     ) {
       throw new BackendRequestError(
-        `The backend at ${apiUrl} is taking too long to respond. It may be waking up or unavailable.`,
+        'Backend service is taking too long to respond. It may be waking up or temporarily unavailable.',
         504,
         error,
       );
     }
 
     throw new BackendRequestError(
-      `Unable to connect to the backend at ${apiUrl}.`,
+      'Backend service is temporarily unavailable. Please try again shortly.',
       503,
       error,
     );
