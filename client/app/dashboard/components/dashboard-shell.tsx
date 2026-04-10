@@ -21,6 +21,12 @@ import {
   type FormEvent,
 } from 'react';
 import { toast } from 'sonner';
+import type {
+  DashboardNotification,
+  DashboardProfileAction,
+  DashboardProfileSummary,
+  DashboardSection,
+} from '@/app/types';
 import { useAuthStore } from '@/app/store/auth.store';
 import { ApiError } from '@/lib/api/client';
 import { dashboardService } from '@/lib/api/dashboard-service';
@@ -32,6 +38,8 @@ import type {
   Transaction,
   TransactionType,
 } from '@/lib/api/types';
+import DashNavbar from './layout/DashNavbar';
+import DashSidebar from './layout/DashSidebar';
 
 const categories = [
   'Operations',
@@ -42,6 +50,94 @@ const categories = [
   'Travel',
   'Software',
 ] as const;
+
+type TransactionFormState = {
+  amount: string;
+  category: (typeof categories)[number];
+  note: string;
+  type: TransactionType;
+};
+
+const sectionMeta: Record<
+  DashboardSection,
+  {
+    description: string;
+    pill: string;
+    subtitle: string;
+    title: string;
+  }
+> = {
+  Dashboard: {
+    title: 'Overview',
+    subtitle: 'Track secure finance activity, budgets, and account health.',
+    pill: 'Protected dashboard',
+    description:
+      'Your dashboard uses unified auth across email/password and social login, with secure cookie-backed sessions routed through your own backend.',
+  },
+  Analytics: {
+    title: 'Analytics',
+    subtitle: 'Read trends across income, expenses, and category performance.',
+    pill: 'Analytics preview',
+    description:
+      'This section is mounted inside the shared dashboard shell, so your live financial data stays available while deeper analytics screens are connected.',
+  },
+  Insights: {
+    title: 'Insights',
+    subtitle: 'Review the strongest signals coming from your finance data.',
+    pill: 'Insight stream',
+    description:
+      'Use the secure shell to surface budget alerts, movement patterns, and recent activity without breaking session continuity.',
+  },
+  Updates: {
+    title: 'Updates',
+    subtitle: 'Stay current with new activity and budget changes.',
+    pill: 'Activity monitor',
+    description:
+      'Recent transactions and budget movement are still live here, so the shell can double as a reliable operations feed.',
+  },
+  Chat: {
+    title: 'Team Chat',
+    subtitle: 'Keep collaboration attached to the same authenticated workspace.',
+    pill: 'Collaboration space',
+    description:
+      'The layout is ready for conversation tools while your authenticated finance data remains visible in the surrounding shell.',
+  },
+  Settings: {
+    title: 'Settings',
+    subtitle: 'Manage profile, auth, and system preferences in one place.',
+    pill: 'Workspace settings',
+    description:
+      'Profile-aware navigation and session state are now part of the shell, so settings can plug into the same authenticated experience.',
+  },
+  'Help Desk': {
+    title: 'Help Desk',
+    subtitle: 'Find support resources without leaving the dashboard.',
+    pill: 'Support center',
+    description:
+      'The shared shell lets you keep finance context visible while you access guides, support, or account troubleshooting.',
+  },
+  Integration: {
+    title: 'Integration',
+    subtitle: 'Connect external systems to the protected finance workspace.',
+    pill: 'Integration hub',
+    description:
+      'This shell now supports connected sections cleanly, so integration views can reuse the same sidebar, navbar, and auth-aware data.',
+  },
+  Feedback: {
+    title: 'Feedback',
+    subtitle: 'Capture product feedback inside the signed-in experience.',
+    pill: 'Feedback channel',
+    description:
+      'Keeping feedback inside the dashboard shell makes it easier to respond with full account and activity context.',
+  },
+};
+
+const emptyForm: TransactionFormState = {
+  amount: '',
+  type: 'expense',
+  category: 'Operations',
+  note: '',
+};
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-US', {
@@ -55,12 +151,7 @@ const formatDate = (value: string) =>
     dateStyle: 'medium',
   }).format(new Date(value));
 
-const emptyForm = {
-  amount: '',
-  type: 'expense' as TransactionType,
-  category: 'Operations',
-  note: '',
-};
+const normalizeHandle = (email: string) => `@${email.split('@')[0].toLowerCase()}`;
 
 export function DashboardShell() {
   const router = useRouter();
@@ -74,10 +165,13 @@ export function DashboardShell() {
   const [profile, setProfile] = useState<CurrentUser | null>(null);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [formState, setFormState] = useState(emptyForm);
+  const [formState, setFormState] = useState<TransactionFormState>(emptyForm);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<DashboardSection>('Dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
   const [isPending, startTransition] = useTransition();
 
   const requestWithAuth = async <T,>(request: () => Promise<T>): Promise<T> => {
@@ -122,9 +216,7 @@ export function DashboardShell() {
       });
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to load your dashboard.';
+        error instanceof Error ? error.message : 'Failed to load your dashboard.';
 
       setErrorMessage(message);
     } finally {
@@ -189,10 +281,70 @@ export function DashboardShell() {
     router.replace('/login');
   };
 
-  const budgetEntries = Object.entries(dashboard?.budgets ?? {});
-  const displayEmail = profile?.email ?? currentUser?.email ?? 'Signed in user';
+  const handleProfileAction = (action: DashboardProfileAction) => {
+    if (action === 'logout') {
+      void handleLogout();
+      return;
+    }
+
+    const label = {
+      profile: 'Profile',
+      settings: 'Settings',
+      billing: 'Billing',
+    }[action];
+
+    toast.info(`${label} is coming soon.`);
+  };
+
+  const displayEmail = profile?.email ?? currentUser?.email ?? 'signed-in-user@finops.local';
   const displayName =
     profile?.name ?? currentUser?.name ?? displayEmail.split('@')[0];
+  const profileSummary: DashboardProfileSummary = {
+    name: displayName,
+    handle: normalizeHandle(displayEmail),
+    email: displayEmail,
+    role: profile?.role ?? currentUser?.role ?? 'USER',
+  };
+
+  const budgetEntries = Object.entries(dashboard?.budgets ?? {});
+  const normalizedSearchValue = searchValue.trim().toLowerCase();
+  const filteredBudgetEntries = normalizedSearchValue
+    ? budgetEntries.filter(([category, budget]) =>
+        [category, budget.alert]
+          .filter(Boolean)
+          .some((value) => value?.toLowerCase().includes(normalizedSearchValue)),
+      )
+    : budgetEntries;
+  const filteredTransactions = normalizedSearchValue
+    ? transactions.filter((transaction) =>
+        [
+          transaction.category,
+          transaction.note,
+          transaction.type,
+          formatDate(transaction.createdAt),
+        ]
+          .filter(Boolean)
+          .some((value) => value?.toLowerCase().includes(normalizedSearchValue)),
+      )
+    : transactions;
+
+  const notifications: DashboardNotification[] = [
+    ...budgetEntries
+      .filter(([, budget]) => Boolean(budget.alert))
+      .slice(0, 2)
+      .map(([category, budget], index) => ({
+        id: `budget-${category}`,
+        title: `${category}: ${budget.alert}`,
+        unread: index === 0,
+      })),
+    ...transactions.slice(0, 2).map((transaction, index) => ({
+      id: `transaction-${transaction.id}`,
+      title: `${transaction.category} ${transaction.type} recorded for ${formatCurrency(transaction.amount)}`,
+      unread: budgetEntries.length === 0 ? index === 0 : false,
+    })),
+  ];
+
+  const currentSectionMeta = sectionMeta[activeSection];
 
   if (!hasHydrated || (isLoading && !dashboard && !profile && !errorMessage)) {
     return (
@@ -206,353 +358,396 @@ export function DashboardShell() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_40%,#eef7ff_100%)]">
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="overflow-hidden rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,#101828_0%,#1f1754_55%,#2c4d9d_100%)] p-6 text-white shadow-[0_35px_90px_rgba(15,23,42,0.18)] sm:p-8"
-        >
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/10 px-4 py-2 text-sm text-white/78">
-                <Sparkles className="h-4 w-4 text-accent" />
-                Auth.js OAuth + custom JWT cookie session
-              </div>
+    <div className="min-h-screen bg-[linear-gradient(180deg,#f7f7fb_0%,#ffffff_35%,#eef4ff_100%)] text-slate-950">
+      <div className="flex min-h-screen">
+        <DashSidebar
+          activeItem={activeSection}
+          isMobileOpen={isSidebarOpen}
+          onMobileClose={() => setIsSidebarOpen(false)}
+          onSelectItem={setActiveSection}
+        />
 
-              <h1 className="mt-5 text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-                Secure finance workflows on your own auth stack.
-              </h1>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="px-4 pt-4 sm:px-6 lg:px-8 lg:pt-6">
+            <DashNavbar
+              notifications={notifications}
+              onOpenSidebar={() => setIsSidebarOpen(true)}
+              onProfileAction={handleProfileAction}
+              profile={profileSummary}
+              searchValue={searchValue}
+              subtitle={currentSectionMeta.subtitle}
+              title={currentSectionMeta.title}
+              onSearchChange={setSearchValue}
+            />
+          </header>
 
-              <p className="mt-4 max-w-xl text-base leading-7 text-white/72 sm:text-lg">
-                Your dashboard uses unified auth across email/password and social
-                login, with secure cookie-backed sessions routed through your own
-                backend.
-              </p>
-
-              <div className="mt-6 flex flex-wrap gap-3">
-                <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white/85">
-                  {displayName}
-                </span>
-                <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white/85">
-                  {displayEmail}
-                </span>
-                <span className="rounded-full bg-accent/15 px-4 py-2 text-sm font-medium text-accent">
-                  Role: {profile?.role ?? currentUser?.role ?? 'USER'}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 self-start">
-              <div className="rounded-2xl border border-white/12 bg-white/10 px-4 py-3 text-sm text-white/70">
-                Active user ID
-                <p className="mt-1 max-w-[15rem] truncate font-semibold text-white">
-                  {profile?.id ?? currentUser?.id ?? 'Loading...'}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => void handleLogout()}
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+          <main className="flex-1 px-4 pb-8 pt-4 sm:px-6 lg:px-8 lg:pb-10">
+            <section className="mx-auto w-full max-w-7xl">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="overflow-hidden rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,#101828_0%,#1f1754_55%,#2c4d9d_100%)] p-6 text-white shadow-[0_35px_90px_rgba(15,23,42,0.18)] sm:p-8"
               >
-                <LogOut className="h-4 w-4" />
-                Log Out
-              </button>
-            </div>
-          </div>
-        </motion.div>
+                <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="max-w-2xl">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/10 px-4 py-2 text-sm text-white/78">
+                      <Sparkles className="h-4 w-4 text-accent" />
+                      {currentSectionMeta.pill}
+                    </div>
 
-        {errorMessage ? (
-          <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-            {errorMessage}
-          </div>
-        ) : null}
+                    <h1 className="mt-5 text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+                      {currentSectionMeta.title} inside your secured finance shell.
+                    </h1>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(360px,420px)]">
-          <div className="grid gap-6">
-            <section className="grid gap-4 sm:grid-cols-3">
-              {[
-                {
-                  title: 'Balance',
-                  value: formatCurrency(dashboard?.balance ?? 0),
-                  icon: Wallet,
-                  tone: 'text-primary',
-                },
-                {
-                  title: 'Income',
-                  value: formatCurrency(dashboard?.income ?? 0),
-                  icon: ArrowUpRight,
-                  tone: 'text-emerald-500',
-                },
-                {
-                  title: 'Expense',
-                  value: formatCurrency(dashboard?.expense ?? 0),
-                  icon: ArrowDownRight,
-                  tone: 'text-rose-500',
-                },
-              ].map((card, index) => (
-                <motion.article
-                  key={card.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 * index }}
-                  className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_20px_40px_rgba(15,23,42,0.06)]"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-slate-500">{card.title}</p>
-                    <card.icon className={`h-5 w-5 ${card.tone}`} />
-                  </div>
-                  <p className="mt-5 text-3xl font-bold tracking-tight text-slate-950">
-                    {card.value}
-                  </p>
-                </motion.article>
-              ))}
-            </section>
-
-            <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-              <article className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_20px_40px_rgba(15,23,42,0.06)]">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  <div>
-                    <h2 className="text-lg font-semibold text-slate-950">
-                      Session Security
-                    </h2>
-                    <p className="text-sm text-slate-600">
-                      JWTs are issued by your backend and stored in HTTP-only cookies.
+                    <p className="mt-4 max-w-xl text-base leading-7 text-white/72 sm:text-lg">
+                      {currentSectionMeta.description}
                     </p>
+
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white/85">
+                        {profileSummary.name}
+                      </span>
+                      <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white/85">
+                        {profileSummary.email}
+                      </span>
+                      <span className="rounded-full bg-accent/15 px-4 py-2 text-sm font-medium text-accent">
+                        Role: {profileSummary.role}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 self-start">
+                    <div className="rounded-2xl border border-white/12 bg-white/10 px-4 py-3 text-sm text-white/70">
+                      Active user ID
+                      <p className="mt-1 max-w-[15rem] truncate font-semibold text-white">
+                        {profile?.id ?? currentUser?.id ?? 'Loading...'}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => void handleLogout()}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Log Out
+                    </button>
                   </div>
                 </div>
+              </motion.div>
 
-                <div className="mt-5 grid gap-3">
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <p className="text-sm font-semibold text-slate-900">
-                      Unified account source
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      Email/password and OAuth both land in the same user model.
-                    </p>
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <p className="text-sm font-semibold text-slate-900">
-                      Provider-aware onboarding
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      Provider: {currentUser?.provider ?? 'custom credentials'}
-                    </p>
-                  </div>
+              {activeSection !== 'Dashboard' ? (
+                <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm text-sky-700">
+                  {activeSection} is now mounted inside the shared dashboard shell.
+                  The live finance widgets below still work while section-specific
+                  screens are being connected.
                 </div>
-              </article>
+              ) : null}
 
-              <article className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_20px_40px_rgba(15,23,42,0.06)]">
-                <div className="flex items-center gap-3">
-                  <PiggyBank className="h-5 w-5 text-primary" />
-                  <div>
-                    <h2 className="text-lg font-semibold text-slate-950">
-                      Budget Snapshot
-                    </h2>
-                    <p className="text-sm text-slate-600">
-                      Current month budget health pulled from the protected backend.
-                    </p>
-                  </div>
+              {errorMessage ? (
+                <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
+                  {errorMessage}
                 </div>
+              ) : null}
 
-                <div className="mt-5 space-y-3">
-                  {budgetEntries.length ? (
-                    budgetEntries.slice(0, 4).map(([category, budget]) => (
-                      <div
-                        key={category}
-                        className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+              <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(360px,420px)]">
+                <div className="grid gap-6">
+                  <section className="grid gap-4 sm:grid-cols-3">
+                    {[
+                      {
+                        title: 'Balance',
+                        value: formatCurrency(dashboard?.balance ?? 0),
+                        icon: Wallet,
+                        tone: 'text-primary',
+                      },
+                      {
+                        title: 'Income',
+                        value: formatCurrency(dashboard?.income ?? 0),
+                        icon: ArrowUpRight,
+                        tone: 'text-emerald-500',
+                      },
+                      {
+                        title: 'Expense',
+                        value: formatCurrency(dashboard?.expense ?? 0),
+                        icon: ArrowDownRight,
+                        tone: 'text-rose-500',
+                      },
+                    ].map((card, index) => (
+                      <motion.article
+                        key={card.title}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.05 * index }}
+                        className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_20px_40px_rgba(15,23,42,0.06)]"
                       >
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="text-sm font-semibold text-slate-900">
-                            {category}
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-slate-500">
+                            {card.title}
                           </p>
-                          <p className="text-sm text-slate-500">
-                            {formatCurrency(budget.remaining)}
+                          <card.icon className={`h-5 w-5 ${card.tone}`} />
+                        </div>
+                        <p className="mt-5 text-3xl font-bold tracking-tight text-slate-950">
+                          {card.value}
+                        </p>
+                      </motion.article>
+                    ))}
+                  </section>
+
+                  <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                    <article className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_20px_40px_rgba(15,23,42,0.06)]">
+                      <div className="flex items-center gap-3">
+                        <ShieldCheck className="h-5 w-5 text-primary" />
+                        <div>
+                          <h2 className="text-lg font-semibold text-slate-950">
+                            Session Security
+                          </h2>
+                          <p className="text-sm text-slate-600">
+                            JWTs are issued by your backend and stored in HTTP-only
+                            cookies.
                           </p>
                         </div>
-                        <p className="mt-2 text-sm text-slate-600">
-                          Spent {formatCurrency(budget.spent)} of{' '}
-                          {formatCurrency(budget.budget)}
-                        </p>
-                        {budget.alert ? (
-                          <p className="mt-2 text-sm font-medium text-rose-600">
-                            {budget.alert}
+                      </div>
+
+                      <div className="mt-5 grid gap-3">
+                        <div className="rounded-2xl bg-slate-50 p-4">
+                          <p className="text-sm font-semibold text-slate-900">
+                            Unified account source
                           </p>
-                        ) : null}
+                          <p className="mt-1 text-sm text-slate-600">
+                            Email/password and OAuth both land in the same user model.
+                          </p>
+                        </div>
+                        <div className="rounded-2xl bg-slate-50 p-4">
+                          <p className="text-sm font-semibold text-slate-900">
+                            Provider-aware onboarding
+                          </p>
+                          <p className="mt-1 text-sm text-slate-600">
+                            Provider: {currentUser?.provider ?? 'custom credentials'}
+                          </p>
+                        </div>
                       </div>
-                    ))
-                  ) : (
-                    <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                      No budgets found yet. Add transactions to start seeing budget insights.
-                    </div>
-                  )}
-                </div>
-              </article>
-            </section>
+                    </article>
 
-            <article className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_20px_40px_rgba(15,23,42,0.06)]">
-              <div className="flex items-center gap-3">
-                <Landmark className="h-5 w-5 text-primary" />
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-950">
-                    Recent Transactions
-                  </h2>
-                  <p className="text-sm text-slate-600">
-                    Authenticated data loaded through your cookie-backed proxy routes.
-                  </p>
-                </div>
-              </div>
+                    <article className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_20px_40px_rgba(15,23,42,0.06)]">
+                      <div className="flex items-center gap-3">
+                        <PiggyBank className="h-5 w-5 text-primary" />
+                        <div>
+                          <h2 className="text-lg font-semibold text-slate-950">
+                            Budget Snapshot
+                          </h2>
+                          <p className="text-sm text-slate-600">
+                            Current month budget health pulled from the protected
+                            backend.
+                          </p>
+                        </div>
+                      </div>
 
-              <div className="mt-5 space-y-3">
-                {transactions.length ? (
-                  transactions.map((transaction) => (
-                    <div
-                      key={transaction.id}
-                      className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
-                    >
+                      <div className="mt-5 space-y-3">
+                        {filteredBudgetEntries.length ? (
+                          filteredBudgetEntries.slice(0, 4).map(([category, budget]) => (
+                            <div
+                              key={category}
+                              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <p className="text-sm font-semibold text-slate-900">
+                                  {category}
+                                </p>
+                                <p className="text-sm text-slate-500">
+                                  {formatCurrency(budget.remaining)}
+                                </p>
+                              </div>
+                              <p className="mt-2 text-sm text-slate-600">
+                                Spent {formatCurrency(budget.spent)} of{' '}
+                                {formatCurrency(budget.budget)}
+                              </p>
+                              {budget.alert ? (
+                                <p className="mt-2 text-sm font-medium text-rose-600">
+                                  {budget.alert}
+                                </p>
+                              ) : null}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                            {normalizedSearchValue
+                              ? 'No budgets match your search yet.'
+                              : 'No budgets found yet. Add transactions to start seeing budget insights.'}
+                          </div>
+                        )}
+                      </div>
+                    </article>
+                  </section>
+
+                  <article className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_20px_40px_rgba(15,23,42,0.06)]">
+                    <div className="flex items-center gap-3">
+                      <Landmark className="h-5 w-5 text-primary" />
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {transaction.category}
+                        <h2 className="text-lg font-semibold text-slate-950">
+                          Recent Transactions
+                        </h2>
+                        <p className="text-sm text-slate-600">
+                          Authenticated data loaded through your cookie-backed proxy
+                          routes.
                         </p>
-                        <p className="mt-1 text-sm text-slate-600">
-                          {transaction.note || 'No note provided'}
-                        </p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
-                          {formatDate(transaction.createdAt)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p
-                          className={`text-base font-semibold ${
-                            transaction.type === 'income'
-                              ? 'text-emerald-600'
-                              : 'text-rose-600'
-                          }`}
-                        >
-                          {transaction.type === 'income' ? '+' : '-'}
-                          {formatCurrency(transaction.amount)}
-                        </p>
-                        <p className="text-sm text-slate-500">{transaction.type}</p>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                    No transactions yet. Use the form to create your first secured transaction.
-                  </div>
-                )}
+
+                    <div className="mt-5 space-y-3">
+                      {filteredTransactions.length ? (
+                        filteredTransactions.map((transaction) => (
+                          <div
+                            key={transaction.id}
+                            className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900">
+                                {transaction.category}
+                              </p>
+                              <p className="mt-1 text-sm text-slate-600">
+                                {transaction.note || 'No note provided'}
+                              </p>
+                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
+                                {formatDate(transaction.createdAt)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p
+                                className={`text-base font-semibold ${
+                                  transaction.type === 'income'
+                                    ? 'text-emerald-600'
+                                    : 'text-rose-600'
+                                }`}
+                              >
+                                {transaction.type === 'income' ? '+' : '-'}
+                                {formatCurrency(transaction.amount)}
+                              </p>
+                              <p className="text-sm capitalize text-slate-500">
+                                {transaction.type}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                          {normalizedSearchValue
+                            ? 'No transactions match your search yet.'
+                            : 'No transactions yet. Use the form to create your first secured transaction.'}
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                </div>
+
+                <motion.aside
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_20px_40px_rgba(15,23,42,0.06)]"
+                >
+                  <h2 className="text-lg font-semibold text-slate-950">
+                    Create authenticated transaction
+                  </h2>
+                  <p className="mt-2 text-sm text-slate-600">
+                    This writes to protected backend routes using the same auth
+                    state as your login flow.
+                  </p>
+
+                  <form className="mt-6 grid gap-4" onSubmit={handleCreateTransaction}>
+                    <label className="grid gap-2 text-sm font-medium text-slate-700">
+                      Amount
+                      <input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        value={formState.amount}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            amount: event.target.value,
+                          }))
+                        }
+                        className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
+                        placeholder="2450"
+                        required
+                      />
+                    </label>
+
+                    <label className="grid gap-2 text-sm font-medium text-slate-700">
+                      Type
+                      <select
+                        value={formState.type}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            type: event.target.value as TransactionType,
+                          }))
+                        }
+                        className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
+                      >
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                      </select>
+                    </label>
+
+                    <label className="grid gap-2 text-sm font-medium text-slate-700">
+                      Category
+                      <select
+                        value={formState.category}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            category: event.target.value as TransactionFormState['category'],
+                          }))
+                        }
+                        className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
+                      >
+                        {categories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="grid gap-2 text-sm font-medium text-slate-700">
+                      Note
+                      <textarea
+                        rows={4}
+                        value={formState.note}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            note: event.target.value,
+                          }))
+                        }
+                        className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-primary focus:bg-white"
+                        placeholder="Monthly infrastructure cost"
+                      />
+                    </label>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || isPending}
+                      className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-dark px-4 text-sm font-semibold text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Saving transaction
+                        </>
+                      ) : (
+                        'Save transaction'
+                      )}
+                    </button>
+                  </form>
+                </motion.aside>
               </div>
-            </article>
-          </div>
-
-          <motion.aside
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_20px_40px_rgba(15,23,42,0.06)]"
-          >
-            <h2 className="text-lg font-semibold text-slate-950">
-              Create authenticated transaction
-            </h2>
-            <p className="mt-2 text-sm text-slate-600">
-              This writes to protected backend routes using the same auth state as
-              your login flow.
-            </p>
-
-            <form className="mt-6 grid gap-4" onSubmit={handleCreateTransaction}>
-              <label className="grid gap-2 text-sm font-medium text-slate-700">
-                Amount
-                <input
-                  type="number"
-                  min="1"
-                  step="0.01"
-                  value={formState.amount}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      amount: event.target.value,
-                    }))
-                  }
-                  className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
-                  placeholder="2450"
-                  required
-                />
-              </label>
-
-              <label className="grid gap-2 text-sm font-medium text-slate-700">
-                Type
-                <select
-                  value={formState.type}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      type: event.target.value as TransactionType,
-                    }))
-                  }
-                  className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
-                >
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
-                </select>
-              </label>
-
-              <label className="grid gap-2 text-sm font-medium text-slate-700">
-                Category
-                <select
-                  value={formState.category}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      category: event.target.value,
-                    }))
-                  }
-                  className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
-                >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="grid gap-2 text-sm font-medium text-slate-700">
-                Note
-                <textarea
-                  rows={4}
-                  value={formState.note}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      note: event.target.value,
-                    }))
-                  }
-                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-primary focus:bg-white"
-                  placeholder="Monthly infrastructure cost"
-                />
-              </label>
-
-              <button
-                type="submit"
-                disabled={isSubmitting || isPending}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-dark px-4 text-sm font-semibold text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Saving transaction
-                  </>
-                ) : (
-                  'Save transaction'
-                )}
-              </button>
-            </form>
-          </motion.aside>
+            </section>
+          </main>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
