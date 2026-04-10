@@ -18,7 +18,9 @@ import {
   useEffectEvent,
   useState,
   useTransition,
+  type Dispatch,
   type FormEvent,
+  type SetStateAction,
 } from 'react';
 import { toast } from 'sonner';
 import type {
@@ -153,6 +155,20 @@ const formatDate = (value: string) =>
 
 const normalizeHandle = (email: string) => `@${email.split('@')[0].toLowerCase()}`;
 
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
+const resolveSettledValue = <T,>(
+  result: PromiseSettledResult<T>,
+  fallbackMessage: string,
+): [T | null, string | null] => {
+  if (result.status === 'fulfilled') {
+    return [result.value, null];
+  }
+
+  return [null, getErrorMessage(result.reason, fallbackMessage)];
+};
+
 export function DashboardShell() {
   const router = useRouter();
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
@@ -195,33 +211,46 @@ export function DashboardShell() {
   };
 
   const loadDashboard = useEffectEvent(async () => {
-    try {
-      setIsLoading(true);
-      setErrorMessage(null);
+    setIsLoading(true);
+    setErrorMessage(null);
 
-      const [nextProfile, nextDashboard, nextTransactions] = await requestWithAuth(
-        async () =>
-          Promise.all([
-            userService.getCurrent(),
-            dashboardService.get(),
-            transactionService.list(),
-          ]),
-      );
+    const results = await Promise.allSettled([
+      requestWithAuth(() => userService.getCurrent()),
+      requestWithAuth(() => dashboardService.get()),
+      requestWithAuth(() => transactionService.list()),
+    ]);
 
-      startTransition(() => {
+    const [profileResult, dashboardResult, transactionResult] = results;
+    const [nextProfile, profileError] = resolveSettledValue(
+      profileResult,
+      'Failed to load your profile.',
+    );
+    const [nextDashboard, dashboardError] = resolveSettledValue(
+      dashboardResult,
+      'Failed to load your dashboard.',
+    );
+    const [nextTransactions, transactionError] = resolveSettledValue(
+      transactionResult,
+      'Failed to load your transactions.',
+    );
+
+    startTransition(() => {
+      if (nextProfile) {
         setProfile(nextProfile);
-        setDashboard(nextDashboard);
-        setTransactions(nextTransactions.data);
         updateCurrentUser(nextProfile);
-      });
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to load your dashboard.';
+      }
 
-      setErrorMessage(message);
-    } finally {
-      setIsLoading(false);
-    }
+      if (nextDashboard) {
+        setDashboard(nextDashboard);
+      }
+
+      if (nextTransactions) {
+        setTransactions(nextTransactions.data);
+      }
+    });
+
+    setErrorMessage(profileError ?? dashboardError ?? transactionError);
+    setIsLoading(false);
   });
 
   useEffect(() => {
@@ -229,13 +258,39 @@ export function DashboardShell() {
       return;
     }
 
-    if (!currentUserId) {
-      router.replace('/login');
-      return;
-    }
+    let cancelled = false;
 
-    void loadDashboard();
-  }, [currentUserId, hasHydrated, loadDashboard, router]);
+    const bootstrapDashboard = async () => {
+      const sessionUser = currentUserId ? currentUser : await hydrateSession();
+
+      if (cancelled) {
+        return;
+      }
+
+      if (!sessionUser?.id) {
+        clearSession();
+        setIsLoading(false);
+        router.replace('/login');
+        return;
+      }
+
+      await loadDashboard();
+    };
+
+    void bootstrapDashboard();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    clearSession,
+    currentUser,
+    currentUserId,
+    hasHydrated,
+    hydrateSession,
+    loadDashboard,
+    router,
+  ]);
 
   const handleCreateTransaction = async (
     event: FormEvent<HTMLFormElement>,
