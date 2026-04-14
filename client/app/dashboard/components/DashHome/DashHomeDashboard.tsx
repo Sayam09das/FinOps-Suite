@@ -26,13 +26,13 @@ import type {
   CurrentUser,
   DashboardData,
 } from '@/lib/api/types';
-import Analyticshome from './Analytics/Analyticshome';
-import Dashchat from './Chat/Dashchat';
-import DashHomeSection from './DashHome/DashHomeSection';
-import DashInsights from './Insights/DashInsights';
-import DashUpdates from './Updates/DashUpdates';
-import DashNavbar from './layout/DashNavbar';
-import DashSidebar from './layout/DashSidebar';
+import Analyticshome from '../Analytics/Analyticshome';
+import Dashchat from '../Chat/Dashchat';
+import DashInsights from '../Insights/DashInsights';
+import DashUpdates from '../Updates/DashUpdates';
+import DashNavbar from '../layout/DashNavbar';
+import DashSidebar from '../layout/DashSidebar';
+import DashHomeSection from './DashHomeSection';
 
 const sectionCopy: Record<
   DashboardSection,
@@ -185,7 +185,7 @@ function UtilitySection({ section }: UtilitySectionProps) {
   );
 }
 
-export function DashboardView() {
+export default function DashHomeDashboard() {
   const router = useRouter();
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const currentUser = useAuthStore((state) => state.currentUser);
