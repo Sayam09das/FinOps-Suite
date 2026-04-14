@@ -1,7 +1,14 @@
 'use client';
 
-import { useEffect, useEffectEvent, useState } from 'react';
+import {
+  startTransition,
+  useDeferredValue,
+  useEffect,
+  useEffectEvent,
+  useState,
+} from 'react';
 import { useRouter } from 'next/navigation';
+import { Blocks, Headphones, Link2, MessageSquareMore, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
   DashboardNotification,
@@ -12,9 +19,18 @@ import type {
 import { useAuthStore } from '@/app/store/auth.store';
 import { ApiError } from '@/lib/api/client';
 import { dashboardService } from '@/lib/api/dashboard-service';
+import { transactionService } from '@/lib/api/transaction-service';
 import { userService } from '@/lib/api/user-service';
-import type { CurrentUser, DashboardData } from '@/lib/api/types';
-import DashHero from './Dashhero';
+import type {
+  CreateTransactionPayload,
+  CurrentUser,
+  DashboardData,
+} from '@/lib/api/types';
+import Analyticshome from './Analytics/Analyticshome';
+import Dashchat from './Chat/Dashchat';
+import DashHomeSection from './DashHome/DashHomeSection';
+import DashInsights from './Insights/DashInsights';
+import DashUpdates from './Updates/DashUpdates';
 import DashNavbar from './layout/DashNavbar';
 import DashSidebar from './layout/DashSidebar';
 
@@ -26,40 +42,74 @@ const sectionCopy: Record<
   }
 > = {
   Dashboard: {
-    title: 'Dashboard',
-    subtitle: 'Your finance command center with live backend-connected totals.',
+    title: 'Dashboard Home',
+    subtitle: 'Live totals, budgets, and recent transactions synced from your backend.',
   },
   Analytics: {
     title: 'Analytics',
-    subtitle: 'This section UI can be connected after the dashboard hero.',
+    subtitle: 'Category performance and cash-flow signals from your latest data.',
   },
   Insights: {
     title: 'Insights',
-    subtitle: 'This section UI can be connected after the dashboard hero.',
+    subtitle: 'Actionable summaries based on balances, budgets, and spending behavior.',
   },
   Updates: {
     title: 'Updates',
-    subtitle: 'This section UI can be connected after the dashboard hero.',
+    subtitle: 'Recent financial activity and status changes in one timeline.',
   },
   Chat: {
-    title: 'Chat',
-    subtitle: 'This section UI can be connected after the dashboard hero.',
+    title: 'Finance Assistant',
+    subtitle: 'Quick prompts and data-aware answers for your dashboard.',
   },
   Settings: {
     title: 'Settings',
-    subtitle: 'This section UI can be connected after the dashboard hero.',
+    subtitle: 'Workspace preferences and account-level controls.',
   },
   'Help Desk': {
     title: 'Help Desk',
-    subtitle: 'This section UI can be connected after the dashboard hero.',
+    subtitle: 'Support guidance and onboarding help for your team.',
   },
   Integration: {
     title: 'Integration',
-    subtitle: 'This section UI can be connected after the dashboard hero.',
+    subtitle: 'Connect banks, tools, and workflows into your finance stack.',
   },
   Feedback: {
     title: 'Feedback',
-    subtitle: 'This section UI can be connected after the dashboard hero.',
+    subtitle: 'Share product feedback and prioritize what we improve next.',
+  },
+};
+
+const utilitySectionContent: Record<
+  Extract<DashboardSection, 'Settings' | 'Help Desk' | 'Integration' | 'Feedback'>,
+  {
+    description: string;
+    title: string;
+    icon: typeof Settings2;
+  }
+> = {
+  Settings: {
+    title: 'Account settings',
+    description:
+      'Profile, billing, notifications, and session controls can live here next. The navigation is now wired so this section opens correctly from the dashboard shell.',
+    icon: Settings2,
+  },
+  'Help Desk': {
+    title: 'Support center',
+    description:
+      'This area is ready for FAQs, guided onboarding, and support channels. The navbar and sidebar now route here cleanly without breaking the dashboard.',
+    icon: Headphones,
+  },
+  Integration: {
+    title: 'Connected tools',
+    description:
+      'Use this section for bank feeds, exports, and third-party workflows. The dashboard structure is now set up so these utility pages stay aligned with the rest of the app.',
+    icon: Link2,
+  },
+  Feedback: {
+    title: 'Product feedback',
+    description:
+      'Collect requests, votes, or release notes here. Navigation to this section now works from the dashboard sidebar just like the main product views.',
+    icon: MessageSquareMore,
   },
 };
 
@@ -79,6 +129,62 @@ const resolveSettledValue = <T,>(
   return [null, getErrorMessage(result.reason, fallbackMessage)];
 };
 
+const getBudgetNotifications = (dashboard: DashboardData | null) =>
+  Object.entries(dashboard?.budgets ?? {})
+    .filter(([, budget]) => Boolean(budget.alert))
+    .map(([category, budget], index) => ({
+      id: `budget-${category}`,
+      title: `${category}: ${budget.alert}`,
+      unread: index === 0,
+    }));
+
+const getTransactionNotifications = (dashboard: DashboardData | null) =>
+  (dashboard?.recentTransactions ?? []).slice(0, 2).map((transaction, index) => ({
+    id: `txn-${transaction.id}`,
+    title: `${transaction.type === 'income' ? 'Income' : 'Expense'}: ${transaction.category}`,
+    unread: index === 0,
+  }));
+
+type UtilitySectionProps = {
+  section: Extract<
+    DashboardSection,
+    'Settings' | 'Help Desk' | 'Integration' | 'Feedback'
+  >;
+};
+
+function UtilitySection({ section }: UtilitySectionProps) {
+  const { description, icon: Icon, title } = utilitySectionContent[section];
+
+  return (
+    <section className="rounded-[1.75rem] border border-slate-200/80 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:p-8">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="max-w-2xl">
+          <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+            <Icon className="h-5 w-5" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-950">{title}</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+        </div>
+
+        <div className="grid gap-3 sm:min-w-72">
+          {[
+            'Navigation now stays inside the dashboard shell.',
+            'Top navbar remains visible across sections.',
+            'This panel is ready for the next feature pass.',
+          ].map((item) => (
+            <div
+              key={item}
+              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600"
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function DashboardView() {
   const router = useRouter();
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
@@ -90,10 +196,12 @@ export function DashboardView() {
   const [profile, setProfile] = useState<CurrentUser | null>(null);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<DashboardSection>('Dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  const deferredSearchValue = useDeferredValue(searchValue);
 
   const requestWithAuth = async <T,>(request: () => Promise<T>): Promise<T> => {
     try {
@@ -115,37 +223,47 @@ export function DashboardView() {
     }
   };
 
-  const loadDashboard = useEffectEvent(async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
+  const loadDashboard = useEffectEvent(
+    async (options: { background?: boolean } = {}) => {
+      const { background = false } = options;
 
-    const results = await Promise.allSettled([
-      requestWithAuth(() => userService.getCurrent()),
-      requestWithAuth(() => dashboardService.get()),
-    ]);
+      if (background) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
 
-    const [profileResult, dashboardResult] = results;
-    const [nextProfile, profileError] = resolveSettledValue(
-      profileResult,
-      'Failed to load your profile.',
-    );
-    const [nextDashboard, dashboardError] = resolveSettledValue(
-      dashboardResult,
-      'Failed to load your dashboard totals.',
-    );
+      setErrorMessage(null);
 
-    if (nextProfile) {
-      setProfile(nextProfile);
-      updateCurrentUser(nextProfile);
-    }
+      const results = await Promise.allSettled([
+        requestWithAuth(() => userService.getCurrent()),
+        requestWithAuth(() => dashboardService.get()),
+      ]);
 
-    if (nextDashboard) {
-      setDashboard(nextDashboard);
-    }
+      const [profileResult, dashboardResult] = results;
+      const [nextProfile, profileError] = resolveSettledValue(
+        profileResult,
+        'Failed to load your profile.',
+      );
+      const [nextDashboard, dashboardError] = resolveSettledValue(
+        dashboardResult,
+        'Failed to load your dashboard totals.',
+      );
 
-    setErrorMessage(profileError ?? dashboardError);
-    setIsLoading(false);
-  });
+      if (nextProfile) {
+        setProfile(nextProfile);
+        updateCurrentUser(nextProfile);
+      }
+
+      if (nextDashboard) {
+        setDashboard(nextDashboard);
+      }
+
+      setErrorMessage(profileError ?? dashboardError);
+      setIsLoading(false);
+      setIsRefreshing(false);
+    },
+  );
 
   useEffect(() => {
     if (!hasHydrated) {
@@ -177,6 +295,20 @@ export function DashboardView() {
     };
   }, [clearSession, currentUser, hasHydrated, hydrateSession, loadDashboard, router]);
 
+  useEffect(() => {
+    if (!hasHydrated || !(currentUser?.id ?? profile?.id)) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void loadDashboard({ background: true });
+    }, 30000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [currentUser?.id, hasHydrated, loadDashboard, profile?.id]);
+
   const handleProfileAction = (action: DashboardProfileAction) => {
     if (action === 'logout') {
       void (async () => {
@@ -192,7 +324,20 @@ export function DashboardView() {
       billing: 'Billing',
     }[action];
 
-    toast.info(`${label} UI will be connected next.`);
+    toast.info(`${label} tools are ready to be connected next.`);
+  };
+
+  const handleCreateTransaction = async (payload: CreateTransactionPayload) => {
+    await requestWithAuth(() => transactionService.create(payload));
+    toast.success('Transaction added and dashboard refreshed.');
+    await loadDashboard({ background: true });
+  };
+
+  const handleSelectSection = (section: DashboardSection) => {
+    startTransition(() => {
+      setActiveSection(section);
+      setIsSidebarOpen(false);
+    });
   };
 
   const displayEmail =
@@ -206,27 +351,76 @@ export function DashboardView() {
     role: profile?.role ?? currentUser?.role ?? 'USER',
   };
 
-  const notifications: DashboardNotification[] = Object.entries(
-    dashboard?.budgets ?? {},
-  )
-    .filter(([, budget]) => Boolean(budget.alert))
-    .slice(0, 3)
-    .map(([category, budget], index) => ({
-      id: `budget-${category}`,
-      title: `${category}: ${budget.alert}`,
-      unread: index === 0,
-    }));
-
-  const filteredNotifications = searchValue.trim()
-    ? notifications.filter((notification) =>
-        notification.title.toLowerCase().includes(searchValue.trim().toLowerCase()),
-      )
-    : notifications;
+  const notifications: DashboardNotification[] = [
+    ...getBudgetNotifications(dashboard),
+    ...getTransactionNotifications(dashboard),
+  ].slice(0, 5);
 
   const currentSection = sectionCopy[activeSection];
+  const sharedLoadingState = isLoading || isRefreshing;
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'Dashboard':
+        return (
+          <DashHomeSection
+            dashboard={dashboard}
+            displayName={displayName}
+            isLoading={sharedLoadingState}
+            isRefreshing={isRefreshing}
+            onCreateTransaction={handleCreateTransaction}
+            searchValue={deferredSearchValue}
+          />
+        );
+      case 'Analytics':
+        return (
+          <Analyticshome
+            dashboard={dashboard}
+            isLoading={sharedLoadingState}
+          />
+        );
+      case 'Insights':
+        return <DashInsights dashboard={dashboard} />;
+      case 'Updates':
+        return (
+          <DashUpdates
+            dashboard={dashboard}
+            isLoading={sharedLoadingState}
+            searchValue={deferredSearchValue}
+          />
+        );
+      case 'Chat':
+        return (
+          <Dashchat
+            dashboard={dashboard}
+            displayName={displayName}
+            searchValue={deferredSearchValue}
+          />
+        );
+      case 'Settings':
+      case 'Help Desk':
+      case 'Integration':
+      case 'Feedback':
+        return <UtilitySection section={activeSection} />;
+      default:
+        return (
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+            <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+              <Blocks className="h-5 w-5" />
+            </div>
+            <p className="mt-4">
+              This dashboard section is available, but its dedicated content has not
+              been connected yet.
+            </p>
+          </section>
+        );
+    }
+  };
 
   if (!hasHydrated) {
-    return <div className="min-h-screen bg-[linear-gradient(180deg,#f7f7fb_0%,#ffffff_35%,#eef4ff_100%)]" />;
+    return (
+      <div className="min-h-screen bg-[linear-gradient(180deg,#f7f7fb_0%,#ffffff_35%,#eef4ff_100%)]" />
+    );
   }
 
   return (
@@ -236,13 +430,13 @@ export function DashboardView() {
           activeItem={activeSection}
           isMobileOpen={isSidebarOpen}
           onMobileClose={() => setIsSidebarOpen(false)}
-          onSelectItem={setActiveSection}
+          onSelectItem={handleSelectSection}
         />
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="px-4 pt-4 sm:px-6 lg:px-8 lg:pt-6">
             <DashNavbar
-              notifications={filteredNotifications}
+              notifications={notifications}
               onOpenSidebar={() => setIsSidebarOpen(true)}
               onProfileAction={handleProfileAction}
               profile={profileSummary}
@@ -261,23 +455,7 @@ export function DashboardView() {
                 </div>
               ) : null}
 
-              {activeSection === 'Dashboard' ? (
-                <DashHero
-                  dashboard={dashboard}
-                  displayName={displayName}
-                  isLoading={isLoading}
-                />
-              ) : (
-                <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_20px_40px_rgba(15,23,42,0.06)] sm:p-8">
-                  <h2 className="text-2xl font-bold text-slate-950">
-                    {activeSection}
-                  </h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                    This section is ready for your next UI piece. For now, only the
-                    dashboard hero is connected to the backend, just like you asked.
-                  </p>
-                </section>
-              )}
+              {renderSection()}
             </div>
           </main>
         </div>
