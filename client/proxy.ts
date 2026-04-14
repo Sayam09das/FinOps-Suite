@@ -8,7 +8,7 @@ import {
 const PROTECTED = ['/dashboard'];
 const AUTH_PAGES = ['/login', '/register', '/auth', '/sign-in', '/sign-up'];
 
-export function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   const isAuthenticated =
@@ -54,6 +54,4 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = {
-  matcher: ['/dashboard/:path*', '/login', '/register', '/auth', '/sign-in', '/sign-up'],
-};
+
