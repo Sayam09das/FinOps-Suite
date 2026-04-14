@@ -8,7 +8,7 @@ import {
   formatCurrency,
   formatDateLabel,
   formatTimeLabel,
-} from '../dashboard-helpers';
+} from './dashboard-helpers';
 
 type RecentTransactioncardsProps = {
   isLoading?: boolean;

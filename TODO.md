@@ -1,19 +1,2 @@
-# AddTransactionModal Implementation TODO
-
-## Status: ✅ Completed
-
-### Steps:
-- [x] 1. Create TODO.md with plan breakdown
-- [x] 2. Read utils/cn.ts to confirm className helper (exists)
-- [x] 3. Implement full AddTransactionModal.tsx (form, animations, responsive)
-- [x] 4. Update TODO.md with completion
-
-### Next Steps:
-- [ ] 5. Add to dashboard-view.tsx or parent component: 
-  ```tsx
-  const [showModal, setShowModal] = useState(false);
-  <button onClick={() => setShowModal(true)}>Add Transaction</button>
-  <AddTransactionModal isOpen={showModal} onClose={() => setShowModal(false)} />
-  ```
-- [ ] Test: `cd client && npm run dev` then visit http://localhost:3000/dashboard
+# Task: Make Transactioncards Real-Time\n\n## Plan Breakdown ✅\n- [x] Step 1: Update Transactioncards.tsx with props and aggregations\n- [x] Step 2: Add imports for types and helpers\n- [x] Step 3: Implement chart data aggregation (monthly/yearly grouping)\n- [x] Step 4: Compute totals and spending limits from dashboard data\n- [x] Step 5: Add loading states and error handling\n- [x] Step 6: Test integration with parent dashboard polling\n\n**Status:** ✅ Complete!\n\nTransactioncards now uses real dashboard.recentTransactions data:\n- Aggregates into time-series charts (monthly/yearly toggle)\n- Shows live totals from dashboard.income/expense/balance\n- Spending limits from budgets\n- Falls back to demo data if no transactions\n- Loading skeleton during refresh\n- Integrates with existing 30s polling + manual txn add\n\nRun `cd client && npm run dev` to test. Add transactions via modal to see live updates.
 
