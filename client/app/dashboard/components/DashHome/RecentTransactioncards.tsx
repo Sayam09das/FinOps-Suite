@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDownRight, ArrowUpRight, History, Search } from 'lucide-react';
 import type { Transaction } from '@/lib/api/types';
@@ -22,6 +22,8 @@ export default function RecentTransactioncards({
   transactions,
 }: RecentTransactioncardsProps) {
   const [typeFilter, setTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
+
+  const seenIds = useRef(new Set<string>());
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((transaction) => {
@@ -90,9 +92,10 @@ export default function RecentTransactioncards({
             return (
               <motion.article
                 key={transaction.id}
-                initial={{ opacity: 0, y: 14 }}
+                layout
+                initial={seenIds.current.has(transaction.id) ? false : { opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, delay: index * 0.05 }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
