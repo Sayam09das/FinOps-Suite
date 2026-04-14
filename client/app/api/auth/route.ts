@@ -27,18 +27,17 @@ export async function POST(request: NextRequest) {
     });
 
     // Forward cookies to frontend
-    const backendCookies = backendRes.headers.get('set-cookie');
-    const response = NextResponse.json(await backendRes.json(), {
+    const backendData = await backendRes.json();
+    const response = NextResponse.json(backendData, {
       status: backendRes.status,
     });
 
-    if (backendCookies) {
-      const cookiesArray = backendCookies.split(',');
-      cookiesArray.forEach(cookieStr => {
-        const cookie = cookieStr.split(';')[0];
-        response.cookies.set(cookie.split('=')[0].trim(), cookie.split('=')[1].trim());
-      });
-    }
+    // Forward all Set-Cookie headers
+    backendRes.headers.forEach((value, key) => {
+      if (key.toLowerCase() === 'set-cookie') {
+        response.headers.append(key, value);
+      }
+    });
 
     return response;
   } catch (error) {
