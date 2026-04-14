@@ -173,7 +173,7 @@ export default function DashHero({
           >
             <div className="flex items-center gap-4">
               <div
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br ${card.gradient} shadow-lg ${card.shadow}`}
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${card.gradient} shadow-lg ${card.shadow}`}
               >
                 <card.icon size={22} className="text-white" strokeWidth={1.8} />
               </div>
