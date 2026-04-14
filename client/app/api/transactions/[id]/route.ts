@@ -3,7 +3,8 @@ import { cookies } from 'next/headers';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:5000';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const body = await request.json();
     const cookieStore = await cookies();
@@ -13,7 +14,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       cookieHeaders[cookie.name] = cookie.value;
     });
 
-    const backendRes = await fetch(`${BACKEND_URL}/api/transactions/${params.id}`, {
+    const backendRes = await fetch(`${BACKEND_URL}/api/transactions/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -38,7 +39,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const cookieStore = await cookies();
     const cookieHeaders: Record<string, string> = {};
@@ -47,7 +49,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       cookieHeaders[cookie.name] = cookie.value;
     });
 
-    const backendRes = await fetch(`${BACKEND_URL}/api/transactions/${params.id}`, {
+    const backendRes = await fetch(`${BACKEND_URL}/api/transactions/${id}`, {
       method: 'DELETE',
       headers: {
         'Cookie': Object.entries(cookieHeaders)
