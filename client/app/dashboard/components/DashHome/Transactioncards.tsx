@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Area,
@@ -178,7 +178,8 @@ const LoadingSkeleton = () => (
   </div>
 );
 
-// Chart wrapper that uses CSS opacity so ResponsiveContainer always has real dimensions
+const CHART_HEIGHT = 200;
+
 const ChartPane = ({
   data,
   visible,
@@ -187,10 +188,10 @@ const ChartPane = ({
   visible: boolean;
 }) => (
   <div
-    className="h-44 sm:h-52 transition-opacity duration-200"
-    style={{ opacity: visible ? 1 : 0, pointerEvents: visible ? 'auto' : 'none' }}
+    className="transition-opacity duration-200"
+    style={{ opacity: visible ? 1 : 0, pointerEvents: visible ? 'auto' : 'none', height: CHART_HEIGHT }}
   >
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
       <AreaChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
         <defs>
           <linearGradient id="gradEarning" x1="0" y1="0" x2="0" y2="1">
@@ -250,7 +251,12 @@ const ChartPane = ({
 export default function Transactioncards({ dashboard, isLoading }: Props) {
   const [view, setView] = useState<'monthly' | 'yearly'>('yearly');
   const [transitioning, setTransitioning] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const transactions = useMemo(() => dashboard?.recentTransactions ?? [], [dashboard]);
   const chartData = useMemo(() => aggregateChartData(transactions, view), [transactions, view]);
@@ -285,6 +291,19 @@ export default function Transactioncards({ dashboard, isLoading }: Props) {
   };
 
   if (isLoading) return <LoadingSkeleton />;
+
+  if (!isMounted) {
+    return (
+      <div className="px-0 font-sans">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
+          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <LoadingSkeleton />
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 h-64" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-0 font-sans">

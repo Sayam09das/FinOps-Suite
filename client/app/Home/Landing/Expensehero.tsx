@@ -332,7 +332,7 @@ export default function ExpenseHero() {
                                 {/* Donut */}
                                 <div className="relative w-24 h-24 flex-shrink-0">
                                     {chartsReady ? (
-                                        <ResponsiveContainer width="100%" height="100%">
+                                        <ResponsiveContainer width={96} height={96}>
                                             <PieChart>
                                                 <Pie
                                                     data={categories}

@@ -5,6 +5,7 @@ import {
   useDeferredValue,
   useEffect,
   useEffectEvent,
+  useRef,
   useState,
 } from 'react';
 import { useRouter } from 'next/navigation';
@@ -265,11 +266,16 @@ export default function DashHomeDashboard() {
     },
   );
 
+  // Track whether the initial bootstrap has already run so currentUser
+  // updates from loadDashboard don't re-trigger the effect.
+  const bootstrappedRef = useRef(false);
+
   useEffect(() => {
-    if (!hasHydrated) {
+    if (!hasHydrated || bootstrappedRef.current) {
       return;
     }
 
+    bootstrappedRef.current = true;
     let cancelled = false;
 
     const bootstrapDashboard = async () => {
@@ -293,7 +299,8 @@ export default function DashHomeDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [clearSession, currentUser, hasHydrated, hydrateSession, loadDashboard, router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasHydrated]);
 
   useEffect(() => {
     if (!hasHydrated || !(currentUser?.id ?? profile?.id)) {

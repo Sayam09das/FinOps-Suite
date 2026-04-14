@@ -599,7 +599,7 @@ export default function FinSuiteHero() {
                                         </div>
                                         <div className="h-24 min-w-0 w-full">
                                             {chartsReady ? (
-                                                <ResponsiveContainer width="100%" height="100%">
+                                                <ResponsiveContainer width="100%" height={96}>
                                                     <BarChart
                                                         data={spendingData}
                                                         barSize={28}
@@ -660,7 +660,7 @@ export default function FinSuiteHero() {
                                         </div>
                                         <div className="h-24 min-w-0 w-full">
                                             {chartsReady ? (
-                                                <ResponsiveContainer width="100%" height="100%">
+                                                <ResponsiveContainer width="100%" height={96}>
                                                     <AreaChart
                                                         data={balanceHistory}
                                                         margin={{ top: 5, right: 4, bottom: 0, left: -24 }}
