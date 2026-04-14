@@ -378,93 +378,92 @@ export default function AuthView({ mode }: AuthViewProps) {
               <label className="grid gap-2 text-sm font-medium text-slate-700">
                 Email
                 <input
-                    type="email"
-                    autoComplete="email"
-                    value={formState.email}
-                    onChange={(event) =>
-                      setFormState((current) => ({
-                        ...current,
-                        email: event.target.value,
-                      }))
-                    }
-                    className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
-                    placeholder="you@example.com"
-                    required
-                  />
-                </label>
+                  type="email"
+                  autoComplete="email"
+                  value={formState.email}
+                  onChange={(event) =>
+                    setFormState((current) => ({
+                      ...current,
+                      email: event.target.value,
+                    }))
+                  }
+                  className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
+                  placeholder="you@example.com"
+                  required
+                />
+              </label>
 
+              <label className="grid gap-2 text-sm font-medium text-slate-700">
+                Password
+                <input
+                  type="password"
+                  autoComplete={
+                    mode === 'register' ? 'new-password' : 'current-password'
+                  }
+                  value={formState.password}
+                  onChange={(event) =>
+                    setFormState((current) => ({
+                      ...current,
+                      password: event.target.value,
+                    }))
+                  }
+                  className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
+                  placeholder="Minimum 8 characters"
+                  minLength={8}
+                  required
+                />
+              </label>
+
+              {mode === 'register' ? (
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
-                  Password
+                  Confirm password
                   <input
                     type="password"
-                    autoComplete={
-                      mode === 'register' ? 'new-password' : 'current-password'
-                    }
-                    value={formState.password}
+                    autoComplete="new-password"
+                    value={formState.confirmPassword}
                     onChange={(event) =>
                       setFormState((current) => ({
                         ...current,
-                        password: event.target.value,
+                        confirmPassword: event.target.value,
                       }))
                     }
                     className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
-                    placeholder="Minimum 8 characters"
+                    placeholder="Repeat your password"
                     minLength={8}
                     required
                   />
                 </label>
+              ) : null}
 
-                {mode === 'register' ? (
-                  <label className="grid gap-2 text-sm font-medium text-slate-700">
-                    Confirm password
-                    <input
-                      type="password"
-                      autoComplete="new-password"
-                      value={formState.confirmPassword}
-                      onChange={(event) =>
-                        setFormState((current) => ({
-                          ...current,
-                          confirmPassword: event.target.value,
-                        }))
-                      }
-                      className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-primary focus:bg-white"
-                      placeholder="Repeat your password"
-                      minLength={8}
-                      required
-                    />
-                  </label>
-                ) : null}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                Sessions are stored in secure HTTP-only cookies. The app restores your login automatically without localStorage.
+              </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                  Sessions are stored in secure HTTP-only cookies. The app restores your login automatically without localStorage.
+              {errorMessage ? (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                  {errorMessage}
                 </div>
+              ) : null}
 
-                {errorMessage ? (
-                  <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                    {errorMessage}
-                  </div>
-                ) : null}
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting || Boolean(activeOAuthProvider)}
-                  className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-dark px-4 text-sm font-semibold text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {copy.loadingLabel}
-                    </>
-                  ) : (
-                    copy.buttonLabel
-                  )}
-                </button>
-              </form>
-            </section>
-          </div>
+              <button
+                type="submit"
+                disabled={isSubmitting || Boolean(activeOAuthProvider)}
+                className="mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-dark px-4 text-sm font-semibold text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {copy.loadingLabel}
+                  </>
+                ) : (
+                  copy.buttonLabel
+                )}
+              </button>
+            </form>
+          </section>
         </div>
-      </AuthShell>
-    );
-  }
+      </div>
+    </AuthShell>
+  );
 }
 
