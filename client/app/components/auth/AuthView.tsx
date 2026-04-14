@@ -129,7 +129,6 @@ export default function AuthView({ mode }: AuthViewProps) {
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const currentUser = useAuthStore((state) => state.currentUser);
   const setSession = useAuthStore((state) => state.setSession);
-  const hydrateSession = useAuthStore((state) => state.hydrateSession);
   const [formState, setFormState] = useState({
     name: '',
     email: '',
@@ -183,10 +182,12 @@ export default function AuthView({ mode }: AuthViewProps) {
               password: formState.password,
             });
 
+      // Set the store session — cookies are already written by the API route
       setSession(session);
-      await hydrateSession(); // Ensure store hydrated before redirect
       toast.success(copy.successMessage);
-      router.replace('/dashboard');
+      // Use window.location so the browser does a full navigation and the
+      // middleware reads the freshly-written cookies from the response
+      window.location.replace('/dashboard');
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unable to continue.';

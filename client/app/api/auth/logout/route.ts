@@ -12,7 +12,7 @@ export async function POST() {
 
   await clearAuthCookies();
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       success: true,
       data: null,
@@ -20,4 +20,7 @@ export async function POST() {
     },
     { status: 200 },
   );
+
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  return response;
 }

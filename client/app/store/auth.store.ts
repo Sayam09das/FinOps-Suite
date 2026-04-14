@@ -84,6 +84,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         currentUser: null,
         hasHydrated: true,
       });
+      // Hard navigation so the browser discards the cached /dashboard page
+      // and the middleware sees the cleared cookies on the next request.
+      if (typeof window !== 'undefined') {
+        window.location.replace('/login');
+      }
     }
   },
 
