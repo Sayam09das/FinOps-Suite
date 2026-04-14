@@ -283,7 +283,7 @@ export default function Transactioncards({ dashboard, isLoading }: Props) {
               transition={{ duration: 0.25 }}
               className="h-44 sm:h-52"
             >
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={176} minHeight={176}>
                 <AreaChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="gradEarning" x1="0" y1="0" x2="0" y2="1">
