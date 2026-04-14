@@ -122,6 +122,8 @@ export const apiRequest = async <T>(
   input: string,
   init: ApiRequestOptions = {},
 ): Promise<T> => {
+  const baseURL = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL ?? '' : '';
+  const url = `${baseURL}${input.startsWith('/') ? '' : '/'}${input}`;
   const headers = new Headers(init.headers);
   const body = prepareRequestBody(init.body, headers);
 
@@ -129,13 +131,14 @@ export const apiRequest = async <T>(
     headers.set('Accept', 'application/json');
   }
 
-  const response = await fetch(input, {
+  const response = await fetch(url, {
     ...init,
     body,
     credentials: 'include',
     cache: 'no-store',
     headers,
   });
+
 
   const payload = await parseResponsePayload<T>(response);
   const message = extractErrorMessage(response, payload);

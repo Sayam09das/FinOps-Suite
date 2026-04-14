@@ -1,2 +1,37 @@
-# Task: Make Transactioncards Real-Time\n\n## Plan Breakdown ✅\n- [x] Step 1: Update Transactioncards.tsx with props and aggregations\n- [x] Step 2: Add imports for types and helpers\n- [x] Step 3: Implement chart data aggregation (monthly/yearly grouping)\n- [x] Step 4: Compute totals and spending limits from dashboard data\n- [x] Step 5: Add loading states and error handling\n- [x] Step 6: Test integration with parent dashboard polling\n\n**Status:** ✅ Complete!\n\nTransactioncards now uses real dashboard.recentTransactions data:\n- Aggregates into time-series charts (monthly/yearly toggle)\n- Shows live totals from dashboard.income/expense/balance\n- Spending limits from budgets\n- Falls back to demo data if no transactions\n- Loading skeleton during refresh\n- Integrates with existing 30s polling + manual txn add\n\nRun `cd client && npm run dev` to test. Add transactions via modal to see live updates.
+# Fix Auth/Backend Connection
+Status: In Progress
 
+## Steps:
+
+### 1. Verify/Start Backend [ ] - npm ci/Prisma failed: MongoDB timeout
+- Fix Atlas Network Access: Add 0.0.0.0/0 IP whitelist
+- Rerun: cd backend && npm run dev
+- cd backend
+- npm install (if needed)
+- Check .env: DATABASE_URL, JWT secrets
+- npx prisma generate && npx prisma db push
+- npm run dev (http://localhost:5001)
+- Verify: curl http://localhost:5001/api/health
+
+### 2. Configure Client API Base URL [ ]
+- Add to client/.env.local: NEXT_PUBLIC_API_URL=http://localhost:5001/api
+
+### 3. Update apiClient to use base URL [x]
+- Edit client/lib/api/client.ts: Prefix input with baseURL in apiRequest
+
+### 4. Ensure Auth Hydration [ ]
+- Check client/app/providers.tsx: Call useAuthStore.getState().hydrateSession()
+
+### 5. Fix Dashboard Navbar Handler [ ]
+- Edit client/app/dashboard/page.tsx: Add onProfileAction with store.logout() for 'logout'
+
+### 6. Test End-to-End [ ]
+- Client: npm run dev (:3000)
+- Register/Login → Dashboard → Logout
+- Check Network tab for successful /api/auth/* calls
+
+### 7. Update TODOs [ ]
+- Mark complete
+- Remove Todo/TODO-FixBackendConnection.md
+
+**Current: Starting step 1**
