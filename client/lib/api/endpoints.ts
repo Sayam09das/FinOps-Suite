@@ -3,7 +3,7 @@ export const apiEndpoints = {
     login: '/api/auth/login',
     register: '/api/auth/register',
     oauth: '/api/auth/oauth',
-    session: '/api/auth/session',
+    session: '/api/auth/me',
     logout: '/api/auth/logout',
   },
   dashboard: {

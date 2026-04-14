@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { ApiError } from '@/lib/api/client';
+ import { ApiError } from '@/lib/api/client';
 import { authService } from '@/lib/api/auth-service';
 import type { AuthUser, CurrentUser } from '@/lib/api/types';
 

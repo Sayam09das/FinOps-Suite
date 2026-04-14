@@ -3,9 +3,7 @@ Status: In Progress
 
 ## Steps:
 
-### 1. Verify/Start Backend [ ] - npm ci/Prisma failed: MongoDB timeout
-- Fix Atlas Network Access: Add 0.0.0.0/0 IP whitelist
-- Rerun: cd backend && npm run dev
+### 1. Verify/Start Backend [x] - Running :5000 (Redis optional)
 - cd backend
 - npm install (if needed)
 - Check .env: DATABASE_URL, JWT secrets
@@ -17,6 +15,7 @@ Status: In Progress
 - Add to client/.env.local: NEXT_PUBLIC_API_URL=http://localhost:5001/api
 
 ### 3. Update apiClient to use base URL [x]
+### 3.5. Fix endpoints.session → /me [x]
 - Edit client/lib/api/client.ts: Prefix input with baseURL in apiRequest
 
 ### 4. Ensure Auth Hydration [ ]
