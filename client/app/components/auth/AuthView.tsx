@@ -183,6 +183,7 @@ export default function AuthView({ mode }: AuthViewProps) {
             });
 
       setSession(session);
+      await hydrateSession(); // Ensure store hydrated before redirect
       toast.success(copy.successMessage);
       router.replace('/dashboard');
     } catch (error) {
