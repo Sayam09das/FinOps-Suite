@@ -96,6 +96,7 @@ export default function RecentTransactioncards({
                 initial={seenIds.current.has(transaction.id) ? false : { opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                onAnimationComplete={() => seenIds.current.add(transaction.id)}
                 className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
