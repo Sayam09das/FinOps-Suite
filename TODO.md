@@ -1,36 +1,29 @@
-# Fix Auth/Backend Connection
-Status: In Progress
+# FinOps Suite - Task Progress Tracker
 
-## Steps:
+## Current Task: Fix 404/401 Auth Errors (Deployed App)
 
-### 1. Verify/Start Backend [x] - Running :5000 (Redis optional)
-- cd backend
-- npm install (if needed)
-- Check .env: DATABASE_URL, JWT secrets
-- npx prisma generate && npx prisma db push
-- npm run dev (http://localhost:5001)
-- Verify: curl http://localhost:5001/api/health
+### ✅ Plan Approved
+- Create Next.js API proxy routes forwarding to backend
+- Local backend: http://localhost:5000
+- Prod backend URL TBD
 
-### 2. Configure Client API Base URL [ ]
-- Add to client/.env.local: NEXT_PUBLIC_API_URL=http://localhost:5001/api
+### 📋 Steps to Complete:
 
-### 3. Update apiClient to use base URL [x]
-### 3.5. Fix endpoints.session → /me [x]
-- Edit client/lib/api/client.ts: Prefix input with baseURL in apiRequest
+- ✅ **Step 1**: Create proxy API routes in `client/app/api/`
+  - `client/app/api/auth/me/route.ts` (GET session)
+  - `client/app/api/auth/route.ts` (POST login/register/logout)
+  - `client/app/api/transactions/route.ts` (GET/POST list/create)
+  - `client/app/api/transactions/[id]/route.ts` (PUT/DELETE)
+  - `client/app/api/dashboard/route.ts`
 
-### 4. Ensure Auth Hydration [ ]
-- Check client/app/providers.tsx: Call useAuthStore.getState().hydrateSession()
+- ✅ **Step 2**: Add environment variables
+  - `.env.local` with `NEXT_PUBLIC_BACKEND_URL=http://localhost:5000`
 
-### 5. Fix Dashboard Navbar Handler [ ]
-- Edit client/app/dashboard/page.tsx: Add onProfileAction with store.logout() for 'logout'
+- ✅ **Step 3**: Fixed TypeScript errors in proxy routes
 
-### 6. Test End-to-End [ ]
-- Client: npm run dev (:3000)
-- Register/Login → Dashboard → Logout
-- Check Network tab for successful /api/auth/* calls
+- [ ] **Step 4**: Test locally (`cd client && npm run dev`)
 
-### 7. Update TODOs [ ]
-- Mark complete
-- Remove Todo/TODO-FixBackendConnection.md
+- [ ] **Step 5**: Deploy and update Render env vars
 
-**Current: Starting step 1**
+**Next Action**: Create API route files
+

@@ -12,22 +12,26 @@ export async function GET(request: NextRequest) {
       cookieHeaders[cookie.name] = cookie.value;
     });
 
-    const backendRes = await fetch(`${BACKEND_URL}/api/dashboard`, {
+    const backendRes = await fetch(`${BACKEND_URL}/api/auth/me`, {
       method: 'GET',
       headers: {
         'Cookie': Object.entries(cookieHeaders)
           .map(([key, value]) => `${key}=${value}`)
           .join('; '),
+        'Content-Type': 'application/json',
       },
       credentials: 'include',
     });
 
     const data = await backendRes.json();
-    return NextResponse.json({ success: true, data }, {
-      status: backendRes.status,
-    });
+
+    if (!backendRes.ok) {
+      return NextResponse.json(data, { status: backendRes.status });
+    }
+
+    return NextResponse.json({ success: true, data }, { status: 200 });
   } catch (error) {
-    console.error('Dashboard proxy error:', error);
+    console.error('Auth proxy error:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

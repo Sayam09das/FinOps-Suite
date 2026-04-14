@@ -1,94 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  BackendRequestError,
-  createRouteErrorBody,
-  proxyWithAuth,
-  readApiEnvelope,
-} from '@/lib/auth/server';
-import type { Transaction } from '@/lib/api/types';
+import { cookies } from 'next/headers';
 
-type RouteContext = {
-  params: Promise<{ id: string }> | { id: string };
-};
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:5000';
 
-const resolveParams = async ({ params }: RouteContext) => await params;
-
-export async function PUT(request: NextRequest, context: RouteContext) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await resolveParams(context);
-    const rawBody = await request.text();
-    const response = await proxyWithAuth(`/api/transactions/${id}`, {
+    const body = await request.json();
+    const cookieStore = await cookies();
+    const cookieHeaders: Record<string, string> = {};
+    
+    cookieStore.getAll().forEach((cookie: any) => {
+      cookieHeaders[cookie.name] = cookie.value;
+    });
+
+    const backendRes = await fetch(`${BACKEND_URL}/api/transactions/${params.id}`, {
       method: 'PUT',
-      body: rawBody,
       headers: {
-        'Content-Type':
-          request.headers.get('content-type') || 'application/json',
+        'Content-Type': 'application/json',
+        'Cookie': Object.entries(cookieHeaders)
+          .map(([key, value]) => `${key}=${value}`)
+          .join('; '),
       },
+      body: JSON.stringify(body),
+      credentials: 'include',
     });
-    const payload = await readApiEnvelope<Transaction>(response);
 
-    if (response.status >= 500) {
-      return NextResponse.json(
-        payload ?? {
-          success: false,
-          message: 'Unable to update transaction right now.',
-        },
-        { status: 200 },
-      );
-    }
-
-    return NextResponse.json(
-      payload ?? {
-        success: response.ok,
-        message: response.ok
-          ? 'Transaction updated'
-          : 'Unable to update transaction',
-      },
-      { status: response.status },
-    );
+    const data = await backendRes.json();
+    return NextResponse.json({ success: true, data }, {
+      status: backendRes.status,
+    });
   } catch (error) {
+    console.error('Transaction update proxy error:', error);
     return NextResponse.json(
-      createRouteErrorBody(error, 'Unable to update transaction right now.'),
-      {
-        status: error instanceof BackendRequestError ? 200 : 500,
-      },
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
     );
   }
 }
 
-export async function DELETE(_: NextRequest, context: RouteContext) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await resolveParams(context);
-    const response = await proxyWithAuth(`/api/transactions/${id}`, {
-      method: 'DELETE',
+    const cookieStore = await cookies();
+    const cookieHeaders: Record<string, string> = {};
+    
+    cookieStore.getAll().forEach((cookie: any) => {
+      cookieHeaders[cookie.name] = cookie.value;
     });
-    const payload = await readApiEnvelope<null>(response);
 
-    if (response.status >= 500) {
-      return NextResponse.json(
-        payload ?? {
-          success: false,
-          message: 'Unable to delete transaction right now.',
-        },
-        { status: 200 },
-      );
-    }
-
-    return NextResponse.json(
-      payload ?? {
-        success: response.ok,
-        message: response.ok
-          ? 'Transaction deleted'
-          : 'Unable to delete transaction',
+    const backendRes = await fetch(`${BACKEND_URL}/api/transactions/${params.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Cookie': Object.entries(cookieHeaders)
+          .map(([key, value]) => `${key}=${value}`)
+          .join('; '),
       },
-      { status: response.status },
-    );
+      credentials: 'include',
+    });
+
+    const data = await backendRes.json();
+    return NextResponse.json({ success: true, data }, {
+      status: backendRes.status,
+    });
   } catch (error) {
+    console.error('Transaction delete proxy error:', error);
     return NextResponse.json(
-      createRouteErrorBody(error, 'Unable to delete transaction right now.'),
-      {
-        status: error instanceof BackendRequestError ? 200 : 500,
-      },
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
     );
   }
 }
+

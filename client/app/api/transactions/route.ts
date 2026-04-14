@@ -1,89 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  BackendRequestError,
-  createRouteErrorBody,
-  proxyWithAuth,
-  readApiEnvelope,
-} from '@/lib/auth/server';
-import type { PaginatedTransactions, Transaction } from '@/lib/api/types';
+import { cookies } from 'next/headers';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:5000';
 
 export async function GET(request: NextRequest) {
   try {
-    const response = await proxyWithAuth(
-      `/api/transactions${request.nextUrl.search}`,
-      {
-        method: 'GET',
-      },
-    );
-    const payload = await readApiEnvelope<PaginatedTransactions>(response);
+    const cookieStore = await cookies();
+    const cookieHeaders: Record<string, string> = {};
+    
+    cookieStore.getAll().forEach((cookie: any) => {
+      cookieHeaders[cookie.name] = cookie.value;
+    });
 
-    if (response.status >= 500) {
-      return NextResponse.json(
-        payload ?? {
-          success: false,
-          message: 'Unable to load transactions right now.',
-        },
-        { status: 200 },
-      );
-    }
-
-    return NextResponse.json(
-      payload ?? {
-        success: response.ok,
-        message: response.ok
-          ? 'Transactions loaded'
-          : 'Unable to load transactions',
+    const backendRes = await fetch(`${BACKEND_URL}/api/transactions`, {
+      method: 'GET',
+      headers: {
+        'Cookie': Object.entries(cookieHeaders)
+          .map(([key, value]) => `${key}=${value}`)
+          .join('; '),
       },
-      { status: response.status },
-    );
+      credentials: 'include',
+    });
+
+    const data = await backendRes.json();
+
+    return NextResponse.json({ success: true, data }, {
+      status: backendRes.status,
+    });
   } catch (error) {
+    console.error('Transactions proxy error:', error);
     return NextResponse.json(
-      createRouteErrorBody(error, 'Unable to load transactions right now.'),
-      {
-        status: error instanceof BackendRequestError ? 200 : 500,
-      },
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
     );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const rawBody = await request.text();
-    const response = await proxyWithAuth('/api/transactions', {
-      method: 'POST',
-      body: rawBody,
-      headers: {
-        'Content-Type':
-          request.headers.get('content-type') || 'application/json',
-      },
+    const body = await request.json();
+    const cookieStore = await cookies();
+    const cookieHeaders: Record<string, string> = {};
+    
+    cookieStore.getAll().forEach((cookie: any) => {
+      cookieHeaders[cookie.name] = cookie.value;
     });
-    const payload = await readApiEnvelope<Transaction>(response);
 
-    if (response.status >= 500) {
-      return NextResponse.json(
-        payload ?? {
-          success: false,
-          message: 'Unable to create transaction right now.',
-        },
-        { status: 200 },
-      );
-    }
-
-    return NextResponse.json(
-      payload ?? {
-        success: response.ok,
-        message: response.ok
-          ? 'Transaction created'
-          : 'Unable to create transaction',
+    const backendRes = await fetch(`${BACKEND_URL}/api/transactions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': Object.entries(cookieHeaders)
+          .map(([key, value]) => `${key}=${value}`)
+          .join('; '),
       },
-      { status: response.status },
-    );
+      body: JSON.stringify(body),
+      credentials: 'include',
+    });
+
+    const data = await backendRes.json();
+    return NextResponse.json({ success: true, data }, {
+      status: backendRes.status,
+    });
   } catch (error) {
+    console.error('Transactions POST proxy error:', error);
     return NextResponse.json(
-      createRouteErrorBody(error, 'Unable to create transaction right now.'),
-      {
-        status: error instanceof BackendRequestError ? 200 : 500,
-      },
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
     );
   }
 }
+
