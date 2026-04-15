@@ -14,17 +14,19 @@ export const sendAuthResponse = (
   statusCode: number,
   message: string,
 ) => {
-  // Set secure httpOnly cookies for cross-origin
-  res.cookie('accessToken', session.accessToken, {
+  // Set secure httpOnly cookies for cross-origin (user-specified names)
+  res.cookie('finops.access-token', session.accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
     maxAge: 15 * 60 * 1000, // 15m
   });
-  res.cookie('refreshToken', session.refreshToken, {
+  res.cookie('finops.refresh-token', session.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7d
   });
   

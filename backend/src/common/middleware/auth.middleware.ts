@@ -23,8 +23,8 @@ const getAccessSecret = () =>
   process.env.JWT_ACCESS_SECRET || 'finops-access-secret';
 
 const getToken = (req: Request): string | null => {
-  // Priority 1: httpOnly cookie
-  const cookieToken = req.cookies?.accessToken;
+  // Priority 1: httpOnly cookie (user-specified names)
+  const cookieToken = req.cookies?.['finops.access-token'];
   if (cookieToken) return cookieToken;
 
   // Fallback: Bearer header

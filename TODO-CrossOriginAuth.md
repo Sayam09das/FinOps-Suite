@@ -5,7 +5,7 @@ Status: 🔄 Planning
 
 ## Plan Steps:
 
-- [✅] 1. **backend/src/modules/auth/auth.controller.ts** - Add `res.cookie()` in `sendAuthResponse()` ✓
+- [✅] 1-2. **backend** - Cookie names `finops.access-token`, `finops.refresh-token` + middleware fix ✓
   `httpOnly: true, secure: true, sameSite: 'none'`
 - [✅] 2. **backend/src/modules/auth/logout.controller.ts** - Update `clearCookie()` options ✓
 - [✅] 3. **Verify** `backend/src/config/env.ts` FRONTEND_URLS includes production domains ✓
