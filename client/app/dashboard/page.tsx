@@ -1,34 +1,37 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashHomeDashboard from './components/DashHome/DashHomeDashboard';
 
-const DashboardPage = () => {
+const BACKEND_URL = 'https://finops-suite.onrender.com';
+
+export default function DashboardPage() {
   const router = useRouter();
   const [status, setStatus] = useState<'loading' | 'ok'>('loading');
+  const hasChecked = useRef(false);
 
   useEffect(() => {
+    if (hasChecked.current) return;
+    hasChecked.current = true;
+
     const checkSession = async () => {
       try {
-        const res = await fetch('/api/auth/me', {
-          method: 'GET',
+        await new Promise(res => setTimeout(res, 300));
+
+        const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
           credentials: 'include',
           cache: 'no-store',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         });
 
-        if (!res.ok) {
-          router.replace('/login');
-          return;
+        if (res.status === 200) {
+          setStatus('ok');
+        } else {
+          router.replace('/login?next=/dashboard');
         }
-
-        setStatus('ok');
       } catch (error) {
-        console.error('Dashboard auth check failed:', error);
-        router.replace('/login');
+        console.error(error);
+        router.replace('/login?next=/dashboard');
       }
     };
 
@@ -44,7 +47,4 @@ const DashboardPage = () => {
   }
 
   return <DashHomeDashboard />;
-};
-
-export default DashboardPage;
-
+}
