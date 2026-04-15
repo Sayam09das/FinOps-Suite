@@ -8,7 +8,7 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().default('finops-access-secret'),
   JWT_REFRESH_SECRET: z.string().default('finops-refresh-secret'),
   FRONTEND_URL: z.string().url().optional(),
-  FRONTEND_URLS: z.string().default('http://localhost:3000,https://fin-ops-suite.vercel.app'),
+  FRONTEND_URLS: z.string().default('http://localhost:3000,https://finops-suite.vercel.app,https://fin-ops-suite.vercel.app'),
   ADMIN_EMAILS: z.string().optional(),
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
