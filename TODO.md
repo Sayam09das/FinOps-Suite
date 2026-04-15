@@ -1,19 +1,22 @@
-# FinOps Suite - Critical Auth Bug Fix
-Status: ✅ In Progress
+# Cross-Origin Auth Fix TODO
 
-## Steps (from approved plan):
+## Plan Status: ✅ Approved
 
-- [✅] 1. Create `client/app/middleware.ts` - Server-side route protection ✓
-- [✅] 2. Update `client/app/dashboard/page.tsx` - Add server-side auth check ✓
-- [ ] 3. Enhance `client/app/api/auth/route.ts` - Explicit cookie clearing on logout
-- [ ] 4. Test: logout → cookies cleared → /dashboard redirects to /login
-- [ ] 5. Deploy to Vercel
+**Step 1: ✅ Fixed backend cookie settings**
+- File: `backend/src/modules/auth/auth.controller.ts`
+- Force `secure: true`, `sameSite: 'none'` for cross-origin cookies
 
-## Testing Commands:
-```
-cd client
-npm run dev
-```
-- Test direct /dashboard URL (should redirect)
-- Test logout → inspect cookies
-- Test back button after logout
+**Step 2: ✅ Fixed frontend middleware**
+- File: `client/app/middleware.ts`
+- Removed unnecessary clearing of `finops.*` cookies on auth failure
+
+**Step 3: [PENDING] Test local login flow**
+- Backend: `cd backend && npm run dev`
+- Frontend: `cd client && npm run dev`
+- Login → verify `finops.access-token`, `finops.refresh-token` appear in DevTools (localhost:5000 domain)
+
+**Step 4: [PENDING] Deploy & production test**
+- Backend: Render deploy  
+- Frontend: Vercel deploy
+- Test login → verify cookies stored under `finops-suite.onrender.com` domain
+- Verify /dashboard doesn't redirect & /api/auth/me returns 200

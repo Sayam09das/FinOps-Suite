@@ -34,12 +34,8 @@ export async function middleware(request: NextRequest, ev: NextFetchEvent) {
         // Invalid/missing auth - redirect to login and clear cookies
         const response = NextResponse.redirect(new URL('/login', request.url));
         
-        // Clear backend cookie
+        // Clear legacy cookie only
         response.cookies.delete('accessToken');
-        
-        // Clear user-reported cookies (safety)
-        response.cookies.delete('finops.access-token');
-        response.cookies.delete('finops.refresh-token');
         
         response.headers.set('Cache-Control', 'no-store');
         return response;
@@ -55,8 +51,6 @@ export async function middleware(request: NextRequest, ev: NextFetchEvent) {
       const response = NextResponse.redirect(new URL('/login', request.url));
       
       response.cookies.delete('accessToken');
-      response.cookies.delete('finops.access-token');
-      response.cookies.delete('finops.refresh-token');
       
       response.headers.set('Cache-Control', 'no-store');
       return response;
