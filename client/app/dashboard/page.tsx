@@ -1,46 +1,50 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+'use client';
 
-async function getValidSession() {
-  try {
-    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:5000';
-    
-    const cookieStore = await cookies();
-    const cookieHeaders: Record<string, string> = {};
-    cookieStore.getAll().forEach((cookie: any) => {
-      cookieHeaders[cookie.name] = cookie.value;
-    });
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import DashHomeDashboard from './components/DashHome/DashHomeDashboard';
 
-    const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
-      method: 'GET',
-      headers: {
-        'Cookie': Object.entries(cookieHeaders)
-          .map(([key, value]) => `${key}=${value}`)
-          .join('; '),
-      },
-      cache: 'no-store',
-    });
+const DashboardPage = () => {
+  const router = useRouter();
+  const [status, setStatus] = useState<'loading' | 'ok'>('loading');
 
-    if (!res.ok) {
-      return null;
-    }
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/auth/me', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-    return await res.json();
-  } catch {
-    return null;
+        if (!res.ok) {
+          router.replace('/login');
+          return;
+        }
+
+        setStatus('ok');
+      } catch (error) {
+        console.error('Dashboard auth check failed:', error);
+        router.replace('/login');
+      }
+    };
+
+    checkSession();
+  }, [router]);
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Checking auth session...</p>
+      </div>
+    );
   }
-}
 
-export default async function DashboardPage() {
-  const session = await getValidSession();
-  
-  if (!session) {
-    redirect('/login');
-  }
-
-  // Client component (keep existing protection as fallback)
-  const { default: DashHomeDashboard } = await import('./components/DashHome/DashHomeDashboard');
-  
   return <DashHomeDashboard />;
-}
+};
+
+export default DashboardPage;
 

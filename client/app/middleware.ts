@@ -3,8 +3,8 @@ import type { NextFetchEvent } from 'next/server';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:5000';
 
-// Protected routes - expand as needed
-const protectedPaths = ['/dashboard'];
+// Protected routes are handled client-side for cross-domain auth cookies.
+const protectedPaths: string[] = [];
 
 // Public routes
 const publicPaths = ['/', '/login', '/register', '/sign-in', '/sign-up', '/oauth', '/api'];
