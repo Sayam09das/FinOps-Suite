@@ -39,6 +39,13 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Explicitly clear auth cookies on logout (safety)
+    if (action === 'logout' && backendRes.ok) {
+      response.cookies.delete('accessToken');
+      response.cookies.delete('finops.access-token');
+      response.cookies.delete('finops.refresh-token');
+    }
+
     return response;
   } catch (error) {
     console.error('Auth proxy error:', error);

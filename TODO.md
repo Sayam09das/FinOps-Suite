@@ -1,20 +1,19 @@
-# FinOps Suite - Task Progress Tracker
+# FinOps Suite - Critical Auth Bug Fix
+Status: ✅ In Progress
 
-## Current Task: Fix Vercel Build Error (proxy.ts)
+## Steps (from approved plan):
 
-### Steps to Complete:
+- [✅] 1. Create `client/app/middleware.ts` - Server-side route protection ✓
+- [✅] 2. Update `client/app/dashboard/page.tsx` - Add server-side auth check ✓
+- [ ] 3. Enhance `client/app/api/auth/route.ts` - Explicit cookie clearing on logout
+- [ ] 4. Test: logout → cookies cleared → /dashboard redirects to /login
+- [ ] 5. Deploy to Vercel
 
-- [x] 1. Create TODO.md with approved plan steps
-- [x] 2. Edit client/proxy.ts to export async function proxy (rename from middleware, remove config)
-- [x] 3. Verify file update
-- [ ] 4. User redeploys to Vercel and confirms build success
-- [ ] 5. Test protected routes, auth redirects, no-cache behavior
-- [ ] 6. Mark complete and cleanup (e.g., remove middleware.ts.bak)
-
-### Approved Plan Summary:
-- Rename `middleware` → `proxy` async function
-- Preserve all logic
-- Remove deprecated `config.matcher`
-- Logic already handles matching via path checks
-
-**Next Step**: User redeploy to Vercel
+## Testing Commands:
+```
+cd client
+npm run dev
+```
+- Test direct /dashboard URL (should redirect)
+- Test logout → inspect cookies
+- Test back button after logout
