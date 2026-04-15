@@ -22,7 +22,7 @@ const defaultProfileMenu: DashboardProfileMenuItem[] = [
   { id: 'profile', label: 'Profile' },
   { id: 'settings', label: 'Settings' },
   { id: 'billing', label: 'Billing' },
-  { id: 'logout', label: 'Sign out', danger: true },
+  { id: 'logout', label: 'Log out', danger: true },
 ];
 
 type DashNavbarProps = Readonly<{

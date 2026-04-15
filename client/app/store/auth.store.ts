@@ -78,14 +78,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: async () => {
     try {
-      await authService.logout();
-    } finally {
-      set({
-        currentUser: null,
-        hasHydrated: true,
+      // Must call backend directly with credentials so the browser sends
+      // its cookies to onrender.com, which can then issue Set-Cookie: expires=0
+      await fetch('https://finops-suite.onrender.com/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
       });
-      // Hard navigation so the browser discards the cached /dashboard page
-      // and the middleware sees the cleared cookies on the next request.
+    } catch {
+      // Proceed with local session clear even if the network call fails
+    } finally {
+      set({ currentUser: null, hasHydrated: true });
       if (typeof window !== 'undefined') {
         window.location.replace('/login');
       }
