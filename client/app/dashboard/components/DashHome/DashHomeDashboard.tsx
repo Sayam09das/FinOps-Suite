@@ -188,10 +188,6 @@ function UtilitySection({ section }: UtilitySectionProps) {
 
 export default function DashHomeDashboard() {
   const router = useRouter();
-  const hasHydrated = useAuthStore((state) => state.hasHydrated);
-  const currentUser = useAuthStore((state) => state.currentUser);
-  const clearSession = useAuthStore((state) => state.clearSession);
-  const hydrateSession = useAuthStore((state) => state.hydrateSession);
   const logout = useAuthStore((state) => state.logout);
   const updateCurrentUser = useAuthStore((state) => state.updateCurrentUser);
   const [profile, setProfile] = useState<CurrentUser | null>(null);
@@ -209,15 +205,8 @@ export default function DashHomeDashboard() {
       return await request();
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
-        const user = await hydrateSession();
-
-        if (!user) {
-          clearSession();
-          router.replace('/login');
-          throw new Error('Your session has expired. Please sign in again.');
-        }
-
-        return request();
+        router.replace('/login?next=/dashboard');
+        throw new Error('Your session has expired. Please sign in again.');
       }
 
       throw error;
@@ -271,7 +260,7 @@ export default function DashHomeDashboard() {
   const bootstrappedRef = useRef(false);
 
   useEffect(() => {
-    if (!hasHydrated || bootstrappedRef.current) {
+    if (bootstrappedRef.current) {
       return;
     }
 
@@ -279,15 +268,17 @@ export default function DashHomeDashboard() {
     let cancelled = false;
 
     const bootstrapDashboard = async () => {
-      const sessionUser = currentUser?.id ? currentUser : await hydrateSession();
+      // Verify auth directly against the backend (browser sends cookies cross-domain).
+      // Do NOT use hydrateSession() — it reads server-side cookies which are absent on Vercel.
+      const res = await fetch('https://finops-suite.onrender.com/api/auth/me', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
 
-      if (cancelled) {
-        return;
-      }
+      if (cancelled) return;
 
-      if (!sessionUser?.id) {
-        clearSession();
-        router.replace('/login');
+      if (!res.ok) {
+        router.replace('/login?next=/dashboard');
         return;
       }
 
@@ -300,10 +291,10 @@ export default function DashHomeDashboard() {
       cancelled = true;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasHydrated]);
+  }, []);
 
   useEffect(() => {
-    if (!hasHydrated || !(currentUser?.id ?? profile?.id)) {
+    if (!profile?.id) {
       return;
     }
 
@@ -314,7 +305,7 @@ export default function DashHomeDashboard() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [currentUser?.id, hasHydrated, loadDashboard, profile?.id]);
+  }, [profile?.id, loadDashboard]);
 
   const handleProfileAction = (action: DashboardProfileAction) => {
     if (action === 'logout') {
@@ -347,15 +338,13 @@ export default function DashHomeDashboard() {
     });
   };
 
-  const displayEmail =
-    profile?.email ?? currentUser?.email ?? 'signed-in-user@finops.local';
-  const displayName =
-    profile?.name?.trim() || currentUser?.name?.trim() || displayEmail.split('@')[0];
+  const displayEmail = profile?.email ?? 'signed-in-user@finops.local';
+  const displayName = profile?.name?.trim() || displayEmail.split('@')[0];
   const profileSummary: DashboardProfileSummary = {
     name: displayName,
     handle: normalizeHandle(displayEmail),
     email: displayEmail,
-    role: profile?.role ?? currentUser?.role ?? 'USER',
+    role: profile?.role ?? 'USER',
   };
 
   const notifications: DashboardNotification[] = [
@@ -424,13 +413,7 @@ export default function DashHomeDashboard() {
     }
   };
 
-  if (!hasHydrated) {
-    return (
-      <div className="min-h-screen bg-[linear-gradient(180deg,#f7f7fb_0%,#ffffff_35%,#eef4ff_100%)]" />
-    );
-  }
-
-  return (
+return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f7f7fb_0%,#ffffff_35%,#eef4ff_100%)] text-slate-950">
       <div className="flex min-h-screen">
         <DashSidebar
