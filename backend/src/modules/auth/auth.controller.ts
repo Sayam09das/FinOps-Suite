@@ -14,13 +14,23 @@ export const sendAuthResponse = (
   statusCode: number,
   message: string,
 ) => {
+  // Set secure httpOnly cookies for cross-origin
+  res.cookie('accessToken', session.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 15 * 60 * 1000, // 15m
+  });
+  res.cookie('refreshToken', session.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7d
+  });
+  
+  // Return user only (tokens in cookies, not JSON for security)
   ApiResponse.success(
-    {
-      ...session.user,
-      user: session.user,
-      accessToken: session.accessToken,
-      refreshToken: session.refreshToken,
-    },
+    session.user,
     res,
     statusCode,
     message,
