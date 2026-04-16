@@ -90,6 +90,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } finally {
       set({ currentUser: null, hasHydrated: true });
       if (typeof window !== 'undefined') {
+        // Force-clear cookies client-side (safety for non-httpOnly)
+        document.cookie = 'finops.access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+        document.cookie = 'finops.refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
         window.location.replace('/login');
       }
     }

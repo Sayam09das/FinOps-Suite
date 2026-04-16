@@ -34,7 +34,6 @@ export default function LandingNavbar() {
   const handleLogout = async () => {
     await logout();
     setIsMobileMenuOpen(false);
-    router.refresh();
   };
 
   return (
@@ -127,11 +126,11 @@ export default function LandingNavbar() {
                     Open Dashboard
                   </Link>
                 </motion.div>
-                <button
-                  type="button"
-                  onClick={() => void handleLogout()}
-                  className="rounded-2xl bg-dark px-5 py-2.5 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-primary"
-                >
+                  <button
+                    type="button"
+                    onClick={() => void handleLogout()}
+                    className="rounded-2xl bg-dark px-5 py-2.5 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-primary"
+                  >
                   Log Out
                 </button>
               </>
