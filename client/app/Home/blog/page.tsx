@@ -1,34 +1,68 @@
-import MarketingPageTemplate from "@/app/components/common/MarketingPageTemplate";
+"use client";
+
+import { startTransition, useDeferredValue, useState } from "react";
+
+import BlogCategories from "./components/BlogCategories";
+import BlogGrid from "./components/BlogGrid";
+import BlogHero from "./components/BlogHero";
+import BlogSearch from "./components/BlogSearch";
+import FeaturedPost from "./components/FeaturedPost";
+import WriteBlogSection from "./components/WriteBlogSection";
+import { blogCategories, blogPosts, type BlogCategory } from "./blog-data";
 
 export default function BlogPage() {
+  const [query, setQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<BlogCategory>("All");
+
+  const deferredQuery = useDeferredValue(query);
+  const normalizedQuery = deferredQuery.trim().toLowerCase();
+  const featuredPost = blogPosts[0];
+  const remainingPosts = blogPosts.slice(1);
+
+  const filteredPosts = remainingPosts.filter((post) => {
+    const categoryMatch = activeCategory === "All" || post.category === activeCategory;
+    const queryMatch =
+      normalizedQuery.length === 0 ||
+      post.title.toLowerCase().includes(normalizedQuery) ||
+      post.excerpt.toLowerCase().includes(normalizedQuery) ||
+      post.category.toLowerCase().includes(normalizedQuery);
+
+    return categoryMatch && queryMatch;
+  });
+
+  const categoryCounts = blogCategories.map((category) => ({
+    name: category,
+    count: category === "All" ? remainingPosts.length : remainingPosts.filter((post) => post.category === category).length,
+  }));
+
   return (
-    <MarketingPageTemplate
-      eyebrow="Blog"
-      title="Ideas, playbooks, and product thinking for better finance operations."
-      description="Use the blog as a clean editorial hub for finance strategy, reporting best practices, and product updates, all wrapped in the same design language as the core app."
-      stats={[
-        { label: "Guides", value: "48" },
-        { label: "Categories", value: "12" },
-        { label: "New this month", value: "06" },
-      ]}
-      cards={[
-        {
-          title: "All posts",
-          description: "Browse every article with a layout that supports editorial depth without feeling heavy.",
-        },
-        {
-          title: "Operational categories",
-          description: "Cluster topics by planning, reporting, approvals, and analysis for faster discovery.",
-        },
-        {
-          title: "Author workflow",
-          description: "Give writers and operators a cleaner creation flow with stronger structure and less friction.",
-        },
-      ]}
-      asideTitle="Editorial pages should feel like part of the product"
-      asideDescription="The navbar now connects marketing, content, and application-style surfaces into a more consistent journey, especially on mobile."
-      primaryAction={{ label: "Browse Categories", href: "/blog/categories" }}
-      secondaryAction={{ label: "Write a Blog", href: "/blog/create" }}
-    />
+    <main className="flex-1">
+      <div className="page-shell">
+        <BlogHero />
+        <FeaturedPost post={featuredPost} />
+        <div className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr] xl:items-end">
+          <BlogSearch
+            query={query}
+            resultCount={filteredPosts.length}
+            onQueryChange={(nextValue) => {
+              startTransition(() => {
+                setQuery(nextValue);
+              });
+            }}
+          />
+          <BlogCategories
+            categories={categoryCounts}
+            activeCategory={activeCategory}
+            onCategoryChange={(category) => {
+              startTransition(() => {
+                setActiveCategory(category);
+              });
+            }}
+          />
+        </div>
+        <BlogGrid posts={filteredPosts} />
+        <WriteBlogSection />
+      </div>
+    </main>
   );
 }

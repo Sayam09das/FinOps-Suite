@@ -4,31 +4,31 @@ export default function BlogCategoriesPage() {
   return (
     <MarketingPageTemplate
       eyebrow="Blog Categories"
-      title="Organize content around the way finance teams actually work."
-      description="Structured categories make the blog easier to explore on small screens, faster to skim on desktop, and much more credible as the product grows."
+      title="Organize content around how finance and operations teams really work."
+      description="Categories help readers move through planning, reporting, workflow, and design topics faster while keeping the editorial experience clean on every screen."
       stats={[
         { label: "Planning", value: "14" },
-        { label: "Analytics", value: "09" },
-        { label: "Workflows", value: "11" },
+        { label: "Operations", value: "11" },
+        { label: "Design", value: "09" },
       ]}
       cards={[
         {
           title: "Planning",
-          description: "Posts about budgeting frameworks, forecast reviews, and tracking operational health.",
+          description: "Budget strategy, forecast reviews, and better habits for financial decision-making.",
         },
         {
-          title: "Analytics",
-          description: "Insights on dashboards, variance detection, and how to present numbers with more clarity.",
+          title: "Operations",
+          description: "Approval flows, payment context, and smoother coordination across cross-functional teams.",
         },
         {
-          title: "Workflows",
-          description: "Guides for approvals, team coordination, and building more reliable finance rituals.",
+          title: "Design systems",
+          description: "Thoughtful UI patterns for dashboards, editorial surfaces, and product trust.",
         },
       ]}
-      asideTitle="Better information architecture"
-      asideDescription="A professional navbar only feels complete when the routes behind it are structured well too. These category pages keep discovery intentional across all devices."
+      asideTitle="A cleaner way to explore the blog"
+      asideDescription="These category views make the blog feel more structured and more useful as the content library grows."
       primaryAction={{ label: "Read All Posts", href: "/blog" }}
-      secondaryAction={{ label: "Back Home", href: "/" }}
+      secondaryAction={{ label: "Write a Blog", href: "/blog/create" }}
     />
   );
 }

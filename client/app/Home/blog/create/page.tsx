@@ -4,8 +4,8 @@ export default function CreateBlogPage() {
   return (
     <MarketingPageTemplate
       eyebrow="Write Blog"
-      title="A smoother publishing flow for product updates and operational insights."
-      description="This route can grow into a real editorial editor later, but it already gives your navigation a complete and credible structure while keeping the interface polished."
+      title="Give your team a cleaner place to publish product and finance insights."
+      description="This page can evolve into a full editorial workflow later, but it already fits the same visual system and responsive quality as the rest of the site."
       stats={[
         { label: "Draft flow", value: "Ready" },
         { label: "Review steps", value: "03" },
@@ -13,20 +13,20 @@ export default function CreateBlogPage() {
       ]}
       cards={[
         {
-          title: "Draft",
-          description: "Capture insights fast with a calmer surface that keeps structure and writing momentum in balance.",
+          title: "Draft with clarity",
+          description: "Start with a calmer writing surface that keeps the structure approachable and focused.",
         },
         {
-          title: "Review",
-          description: "Share a cleaner editing workflow with operators, finance leads, and editorial reviewers.",
+          title: "Review collaboratively",
+          description: "Support founder, marketing, and product input without turning the process into a mess.",
         },
         {
-          title: "Publish",
-          description: "Move new posts into the content system with consistent styling and better route-level organization.",
+          title: "Publish consistently",
+          description: "Turn new articles into part of the same startup-style brand and product journey.",
         },
       ]}
-      asideTitle="Designed as part of the product journey"
-      asideDescription="Even placeholder routes should feel deliberate. That keeps the navbar trustworthy now and makes future feature work easier to layer in."
+      asideTitle="Editorial workflow, designed like a product"
+      asideDescription="The site now has the structure to support future content workflows without losing brand cohesion."
       primaryAction={{ label: "Go to Blog", href: "/blog" }}
       secondaryAction={{ label: "Browse Categories", href: "/blog/categories" }}
     />
