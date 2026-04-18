@@ -58,8 +58,8 @@ type NavbarContentProps = {
 
 function NavbarContent({ isDesktop, mounted, pathname, reduceMotion }: NavbarContentProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileBlogOpen, setMobileBlogOpen] = useState(false);
-  const [desktopBlogOpen, setDesktopBlogOpen] = useState(false);
+  const [mobileActiveDropdown, setMobileActiveDropdown] = useState<string | null>(null);
+  const [desktopActiveDropdown, setDesktopActiveDropdown] = useState<string | null>(null);
   const effectiveMobileOpen = mounted && !isDesktop && mobileOpen;
 
   useEffect(() => {
@@ -99,30 +99,32 @@ function NavbarContent({ isDesktop, mounted, pathname, reduceMotion }: NavbarCon
               const active = isNavItemActive(pathname, item);
 
               if (item.dropdown) {
+                const isOpen = desktopActiveDropdown === item.name;
+
                 return (
                   <div
                     key={item.name}
                     className="relative"
-                    onMouseEnter={() => setDesktopBlogOpen(true)}
-                    onMouseLeave={() => setDesktopBlogOpen(false)}
-                    onFocusCapture={() => setDesktopBlogOpen(true)}
+                    onMouseEnter={() => setDesktopActiveDropdown(item.name)}
+                    onMouseLeave={() => setDesktopActiveDropdown(null)}
+                    onFocusCapture={() => setDesktopActiveDropdown(item.name)}
                     onBlurCapture={(event) => {
                       if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-                        setDesktopBlogOpen(false);
+                        setDesktopActiveDropdown(null);
                       }
                     }}
                   >
                     <button
                       type="button"
                       className={`nav-link-pill ${active ? "text-foreground" : "text-foreground/68"}`}
-                      aria-expanded={desktopBlogOpen}
+                      aria-expanded={isOpen}
                       aria-haspopup="menu"
                     >
                       {active ? <motion.span layoutId="nav-pill" className="nav-link-pill-active" /> : null}
                       <span className="relative z-10 flex items-center gap-2">
                         {item.name}
                         <motion.span
-                          animate={{ rotate: desktopBlogOpen ? 180 : 0 }}
+                          animate={{ rotate: isOpen ? 180 : 0 }}
                           transition={{ duration: reduceMotion ? 0 : 0.2 }}
                         >
                           <ChevronDown className="h-4 w-4" />
@@ -131,7 +133,7 @@ function NavbarContent({ isDesktop, mounted, pathname, reduceMotion }: NavbarCon
                     </button>
 
                     <AnimatePresence>
-                      {desktopBlogOpen && mounted ? (
+                      {isOpen && mounted ? (
                         <motion.div
                           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -185,7 +187,6 @@ function NavbarContent({ isDesktop, mounted, pathname, reduceMotion }: NavbarCon
         </LayoutGroup>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <span className="soft-chip">Responsive by design</span>
           <Link href="/pricing" className="btn-primary-soft">
             Get Started
             <ArrowRight className="h-4 w-4" />
@@ -229,17 +230,19 @@ function NavbarContent({ isDesktop, mounted, pathname, reduceMotion }: NavbarCon
                   const active = isNavItemActive(pathname, item);
 
                   if (item.dropdown) {
+                    const isMobileOpen = mobileActiveDropdown === item.name;
+
                     return (
                       <div key={item.name} className="rounded-[1.35rem] border border-border/70 bg-white/35 p-1">
                         <button
                           type="button"
                           className={`nav-mobile-link w-full ${active ? "bg-primary/70 text-foreground" : ""}`}
-                          onClick={() => setMobileBlogOpen((current) => !current)}
-                          aria-expanded={mobileBlogOpen}
+                          onClick={() => setMobileActiveDropdown(isMobileOpen ? null : item.name)}
+                          aria-expanded={isMobileOpen}
                         >
                           <span>{item.name}</span>
                           <motion.span
-                            animate={{ rotate: mobileBlogOpen ? 180 : 0 }}
+                            animate={{ rotate: isMobileOpen ? 180 : 0 }}
                             transition={{ duration: reduceMotion ? 0 : 0.2 }}
                           >
                             <ChevronDown className="h-4 w-4" />
@@ -247,7 +250,7 @@ function NavbarContent({ isDesktop, mounted, pathname, reduceMotion }: NavbarCon
                         </button>
 
                         <AnimatePresence initial={false}>
-                          {mobileBlogOpen ? (
+                          {isMobileOpen ? (
                             <motion.div
                               initial={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}

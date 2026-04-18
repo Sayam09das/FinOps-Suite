@@ -11,14 +11,30 @@ export type NavItem = {
 
 export const navLinks: NavItem[] = [
   { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
+
+  {
+    name: "Product",
+    href: "/product",
+    dropdown: [
+      { name: "Overview", href: "/product" },
+      { name: "Reconciliation", href: "/product/reconciliation" },
+      { name: "Forecasting", href: "/product/forecasting" },
+      { name: "Close Management", href: "/product/close" },
+      { name: "Reporting", href: "/product/reporting" },
+      { name: "Integrations", href: "/integrations" },
+    ],
+  },
+
   { name: "Pricing", href: "/pricing" },
+
   {
     name: "Blog",
+    href: "/blog",
     dropdown: [
       { name: "All Posts", href: "/blog" },
       { name: "Categories", href: "/blog/categories" },
-      { name: "Write Blog", href: "/blog/create" },
     ],
   },
+
+  { name: "About", href: "/about" },
 ];
