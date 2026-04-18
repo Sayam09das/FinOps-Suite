@@ -1,0 +1,84 @@
+import Link from "next/link";
+import { Sparkles, ShieldCheck, BarChart3, Shield } from "lucide-react";
+
+import { Badge } from "@/app/components/ui/badge";
+import { buttonVariants } from "@/app/components/ui/button";
+import { Card, CardContent } from "@/app/components/ui/card";
+import { Reveal } from "@/app/components/ui/reveal";
+
+const stats = [
+  { label: "Unified workflows", value: "5 connected systems" },
+  { label: "Faster close", value: "2x speed improvements" },
+  { label: "Better visibility", value: "Real-time finance insights" },
+];
+
+export default function OverviewHero() {
+  return (
+    <section className="grid gap-10 lg:grid-cols-[1fr_0.95fr] xl:items-center">
+      <Reveal className="space-y-8" variant="left">
+        <Badge>
+          <Sparkles className="h-4 w-4 text-accent-foreground" />
+          Product overview
+        </Badge>
+
+        <div className="space-y-5">
+          <h1 className="max-w-4xl text-5xl font-semibold leading-[0.92] tracking-[-0.05em] text-foreground sm:text-6xl lg:text-7xl">
+            All the finance tools your team needs
+            <span className="block text-accent-foreground">in one calm, modern workspace.</span>
+          </h1>
+          <p className="max-w-2xl text-lg leading-8 text-foreground/72 sm:text-xl">
+            Overview, reconciliation, forecasting, reporting, and close management—designed to work together with a clear,
+            consistent experience across teams and devices.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link href="/pricing" className={buttonVariants({ size: "lg" })}>
+            Get started
+          </Link>
+          <Link href="/contact" className={buttonVariants({ variant: "secondary", size: "lg" })}>
+            Request a demo
+          </Link>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          {stats.map((item, index) => (
+            <Reveal key={item.label} delay={0.04 * index} variant="scale">
+              <Card variant="ghost" padding="md" className="h-full">
+                <CardContent>
+                  <p className="text-sm text-foreground/56">{item.label}</p>
+                  <p className="text-3xl font-semibold tracking-[-0.04em] text-foreground">{item.value}</p>
+                </CardContent>
+              </Card>
+            </Reveal>
+          ))}
+        </div>
+      </Reveal>
+
+      <Reveal variant="scale" delay={0.08}>
+        <Card variant="surface" padding="xl" className="overflow-hidden">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-[2rem] border border-white/60 bg-white/50 p-6 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center gap-3 text-emerald-700">
+                <ShieldCheck className="h-5 w-5" />
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">Secure operations</p>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-foreground/72">
+                Keep sensitive finance workflows protected with secure role controls, audit-ready history, and team trust.
+              </p>
+            </div>
+            <div className="rounded-[2rem] border border-white/60 bg-white/50 p-6 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center gap-3 text-slate-900">
+                <BarChart3 className="h-5 w-5" />
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-900">Data without chaos</p>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-foreground/72">
+                See the numbers that matter, without clutter. Everything is consistent from dashboards to exports.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </Reveal>
+    </section>
+  );
+}
