@@ -187,7 +187,7 @@ function NavbarContent({ isDesktop, mounted, pathname, reduceMotion }: NavbarCon
         </LayoutGroup>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link href="/pricing" className="btn-primary-soft">
+          <Link href="/login" className="btn-primary-soft">
             Get Started
             <ArrowRight className="h-4 w-4" />
           </Link>
