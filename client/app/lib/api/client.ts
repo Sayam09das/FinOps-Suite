@@ -25,7 +25,6 @@ const createRequest = async (url: string, options: RequestInit = {}): Promise<Re
       signal: controller.signal,
       headers,
       ...options,
-      headers: headers, // override to merge
     });
     clearTimeout(timeoutId);
     return res;
