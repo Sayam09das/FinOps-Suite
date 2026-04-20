@@ -19,7 +19,7 @@ export function useDashboard() {
     return {
       totalBudgets: budgets.length,
       totalSpend: overview.totalSpend || 0,
-      transactionsThisMonth: transactions.filter(t => 
+      transactionsThisMonth: transactions.filter((t: any) => 
         new Date(t.date).getMonth() === new Date().getMonth()
       ).length,
       budgetUtilization: overview.budgetUtilization || 0,
