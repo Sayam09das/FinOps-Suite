@@ -2,11 +2,11 @@ import { HTTP_STATUS } from "../constants/api"
 
 export const ENDPOINTS = {
   AUTH: {
-    LOGIN: "/auth/login",
-    REGISTER: "/auth/register",
-    REFRESH: "/auth/refresh",
-    LOGOUT: "/auth/logout",
-    ME: "/auth/me",
+    LOGIN: "/api/auth/login",
+    REGISTER: "/api/auth/register",
+    REFRESH: "/api/auth/refresh",
+    LOGOUT: "/api/auth/logout",
+    ME: "/api/auth/me",
   },
   USER: {
     LIST: "/users",

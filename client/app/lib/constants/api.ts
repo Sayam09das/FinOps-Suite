@@ -1,10 +1,10 @@
 export const ENDPOINTS = {
   AUTH: {
-    LOGIN: "/auth/login" as const,
-    REGISTER: "/auth/register" as const,
-    REFRESH: "/auth/refresh" as const,
-    LOGOUT: "/auth/logout" as const,
-    ME: "/auth/me" as const,
+    LOGIN: "/api/auth/login" as const,
+    REGISTER: "/api/auth/register" as const,
+    REFRESH: "/api/auth/refresh" as const,
+    LOGOUT: "/api/auth/logout" as const,
+    ME: "/api/auth/me" as const,
   },
   USER: {
     LIST: "/users" as const,

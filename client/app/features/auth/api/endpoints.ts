@@ -1,11 +1,11 @@
 // Auth API endpoints & helpers
 
 export const AUTH_ENDPOINTS = {
-  LOGIN: '/auth/login',
-  REGISTER: '/auth/register',
-  LOGOUT: '/auth/logout',
-  ME: '/auth/me',
-  REFRESH: '/auth/refresh',
+  LOGIN: '/api/auth/login',
+  REGISTER: '/api/auth/register',
+  LOGOUT: '/api/auth/logout',
+  ME: '/api/auth/me',
+  REFRESH: '/api/auth/refresh',
 } as const
 
 // Convenience functions (uses global api)
