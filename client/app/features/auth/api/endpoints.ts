@@ -11,11 +11,11 @@ export const AUTH_ENDPOINTS = {
 // Convenience functions (uses global api)
 export const authApi = {
   login: (credentials: { email: string; password: string }) => 
-    api.post(AUTH_ENDPOINTS.LOGIN, credentials),
+    import('@/app/lib/api/client').then(mod => mod.api.post(AUTH_ENDPOINTS.LOGIN, credentials)),
   register: (formData: FormData) => 
-    api.post(AUTH_ENDPOINTS.REGISTER, formData),
-  logout: () => api.post(AUTH_ENDPOINTS.LOGOUT),
-  me: () => api.get(AUTH_ENDPOINTS.ME),
+    import('@/app/lib/api/client').then(mod => mod.api.post(AUTH_ENDPOINTS.REGISTER, formData)),
+  logout: () => import('@/app/lib/api/client').then(mod => mod.api.post(AUTH_ENDPOINTS.LOGOUT)),
+  me: () => import('@/app/lib/api/client').then(mod => mod.api.get(AUTH_ENDPOINTS.ME)),
 }
 
 // Re-export queries

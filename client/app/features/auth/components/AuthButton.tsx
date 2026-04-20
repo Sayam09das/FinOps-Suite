@@ -13,11 +13,11 @@ export function AuthButton({ variant = 'login' }: AuthButtonProps) {
   const { user, logout, isLoading } = useAuth()
 
   if (variant === 'login') {
-    return (
-      <Button variant="outline" size="sm">
-        Sign in
-      </Button>
-    )
+  return (
+    <Button variant="secondary" size="sm">
+      Sign in
+    </Button>
+  )
   }
 
   return (

@@ -1,6 +1,10 @@
+"use client"
+
 import React, { useEffect } from 'react'
 import { useAuth } from '@/app/features/auth'
 import { useRouter } from 'next/navigation'
+import { useDashboard } from '@/app/features/dashboard'
+import { OverviewCard } from '@/app/features/dashboard/components/OverviewCard'
 
 export default function Page() {
   const { user, isAuthenticated, isLoading } = useAuth()
