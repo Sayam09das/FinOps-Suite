@@ -12,6 +12,7 @@ interface Toast {
   description?: React.ReactNode
   action?: ToastAction
   variant: "default" | "destructive"
+  className?: string
 }
 
 interface ToastAction {
@@ -63,7 +64,7 @@ interface ToastProps {
 }
 
 function Toast({ className, variant, title, description, action }: ToastProps) {
-  const timerRef = React.useRef<NodeJS.Timeout>()
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null)
 
   React.useEffect(() => {
     const timer = setTimeout(() => {

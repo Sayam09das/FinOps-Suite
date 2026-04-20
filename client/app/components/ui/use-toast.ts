@@ -24,6 +24,7 @@ export interface Toast {
   variant: "default" | "destructive"
   duration?: number
   action?: ToastAction
+  className?: string
 }
 
 export interface ToastAction {

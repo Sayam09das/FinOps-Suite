@@ -1,55 +1,160 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, type AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { API } from "../constants"
+import { AUTH } from "../constants/auth"
 import { HTTP_STATUS } from "../constants/api"
 
-const apiClient: AxiosInstance = axios.create({
-  baseURL: API.BASE_URL,
-  timeout: API.TIMEOUT,
-  headers: {
-    "Content-Type": "application/json",
-  },
-})
+/**
+ * Base fetch request creator with auth, timeout, and error handling
+ */
+const createRequest = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const token = localStorage.getItem(AUTH.LOCAL_STORAGE_TOKEN);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API.TIMEOUT);
 
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => config,
-  (error: AxiosError) => Promise.reject(error)
-)
-
-apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  (error: AxiosError) => {
-    const status = error.response?.status
-    
-    if (status === HTTP_STATUS.UNAUTHORIZED) {
-      window.location.href = "/login"
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
-    
-    return Promise.reject(error)
+    Object.entries(options.headers || {}).forEach(([key, value]) => {
+      headers[key as string] = value as string;
+    });
+
+    const res = await fetch(API.BASE_URL + url, {
+      signal: controller.signal,
+      headers,
+      ...options,
+      headers: headers, // override to merge
+    });
+    clearTimeout(timeoutId);
+    return res;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && 'name' in error && error.name === 'AbortError') {
+      throw new Error('Request timeout');
+    }
+    throw error;
   }
-)
+};
 
+/**
+ * API wrapper matching previous axios methods
+ */
 export const api = {
-  get: <T = any>(url: string, config?: AxiosRequestConfig) => 
-    apiClient.get<T>(url, config),
-    
-  post: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) => 
-    apiClient.post<T>(url, data, config),
-    
-  put: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) => 
-    apiClient.put<T>(url, data, config),
-    
-  patch: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) => 
-    apiClient.patch<T>(url, data, config),
-    
-  del: <T = any>(url: string, config?: AxiosRequestConfig) => 
-    apiClient.delete<T>(url, config),
-    
-  upload: (url: string, formData: FormData, config?: AxiosRequestConfig) => 
-    apiClient.post(url, formData, {
+  get: async <T = any>(url: string, config: RequestInit = {}): Promise<T> => {
+    const res = await createRequest(url, {
+      method: 'GET',
       ...config,
-      headers: { "Content-Type": "multipart/form-data" },
-    }),
-}
+    });
+    if (!res.ok) {
+      if (res.status === HTTP_STATUS.UNAUTHORIZED) {
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_TOKEN);
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_USER);
+        window.location.href = AUTH.LOGIN_PATH;
+      }
+      const errorText = await res.text();
+      throw new Error(`API Error ${res.status}: ${errorText}`);
+    }
+    return res.json() as Promise<T>;
+  },
 
-export default api
+  post: async <T = any>(url: string, data?: any, config: RequestInit = {}): Promise<T> => {
+    const body = data instanceof FormData ? data : JSON.stringify(data);
+    const res = await createRequest(url, {
+      method: 'POST',
+      body,
+      ...config,
+    });
+    if (!res.ok) {
+      if (res.status === HTTP_STATUS.UNAUTHORIZED) {
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_TOKEN);
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_USER);
+        window.location.href = AUTH.LOGIN_PATH;
+      }
+      const errorText = await res.text();
+      throw new Error(`API Error ${res.status}: ${errorText}`);
+    }
+    return res.json() as Promise<T>;
+  },
+
+  put: async <T = any>(url: string, data?: any, config: RequestInit = {}): Promise<T> => {
+    const body = data instanceof FormData ? data : JSON.stringify(data);
+    const res = await createRequest(url, {
+      method: 'PUT',
+      body,
+      ...config,
+    });
+    if (!res.ok) {
+      if (res.status === HTTP_STATUS.UNAUTHORIZED) {
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_TOKEN);
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_USER);
+        window.location.href = AUTH.LOGIN_PATH;
+      }
+      const errorText = await res.text();
+      throw new Error(`API Error ${res.status}: ${errorText}`);
+    }
+    return res.json() as Promise<T>;
+  },
+
+  patch: async <T = any>(url: string, data?: any, config: RequestInit = {}): Promise<T> => {
+    const body = data instanceof FormData ? data : JSON.stringify(data);
+    const res = await createRequest(url, {
+      method: 'PATCH',
+      body,
+      ...config,
+    });
+    if (!res.ok) {
+      if (res.status === HTTP_STATUS.UNAUTHORIZED) {
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_TOKEN);
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_USER);
+        window.location.href = AUTH.LOGIN_PATH;
+      }
+      const errorText = await res.text();
+      throw new Error(`API Error ${res.status}: ${errorText}`);
+    }
+    return res.json() as Promise<T>;
+  },
+
+  del: async <T = any>(url: string, config: RequestInit = {}): Promise<T> => {
+    const res = await createRequest(url, {
+      method: 'DELETE',
+      ...config,
+    });
+    if (!res.ok) {
+      if (res.status === HTTP_STATUS.UNAUTHORIZED) {
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_TOKEN);
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_USER);
+        window.location.href = AUTH.LOGIN_PATH;
+      }
+      const errorText = await res.text();
+      throw new Error(`API Error ${res.status}: ${errorText}`);
+    }
+    return res.json() as Promise<T>;
+  },
+
+  upload: async <T = any>(url: string, formData: FormData, config: RequestInit = {}): Promise<T> => {
+    // Don't set Content-Type for FormData - let browser set
+    const headers = config.headers ? (config.headers as any) : {};
+    delete headers['Content-Type']; // Ensure no Content-Type for multipart
+
+    const res = await createRequest(url, {
+      method: 'POST',
+      body: formData,
+      headers: headers,
+    });
+    if (!res.ok) {
+      if (res.status === HTTP_STATUS.UNAUTHORIZED) {
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_TOKEN);
+        localStorage.removeItem(AUTH.LOCAL_STORAGE_USER);
+        window.location.href = AUTH.LOGIN_PATH;
+      }
+      const errorText = await res.text();
+      throw new Error(`Upload Error ${res.status}: ${errorText}`);
+    }
+    return res.json() as Promise<T>;
+  },
+};
+
+export default api;
 
