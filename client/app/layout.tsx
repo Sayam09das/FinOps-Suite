@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import Footer from "@/app/components/layout/Footer";
-import Navbar from "@/app/components/layout/Navbar";
-import BackToTop from "@/app/components/layout/BackToTop";
-
 import "./globals.css";
 import "./utilities.css";
 
@@ -19,21 +15,80 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FinOps Suite",
-  description: "A polished financial operations workspace for budgeting, reporting, and approvals.",
+  metadataBase: new URL("https://yourdomain.com"),
+
+  title: {
+    default: "FinOps Suite",
+    template: "%s | FinOps Suite",
+  },
+
+  description:
+    "A polished financial operations workspace for budgeting, reporting, approvals, and financial insights.",
+
+  keywords: [
+    "FinOps",
+    "finance dashboard",
+    "budgeting app",
+    "expense tracking",
+    "financial analytics",
+  ],
+
+  openGraph: {
+    title: "FinOps Suite",
+    description:
+      "Manage budgets, approvals, and reporting in one modern financial workspace.",
+    url: "https://yourdomain.com",
+    siteName: "FinOps Suite",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "FinOps Suite Preview",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "FinOps Suite",
+    description:
+      "A polished financial operations workspace for modern teams.",
+    images: ["/og-image.png"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
+
+import { AppProvider } from "./providers/app-provider"
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full bg-background font-sans text-foreground">
-        <div className="relative flex min-h-full flex-col">
-          {children}
-        </div>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-full bg-background font-sans text-foreground" suppressHydrationWarning>
+        <main className="relative flex min-h-full flex-col">
+          <AppProvider>
+            {children}
+          </AppProvider>
+        </main>
       </body>
     </html>
   );
