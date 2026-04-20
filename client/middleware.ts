@@ -2,26 +2,20 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
  
 export function middleware(request: NextRequest) {
-  // Get auth token from cookies (set by backend login)
-  const token = request.cookies.get('auth-token')?.value || request.cookies.get('refresh-token')?.value
- 
   const { pathname } = request.nextUrl
- 
-  // Public pages - redirect if authenticated
-  if (pathname === '/login' || pathname === '/register') {
-    if (token) {
-      return NextResponse.redirect(new URL('/dashboard/maindashboard', request.url))
+
+  // Protect only dashboard routes
+  if (pathname.startsWith('/dashboard') ) {
+    // Get auth token from cookies
+    const token = request.cookies.get('auth-token')?.value || request.cookies.get('refresh-token')?.value
+
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', request.url))
     }
-    return NextResponse.next()
   }
- 
-  // All other pages - require auth
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
- 
-  // Protected - continue
+
   return NextResponse.next()
+
 }
  
 // Apply to all routes

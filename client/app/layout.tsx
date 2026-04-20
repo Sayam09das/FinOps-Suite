@@ -70,6 +70,9 @@ export const metadata: Metadata = {
 };
 
 import { AppProvider } from "./providers/app-provider"
+import Navbar from "@/app/components/layout/Navbar"
+import Footer from "@/app/components/layout/Footer"
+import BackToTop from "@/app/components/layout/BackToTop"
 
 export default function RootLayout({
   children,
@@ -86,7 +89,10 @@ export default function RootLayout({
       <body className="min-h-full bg-background font-sans text-foreground" suppressHydrationWarning>
         <main className="relative flex min-h-full flex-col">
           <AppProvider>
-            {children}
+            <Navbar />
+            <div className="relative flex-1">{children}</div>
+            <Footer />
+            <BackToTop />
           </AppProvider>
         </main>
       </body>

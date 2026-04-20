@@ -9,10 +9,7 @@ export default function SiteLayout({
 }>) {
   return (
     <>
-      <Navbar />
-      <div className="relative flex-1">{children}</div>
-      <Footer />
-      <BackToTop />
+      {children}
     </>
   );
 }
