@@ -6,6 +6,7 @@ import { Eye, EyeOff, Check, AlertCircle, Lock, Zap, Target, Shield } from "luci
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
+import { useAuth } from "@/app/features/auth";
 
 const validateFullName = (value: string) => {
   if (!value) {
@@ -107,7 +108,9 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const { register, isLoading: authLoading } = useAuth();
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const fullNameValidation = validateFullName(fullName);
@@ -122,10 +125,15 @@ export default function RegisterPage() {
       return;
     }
 
-    // TODO: wire this to the real registration flow
+    const formData = new FormData();
+    formData.append('name', fullName);
+    formData.append('email', email);
+    formData.append('password', password);
+
+    await register(formData);
   };
 
-  const isFormValid = fullNameState.isValid && emailState.isValid && passwordState.isValid;
+  const isFormValid = fullNameState.isValid && emailState.isValid && passwordState.isValid && !authLoading;
 
   return (
     <main className="relative overflow-hidden bg-background text-foreground">
@@ -324,7 +332,13 @@ export default function RegisterPage() {
                 )}
 
                 <Button type="submit" className="w-full rounded-2xl py-3 text-base" size="lg" disabled={!isFormValid}>
-                  Create account
+                  {authLoading ? (
+                    <>
+                      Creating account...
+                    </>
+                  ) : (
+                    'Create account'
+                  )}
                 </Button>
               </form>
             </CardContent>

@@ -6,6 +6,7 @@ import { Eye, EyeOff, Check, AlertCircle, Lock, TrendingUp, Users, BarChart3 } f
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
+import { useAuth } from "@/app/features/auth";
 
 const validateEmail = (value: string) => {
   if (!value) {
@@ -77,7 +78,9 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const { login, isLoading: authLoading } = useAuth();
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const emailValidation = validateEmail(email);
@@ -90,10 +93,10 @@ export default function LoginPage() {
       return;
     }
 
-    // TODO: wire this to the real authentication flow
+    await login(email, password);
   };
 
-  const isFormValid = emailState.isValid && passwordState.isValid;
+  const isFormValid = emailState.isValid && passwordState.isValid && !authLoading;
 
   return (
     <main className="relative overflow-hidden bg-background text-foreground">
@@ -264,8 +267,14 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full rounded-2xl py-3 text-base" size="lg" disabled={!isFormValid}>
-                  Sign in
+                <Button type="submit" className="w-full rounded-2xl py-3 text-base" size="lg" disabled={!isFormValid || authLoading}>
+                  {authLoading ? (
+                    <>
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign in'
+                  )}
                 </Button>
               </form>
             </CardContent>
