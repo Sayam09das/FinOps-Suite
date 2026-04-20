@@ -32,10 +32,7 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full bg-background font-sans text-foreground">
         <div className="relative flex min-h-full flex-col">
-          <Navbar />
-          <div className="relative flex-1">{children}</div>
-          <Footer />
-          <BackToTop />
+          {children}
         </div>
       </body>
     </html>
