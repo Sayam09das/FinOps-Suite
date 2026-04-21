@@ -7,7 +7,9 @@ export function middleware(request: NextRequest) {
   // Protect only dashboard routes
   if (pathname.startsWith('/dashboard') ) {
     // Get auth token from cookies
-    const token = request.cookies.get('auth-token')?.value || request.cookies.get('refresh-token')?.value
+  const accessToken = request.cookies.get('finops.access-token')?.value
+  const refreshToken = request.cookies.get('finops.refresh-token')?.value
+  const token = accessToken || refreshToken
 
     if (!token) {
       return NextResponse.redirect(new URL('/login', request.url))

@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/features/auth'
 import { useDashboard } from '@/app/features/dashboard'
 import { OverviewCard } from '@/app/features/dashboard/components/OverviewCard'
@@ -14,8 +15,9 @@ import { cn } from '@/app/lib/utils/cn'
 export default function Page() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const { stats, budgets, transactions, isLoading: dashboardLoading } = useDashboard()
+  const router = useRouter()
 
-  if (authLoading || dashboardLoading || !isAuthenticated) {
+  if (authLoading || dashboardLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center space-y-4">
@@ -24,6 +26,11 @@ export default function Page() {
         </div>
       </div>
     )
+  }
+
+  if (!isAuthenticated) {
+    router.replace('/login')
+    return null
   }
 
   // Mock data for demonstration (replace with real data from stats)

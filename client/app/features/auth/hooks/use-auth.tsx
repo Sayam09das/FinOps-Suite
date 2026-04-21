@@ -41,6 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await loginMutation.mutateAsync({ email, password });
       await queryClient.invalidateQueries({ queryKey: ['auth'] });
+      await queryClient.refetchQueries({ queryKey: ['auth'] });
+      await new Promise(resolve => setTimeout(resolve, 500));
       showToast({
         title: "Success",
         description: "Login successful!",
