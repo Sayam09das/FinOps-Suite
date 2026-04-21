@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLoginMutation, useRegisterMutation, useLogoutMutation, useAuthMeQuery } from '@/app/lib/api/queries';
@@ -111,14 +111,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, meLoading, pathname, router]);
 
-  const value: AuthContextType = {
+  const value: AuthContextType = useMemo(() => ({
     user: user || null,
     isLoading,
     login,
     register,
     logout,
     isAuthenticated: !!user,
-  };
+  }), [user, isLoading, login, register, logout]);
 
   return (
     <AuthContext.Provider value={value}>
