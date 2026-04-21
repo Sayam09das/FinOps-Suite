@@ -23,14 +23,16 @@ interface ToastAction {
 function Toaster() {
   const { toasts } = useToast()
 
+  const { dismiss: dismissToast } = useToast()
+
   React.useEffect(() => {
     if (toasts.length > TOAST_LIMIT) {
       const delayToast = toasts[TOAST_LIMIT]
       setTimeout(() => {
-        useToast().dismiss(delayToast?.id)
+        dismissToast(delayToast?.id)
       }, TOAST_REMOVE_DELAY)
     }
-  }, [toasts])
+  }, [toasts, dismissToast])
 
   return (
     <div className="fixed bottom-4 right-4 z-[100] flex flex-col-reverse sm:bottom-8 sm:right-8 md:bottom-12 md:right-12 space-y-3 max-w-md mx-4 sm:mx-0">
@@ -64,17 +66,18 @@ interface ToastProps {
 }
 
 function Toast({ className, variant, title, description, action }: ToastProps) {
+  const { dismiss } = useToast()
   const timerRef = React.useRef<NodeJS.Timeout | null>(null)
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      useToast().dismiss()
+      dismiss()
     }, 5000)
 
     return () => {
       clearTimeout(timer)
     }
-  }, [])
+  }, [dismiss])
 
   const variantStyles = {
     default: "bg-background border text-foreground shadow-lg",
@@ -107,7 +110,7 @@ function Toast({ className, variant, title, description, action }: ToastProps) {
       )}
       <button 
         className="absolute right-2 top-2 h-6 w-8 rounded-md text-sm opacity-0 group-hover:opacity-100 transition-all"
-        onClick={() => useToast().dismiss()}
+        onClick={() => dismiss()}
       >
         ✕
       </button>
