@@ -1,10 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, ReactNode, useCallback, useMemo } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import React, { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLoginMutation, useRegisterMutation, useLogoutMutation, useAuthMeQuery } from '@/app/lib/api/queries';
-import { AUTH } from '@/app/lib/constants/auth';
 import { useToast } from '@/app/components/ui/use-toast';
 
 interface User {
@@ -98,18 +97,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     }
   }, [logoutMutation, router, showToast]);
-
-  useEffect(() => {
-    if (meLoading || !pathname) return; // Wait for loading and pathname
-    
-    // Only redirect if we're not on auth pages and user is not authenticated
-    const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/forgot-password');
-    const isProtectedRoute = pathname.startsWith('/dashboard');
-    
-    if (!isAuthPage && isProtectedRoute && !user) {
-      router.push(AUTH.LOGIN_PATH);
-    }
-  }, [user, meLoading, pathname, router]);
 
   const value: AuthContextType = useMemo(() => ({
     user: user || null,
