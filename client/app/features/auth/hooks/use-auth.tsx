@@ -18,7 +18,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => void;
-  register: (formData: FormData) => void;
+  register: (data: { name: string; email: string; password: string }) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -58,17 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loginMutation, router, showToast]);
 
   // Register handler
-  const register = useCallback(async (formData: FormData) => {
+  const register = useCallback(async (data: { name: string; email: string; password: string }) => {
     try {
-      await registerMutation.mutateAsync(formData);
+      await registerMutation.mutateAsync(data);
       showToast({
         title: "Success",
         description: "Account created! Logging you in...",
       });
       // Auto login after register
       await loginMutation.mutateAsync({ 
-        email: formData.get('email') as string, 
-        password: formData.get('password') as string 
+        email: data.email, 
+        password: data.password 
       });
       router.push('/dashboard/maindashboard');
     } catch (error) {

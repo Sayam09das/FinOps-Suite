@@ -23,7 +23,7 @@ export const useLoginMutation = () => {
 export const useRegisterMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: FormData) => 
+    mutationFn: (data: { name: string; email: string; password: string }) => 
       api.post(ENDPOINTS.AUTH.REGISTER, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['auth'] })

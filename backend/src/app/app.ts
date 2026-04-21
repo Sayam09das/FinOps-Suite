@@ -19,6 +19,9 @@ import healthIndex from "../modules/health";
 // Create app
 const app = express();
 
+// Trust proxy for rate limiting behind reverse proxy (Render)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(corsMiddleware);
 app.use(cookieParser());

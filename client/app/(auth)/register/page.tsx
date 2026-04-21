@@ -125,10 +125,11 @@ export default function RegisterPage() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('name', fullName);
-    formData.append('email', email);
-    formData.append('password', password);
+    const formData = {
+      name: fullName,
+      email,
+      password,
+    };
 
     await register(formData);
   };
