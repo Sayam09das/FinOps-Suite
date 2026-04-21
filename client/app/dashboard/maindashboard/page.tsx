@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/features/auth'
 import { useDashboard } from '@/app/features/dashboard'
@@ -16,6 +16,15 @@ export default function Page() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const { stats, budgets, transactions, isLoading: dashboardLoading } = useDashboard()
   const router = useRouter()
+  const redirectedRef = useRef(false)
+
+  useEffect(() => {
+    // Prevent multiple redirects
+    if (!authLoading && !isAuthenticated && !redirectedRef.current) {
+      redirectedRef.current = true
+      router.replace('/login')
+    }
+  }, [authLoading, isAuthenticated, router])
 
   if (authLoading || dashboardLoading) {
     return (
@@ -29,7 +38,6 @@ export default function Page() {
   }
 
   if (!isAuthenticated) {
-    router.replace('/login')
     return null
   }
 

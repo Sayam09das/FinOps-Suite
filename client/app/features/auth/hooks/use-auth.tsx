@@ -39,14 +39,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     try {
+      // Step 1: Call login endpoint
       await loginMutation.mutateAsync({ email, password });
-      await queryClient.invalidateQueries({ queryKey: ['auth'] });
-      await queryClient.refetchQueries({ queryKey: ['auth'] });
+      
+      // Step 2: Invalidate and refetch auth queries
+      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+      await queryClient.refetchQueries({ 
+        queryKey: ['auth', 'me'],
+        type: 'active'
+      });
+      
+      // Step 3: Add small delay to ensure state updates
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       console.log('Login success, redirecting...');
       showToast({
         title: "Success",
         description: "Login successful!",
       });
+      
+      // Step 4: Navigate to dashboard
       router.replace('/dashboard/maindashboard');
     } catch (error) {
       showToast({
@@ -70,7 +82,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: data.email, 
         password: data.password 
       });
-      router.push('/dashboard/maindashboard');
+      
+      // Refetch auth state
+      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+      await queryClient.refetchQueries({ 
+        queryKey: ['auth', 'me'],
+        type: 'active'
+      });
+      
+      // Wait for state updates
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      router.replace('/dashboard/maindashboard');
     } catch (error) {
       showToast({
         variant: "destructive",
@@ -78,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "Registration failed. Try again.",
       });
     }
-  }, [registerMutation, loginMutation, router, showToast]);
+  }, [registerMutation, loginMutation, queryClient, router, showToast]);
 
   // Logout handler
   const logout = useCallback(async () => {
