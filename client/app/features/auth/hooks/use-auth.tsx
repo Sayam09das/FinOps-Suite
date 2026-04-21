@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, ReactNode, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLoginMutation, useRegisterMutation, useLogoutMutation, useAuthMeQuery } from '@/app/lib/api/queries';
 import { AUTH } from '@/app/lib/constants/auth';
@@ -27,6 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const queryClient = useQueryClient();
   const { data: user, isLoading: meLoading } = useAuthMeQuery();
   const loginMutation = useLoginMutation();
@@ -99,10 +100,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [logoutMutation, router, showToast]);
 
   useEffect(() => {
-    if (!user && !meLoading) {
-      // Optionally redirect unauth users from protected routes, but handle per-page
+    if (meLoading || !pathname) return; // Wait for loading and pathname
+    
+    // Only redirect if we're not on auth pages and user is not authenticated
+    const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/forgot-password');
+    const isProtectedRoute = pathname.startsWith('/dashboard');
+    
+    if (!isAuthPage && isProtectedRoute && !user) {
+      router.push(AUTH.LOGIN_PATH);
     }
-  }, [user, meLoading]);
+  }, [user, meLoading, pathname, router]);
 
   const value: AuthContextType = {
     user: user || null,
