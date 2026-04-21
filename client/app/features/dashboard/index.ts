@@ -1,5 +1,7 @@
 export * from './hooks/use-dashboard'
 export * from './components/OverviewCard'
+export * from './components/RecentTransactions'
+export * from './components/BudgetOverview'
+export * from './components/QuickActions'
 export * from './types/dashboard'
 export * from './api/endpoints'
-// export types, other hooks

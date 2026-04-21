@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
-import { TrendingUp, DollarSign, FileText } from 'lucide-react'
+import { TrendingUp, DollarSign, FileText, CreditCard, Target, AlertTriangle } from 'lucide-react'
 import { cn } from '@/app/lib/utils/cn'
 
 interface OverviewCardProps {
@@ -8,15 +8,28 @@ interface OverviewCardProps {
   change: string
   icon: React.ReactNode
   isPositive?: boolean
+  description?: string
 }
 
-export function OverviewCard({ title, value, change, icon, isPositive = true }: OverviewCardProps) {
+export function OverviewCard({
+  title,
+  value,
+  change,
+  icon,
+  isPositive = true,
+  description
+}: OverviewCardProps) {
   return (
-    <Card className="flex-1">
+    <Card className="flex-1 transition-all hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <div>
+          <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+          {description && (
+            <CardDescription className="text-xs">{description}</CardDescription>
+          )}
+        </div>
         <div className={cn(
-          'h-6 w-6 rounded-full p-1',
+          'h-8 w-8 rounded-full p-1.5',
           isPositive ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
         )}>
           {icon}
@@ -24,9 +37,12 @@ export function OverviewCard({ title, value, change, icon, isPositive = true }: 
       </CardHeader>
       <CardContent className="space-y-1">
         <span className="text-2xl font-bold tracking-tight">
-          {value}
+          {typeof value === 'number' ? `$${value.toLocaleString()}` : value}
         </span>
-        <p className="text-xs text-muted-foreground">
+        <p className={cn(
+          "text-xs font-medium",
+          isPositive ? "text-emerald-600" : "text-rose-600"
+        )}>
           {change}
         </p>
       </CardContent>
