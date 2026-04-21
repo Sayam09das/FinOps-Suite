@@ -6,7 +6,6 @@ import { HTTP_STATUS } from "../constants/api"
  * Base fetch request creator with auth, timeout, and error handling
  */
 const createRequest = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  const token = localStorage.getItem(AUTH.LOCAL_STORAGE_TOKEN);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API.TIMEOUT);
 
@@ -14,9 +13,6 @@ const createRequest = async (url: string, options: RequestInit = {}): Promise<Re
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
     Object.entries(options.headers || {}).forEach(([key, value]) => {
       headers[key as string] = value as string;
     });
@@ -38,7 +34,7 @@ const createRequest = async (url: string, options: RequestInit = {}): Promise<Re
 };
 
 /**
- * API wrapper matching previous axios methods
+ * API wrapper matching previous fetch methods
  */
 export const api = {
   get: async <T = any>(url: string, config: RequestInit = {}): Promise<T> => {

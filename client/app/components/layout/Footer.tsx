@@ -71,7 +71,7 @@ const navGroups = [
       { name: "Forecasting", href: "/product/forecasting", badge: "New" },
       { name: "Close Management", href: "/product/close" },
       { name: "Reporting", href: "/product/reporting" },
-      { name: "Integrations", href: "/integrations" },
+      // { name: "Integrations", href: "/integrations" },
       { name: "Pricing", href: "/pricing" }, // moved here
     ],
   },
@@ -80,9 +80,9 @@ const navGroups = [
     links: [
       { name: "About us", href: "/about" },
       { name: "Blog", href: "/blog" },
-      { name: "Careers", href: "/careers", badge: "Hiring" },
-      { name: "Customers", href: "/customers" },
-      { name: "Press kit", href: "/press" },
+      // { name: "Careers", href: "/careers", badge: "Hiring" },
+      // { name: "Customers", href: "/customers" },
+      // { name: "Press kit", href: "/press" },
     ],
   },
   {
@@ -90,10 +90,10 @@ const navGroups = [
     links: [
       { name: "Documentation", href: "/docs" },
       { name: "API reference", href: "/docs/api" },
-      { name: "Community", href: "/community" },
-      { name: "Changelog", href: "/changelog" }, // moved here
+      // { name: "Community", href: "/community" },
+      // { name: "Changelog", href: "/changelog" }, // moved here
       { name: "Status page", href: "https://status.finopssuite.com" },
-      { name: "Support", href: "/support" },
+      // { name: "Support", href: "/support" },
     ],
   },
 ];

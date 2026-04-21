@@ -32,14 +32,11 @@ export const useRegisterMutation = () => {
 }
 
 export const useAuthMeQuery = () => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem(AUTH.LOCAL_STORAGE_TOKEN) : null;
-  
   return useQuery({
     queryKey: ['auth', 'me'],
     queryFn: () => api.get(ENDPOINTS.AUTH.ME),
     staleTime: 5 * 60 * 1000, // 5 min
     retry: false,
-    enabled: !!token, // Only run if token exists
   })
 }
 
