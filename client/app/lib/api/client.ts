@@ -20,6 +20,7 @@ const createRequest = async (url: string, options: RequestInit = {}): Promise<Re
     const res = await fetch(API.BASE_URL + url, {
       signal: controller.signal,
       headers,
+      credentials: 'include',
       ...options,
     });
     clearTimeout(timeoutId);
