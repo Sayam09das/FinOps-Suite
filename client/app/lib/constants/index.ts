@@ -5,7 +5,7 @@ export const APP = {
 } as const
 
 export const API = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api",
   TIMEOUT: 10000,
   VERSION: "v1" as const,
 } as const
