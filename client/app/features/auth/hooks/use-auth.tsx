@@ -26,7 +26,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const queryClient = useQueryClient();
   const { data: user, isLoading: meLoading } = useAuthMeQuery();
   const loginMutation = useLoginMutation();
