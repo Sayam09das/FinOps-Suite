@@ -42,12 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await loginMutation.mutateAsync({ email, password });
       await queryClient.invalidateQueries({ queryKey: ['auth'] });
       await queryClient.refetchQueries({ queryKey: ['auth'] });
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('Login success, redirecting...');
       showToast({
         title: "Success",
         description: "Login successful!",
       });
-      router.push('/dashboard/maindashboard');
+      router.replace('/dashboard/maindashboard');
     } catch (error) {
       showToast({
         variant: "destructive",
