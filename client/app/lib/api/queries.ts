@@ -38,7 +38,7 @@ export const useAuthMeQuery = () => {
     staleTime: 5 * 60 * 1000, // 5 min
     retry: false,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
   })
 }
 

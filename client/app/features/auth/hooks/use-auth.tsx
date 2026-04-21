@@ -40,12 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     try {
       await loginMutation.mutateAsync({ email, password });
+      await queryClient.invalidateQueries({ queryKey: ['auth'] });
       showToast({
         title: "Success",
         description: "Login successful!",
       });
       router.push('/dashboard/maindashboard');
-      router.refresh();
     } catch (error) {
       showToast({
         variant: "destructive",
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "Login failed. Check credentials.",
       });
     }
-  }, [loginMutation, router, showToast]);
+  }, [loginMutation, queryClient, router, showToast]);
 
   // Register handler
   const register = useCallback(async (data: { name: string; email: string; password: string }) => {
