@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Success",
         description: "Logged out successfully",
       });
-      router.push(AUTH.LOGIN_PATH);
+      router.push("/login");
       router.refresh();
     } catch (error) {
       showToast({
