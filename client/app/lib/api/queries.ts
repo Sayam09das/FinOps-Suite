@@ -51,7 +51,7 @@ export const useLogoutMutation = () => useMutation({
 export const useBudgetsQuery = (page = 1) => {
   return useQuery({
     queryKey: ['budgets', page],
-    queryFn: () => api.get(`/budgets?page=${page}`), 
+    queryFn: () => api.get(`/api/budgets?page=${page}`), 
     staleTime: 2 * 60 * 1000,
   })
 }
@@ -68,7 +68,8 @@ export const useTransactionsQuery = () => {
 export const useDashboardOverviewQuery = () => {
   return useQuery({
     queryKey: ['dashboard', 'overview'],
-    queryFn: () => api.get(ENDPOINTS.DASHBOARD.OVERVIEW),
+    queryFn: () => api.get('/api/dashboard/'), // Backend serves GET / at /api/dashboard
+    staleTime: 2 * 60 * 1000,
   })
 }
 

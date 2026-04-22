@@ -6,12 +6,15 @@ import { HTTP_STATUS } from "../constants/api"
  * Base fetch request creator with auth, timeout, and error handling
  */
 const createRequest = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const clientTimestamp = Date.now().toString();
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API.TIMEOUT);
 
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      'x-client-timestamp': clientTimestamp,
     };
 
     // Fallback auth token from localStorage (backup for cookie issues)

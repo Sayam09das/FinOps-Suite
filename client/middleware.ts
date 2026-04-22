@@ -10,15 +10,26 @@ export function middleware(request: NextRequest) {
     const refreshToken = request.cookies.get('finops.refresh-token')?.value
     const token = accessToken || refreshToken
 
-    // Grace period: 3s sync window for serverless (Render.com)
-    const now = Date.now()
-    const clientTimestamp = request.headers.get('x-client-timestamp') 
-      ? parseInt(request.headers.get('x-client-timestamp')!) 
-      : now
-    const syncWindow = 3000 // 3s
+    // Always allow dashboard during 5s sync window (fix TS errors)
+    const clientTimestampStr = request.headers.get('x-client-timestamp')
+    if (clientTimestampStr) {
+      const clientTime = parseInt(clientTimestampStr, 10)
+      if (!isNaN(clientTime)) {
+        const now = Date.now()
+        const syncWindow = 5000 // 5s grace period
+        
+        if ((now - clientTime) < syncWindow) {
+          console.log(`[MIDDLEWARE] Grace period: ${pathname} (${now - clientTime}ms)`)
+          return NextResponse.next()
+        }
+      }
+    }
 
-    if (!token && (now - clientTimestamp > syncWindow)) {
-      console.log(`[MIDDLEWARE] No token after ${syncWindow}ms grace: ${pathname}`)
+    // Grace period: 3s sync window for serverless (Render.com)
+    // Remove duplicate logic - simplified
+
+    if (!token) {
+      console.log(`[MIDDLEWARE] No token found: ${pathname}`)
       return NextResponse.redirect(new URL('/login', request.url))
     }
     

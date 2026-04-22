@@ -18,6 +18,18 @@ export default function Page() {
   const router = useRouter()
   const redirectedRef = useRef(false)
 
+  // Enhanced loading guard - prevent dashboard queries during auth sync
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Authenticating...</p>
+        </div>
+      </div>
+    )
+  }
+
   useEffect(() => {
     console.log('[DASHBOARD] Auth state check:', { authLoading, isAuthenticated, user: user ? 'present' : 'null', redirectedRef: redirectedRef.current })
     // Prevent multiple redirects
