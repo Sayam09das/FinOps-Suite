@@ -12,7 +12,8 @@ export const useLoginMutation = () => {
     mutationFn: ({ email, password }: { email: string; password: string }) => 
       api.post(ENDPOINTS.AUTH.LOGIN, { email, password }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['auth'] })
+      // Don't invalidate during grace period - use setQueryData in useAuth instead
+      console.log('[QUERIES] Login success - cache preserved')
     },
     onError: (error) => {
       console.error('Login failed:', error)
@@ -26,20 +27,27 @@ export const useRegisterMutation = () => {
     mutationFn: (data: { name: string; email: string; password: string }) => 
       api.post(ENDPOINTS.AUTH.REGISTER, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['auth'] })
+      console.log('[QUERIES] Register success')
     },
   })
 }
 
 export const useAuthMeQuery = () => {
+  const cachedUser = typeof window !== 'undefined' 
+    ? localStorage.getItem('finops-user') 
+    : null
+  const initialData = cachedUser ? JSON.parse(cachedUser) : undefined
+  
   return useQuery({
     queryKey: ['auth', 'me'],
     queryFn: () => api.get(ENDPOINTS.AUTH.ME),
-    staleTime: 5 * 60 * 1000, // 5 min
-    gcTime: 5 * 60 * 1000,   // Preserve cache during sync
-    retry: 1,                // Reduce 401 spam
+    initialData,
+    staleTime: 10 * 60 * 1000, // 10 min
+    gcTime: 10 * 60 * 1000,
+    retry: false,              // Never retry 401 during grace period
     refetchOnWindowFocus: false,
-    refetchOnMount: false,   // Prevent immediate refetch spam
+    refetchOnMount: 'always',  // But refetch after grace period
+    refetchOnReconnect: false,
   })
 }
 

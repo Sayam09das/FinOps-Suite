@@ -50,21 +50,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = response?.data || response;
       console.log('[AUTH] Step 2: Extracted user data:', userData);
       
-      // Store in localStorage as fallback (no token since httpOnly cookies)
+      // Store in localStorage as fallback + grace flag (8s TTL)
       setAuthData('', userData);
       
-      // Step 3: Update React Query state with user data
+      // Set RQ cache directly (no invalidate during grace)
       queryClient.setQueryData(['auth', 'me'], userData);
-      // Production serverless delay for cookie sync
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-        console.log('[AUTH] Invalidated auth query for refetch');
-      }, 5000);
+      
+      // Grace period flag for dashboard (8s)
+      const graceUntil = Date.now() + 8000;
+      localStorage.setItem('authGraceUntil', graceUntil.toString());
+      
+      console.log('[AUTH] Grace flag set until:', new Date(graceUntil).toISOString());
       
       console.log('[AUTH] Login successful, redirecting to dashboard...');
       toast({
         title: "Success",
-        description: "Login successful!",
+        description: "Login successful! (grace active)",
       });
       
       // Step 4: Navigate to dashboard immediately

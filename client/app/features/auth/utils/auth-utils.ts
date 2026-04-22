@@ -6,8 +6,8 @@ export function getAuthToken() {
 
 export function setAuthData(token: string, user: any) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem(AUTH.LOCAL_STORAGE_TOKEN, token)
-    localStorage.setItem(AUTH.LOCAL_STORAGE_USER, JSON.stringify(user))
+    localStorage.setItem('finops-auth-token', token)
+    localStorage.setItem('finops-user', JSON.stringify(user))
   }
 }
 

@@ -11,7 +11,18 @@ import { DashboardStats, Transaction, Budget } from '../types/dashboard'
 
 export function useDashboard() {
   const { user, isLoading: authLoading } = useAuth()
-  const isAuthenticated = !!user?.id
+  
+  // Grace period check + cached user fallback
+  const graceUntil = typeof window !== 'undefined' 
+    ? parseInt(localStorage.getItem('authGraceUntil') || '0')
+    : 0
+  const inGracePeriod = Date.now() < graceUntil
+  const cachedUser = typeof window !== 'undefined' 
+    ? localStorage.getItem('finops-user')
+    : null
+  
+  const effectiveUser = user || (inGracePeriod && cachedUser ? JSON.parse(cachedUser) : null)
+  const isAuthenticated = !!effectiveUser?.id || inGracePeriod
 
 const { data: overview, isLoading: overviewLoading } = useDashboardOverviewQuery()
   const { data: budgets, isLoading: budgetsLoading } = useBudgetsQuery()
@@ -34,6 +45,7 @@ const { data: overview, isLoading: overviewLoading } = useDashboardOverviewQuery
     stats,
     budgets: budgets as Budget[] || [],
     transactions: transactions as Transaction[] || [],
-    isLoading: authLoading || overviewLoading || budgetsLoading || transactionsLoading || !isAuthenticated,
+    isLoading: authLoading || overviewLoading || budgetsLoading || transactionsLoading || (!isAuthenticated && !inGracePeriod),
+    // Grace period extends loading to prevent premature redirect
   }
 }

@@ -31,18 +31,31 @@ export default function Page() {
   }
 
   useEffect(() => {
-    console.log('[DASHBOARD] Auth state check:', { authLoading, isAuthenticated, user: user ? 'present' : 'null', redirectedRef: redirectedRef.current })
-    // Prevent multiple redirects
-    if (!authLoading && !isAuthenticated && !redirectedRef.current) {
-      console.log('[DASHBOARD] User not authenticated, redirecting to login')
+    const graceUntil = parseInt(localStorage.getItem('authGraceUntil') || '0')
+    const inGrace = Date.now() < graceUntil
+    
+    console.log('[DASHBOARD] Auth state:', { 
+      authLoading, 
+      isAuthenticated, 
+      user: user ? 'present' : 'null', 
+      inGrace,
+      graceUntil: new Date(graceUntil).toLocaleTimeString(),
+      redirectedRef: redirectedRef.current 
+    })
+    
+    // Respect grace period + prevent multiple redirects
+    if (!authLoading && !isAuthenticated && !inGrace && !redirectedRef.current) {
+      console.log('[DASHBOARD] No auth + no grace → login')
       redirectedRef.current = true
-      // Add a small delay to prevent immediate redirect
       setTimeout(() => {
         console.log('[DASHBOARD] Executing redirect to login')
         router.replace('/login')
-      }, 100)
+      }, 500) // Increased delay
+    } else if (inGrace) {
+      console.log('[DASHBOARD] Grace period active - waiting...')
     } else if (!authLoading && isAuthenticated) {
-      console.log('[DASHBOARD] User authenticated, loading dashboard')
+      console.log('[DASHBOARD] Auth OK - dashboard ready')
+      localStorage.removeItem('authGraceUntil') // Cleanup
     }
   }, [authLoading, isAuthenticated, router])
 
