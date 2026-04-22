@@ -33,10 +33,6 @@ export default function Page() {
       console.log('[DASHBOARD] User authenticated, loading dashboard')
     }
   }, [authLoading, isAuthenticated, router])
-    } else if (!authLoading && isAuthenticated) {
-      console.log('[DASHBOARD] User is authenticated, showing dashboard:', user)
-    }
-  }, [authLoading, isAuthenticated, router, user])
 
   if (authLoading || dashboardLoading) {
     return (
