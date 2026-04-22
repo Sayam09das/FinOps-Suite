@@ -11,9 +11,20 @@ const PORT = Number(process.env.PORT) || 5001;
 
 const server = createServer(app);
 
+const allowedOrigins = (
+  process.env.FRONTEND_URLS ??
+  process.env.FRONTEND_URL ??
+  'http://localhost:3000,http://localhost:3001,https://finops-suite.vercel.app,https://fin-ops-suite.vercel.app'
+)
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 export const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST'],
   },
 });
 

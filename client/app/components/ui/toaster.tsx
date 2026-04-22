@@ -21,16 +21,17 @@ interface ToastAction {
 }
 
 function Toaster() {
-  const { toasts } = useToast()
-
-  const { dismiss: dismissToast } = useToast()
+  const { toasts, dismiss: dismissToast } = useToast()
 
   React.useEffect(() => {
     if (toasts.length > TOAST_LIMIT) {
       const delayToast = toasts[TOAST_LIMIT]
-      setTimeout(() => {
-        dismissToast(delayToast?.id)
-      }, TOAST_REMOVE_DELAY)
+      if (delayToast) {
+        const timeout = setTimeout(() => {
+          dismissToast(delayToast.id)
+        }, TOAST_REMOVE_DELAY)
+        return () => clearTimeout(timeout)
+      }
     }
   }, [toasts, dismissToast])
 
@@ -45,7 +46,8 @@ function Toaster() {
         className 
       }) => (
         <Toast 
-          key={id} 
+          key={id}
+          id={id}
           variant={variant} 
           className={cn(className)}
           title={title}
@@ -58,6 +60,7 @@ function Toaster() {
 }
 
 interface ToastProps {
+  id: string
   title?: React.ReactNode
   description?: React.ReactNode
   variant?: "default" | "destructive"
@@ -65,19 +68,18 @@ interface ToastProps {
   className?: string
 }
 
-function Toast({ className, variant, title, description, action }: ToastProps) {
+function Toast({ id, className, variant, title, description, action }: ToastProps) {
   const { dismiss } = useToast()
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null)
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      dismiss()
+      dismiss(id)
     }, 5000)
 
     return () => {
       clearTimeout(timer)
     }
-  }, [dismiss])
+  }, [id, dismiss])
 
   const variantStyles = {
     default: "bg-background border text-foreground shadow-lg",
@@ -110,7 +112,7 @@ function Toast({ className, variant, title, description, action }: ToastProps) {
       )}
       <button 
         className="absolute right-2 top-2 h-6 w-8 rounded-md text-sm opacity-0 group-hover:opacity-100 transition-all"
-        onClick={() => dismiss()}
+        onClick={() => dismiss(id)}
       >
         ✕
       </button>

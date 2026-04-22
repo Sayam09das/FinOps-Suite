@@ -34,8 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isLoading = meLoading || loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
 
-  // Login handler
-  const { toast: showToast } = useToast();
+  // Toast handler
+  const { toast } = useToast();
 
   const login = useCallback(async (email: string, password: string) => {
     try {
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await new Promise(resolve => setTimeout(resolve, 300));
       
       console.log('Login success, redirecting...');
-      showToast({
+      toast({
         title: "Success",
         description: "Login successful!",
       });
@@ -61,19 +61,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Step 4: Navigate to dashboard
       router.replace('/dashboard/maindashboard');
     } catch (error) {
-      showToast({
+      toast({
         variant: "destructive",
         title: "Error",
         description: "Login failed. Check credentials.",
       });
     }
-  }, [loginMutation, queryClient, router, showToast]);
+  }, [loginMutation, queryClient, router, toast]);
 
   // Register handler
   const register = useCallback(async (data: { name: string; email: string; password: string }) => {
     try {
       await registerMutation.mutateAsync(data);
-      showToast({
+      toast({
         title: "Success",
         description: "Account created! Logging you in...",
       });
@@ -95,32 +95,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       router.replace('/dashboard/maindashboard');
     } catch (error) {
-      showToast({
+      toast({
         variant: "destructive",
         title: "Error",
         description: "Registration failed. Try again.",
       });
     }
-  }, [registerMutation, loginMutation, queryClient, router, showToast]);
+  }, [registerMutation, loginMutation, queryClient, router, toast]);
 
   // Logout handler
   const logout = useCallback(async () => {
     try {
       await logoutMutation.mutateAsync();
-      showToast({
+      toast({
         title: "Success",
         description: "Logged out successfully",
       });
       router.push("/login");
       router.refresh();
     } catch (error) {
-      showToast({
+      toast({
         variant: "destructive",
         title: "Error",
         description: "Logout failed",
       });
     }
-  }, [logoutMutation, router, showToast]);
+  }, [logoutMutation, router, toast]);
 
   const value: AuthContextType = useMemo(() => ({
     user: user || null,

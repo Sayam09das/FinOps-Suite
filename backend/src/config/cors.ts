@@ -5,7 +5,7 @@ const normalizeOrigin = (origin: string): string => origin.replace(/\/+$/, '');
 const allowedOrigins = (
   process.env.FRONTEND_URLS ??
   process.env.FRONTEND_URL ??
-  'http://localhost:3000,https://finops-suite.vercel.app,https://fin-ops-suite.vercel.app'
+  'http://localhost:3000,http://localhost:3001,https://finops-suite.vercel.app,https://fin-ops-suite.vercel.app'
 )
   .split(',')
   .map((origin) => origin.trim())
@@ -16,23 +16,28 @@ type CorsOriginCallback = (error: Error | null, allow?: boolean) => void;
 
 export const corsOptions = {
   origin: (origin: string | undefined, callback: CorsOriginCallback) => {
+    // Allow requests with no origin (like mobile apps or Postman)
     if (!origin) {
       callback(null, true);
       return;
     }
 
-    if (allowedOrigins.includes(normalizeOrigin(origin))) {
+    const normalizedOrigin = normalizeOrigin(origin);
+    
+    if (allowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
       return;
     }
 
+    console.warn(`CORS rejected origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-JSON-Response-Type'],
   preflightContinue: false,
-  optionsSuccessStatus: 204,
+  optionsSuccessStatus: 200,
 };
 
 export const corsMiddleware = cors(corsOptions);
