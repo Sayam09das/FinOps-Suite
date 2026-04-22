@@ -14,8 +14,12 @@ const createRequest = async (url: string, options: RequestInit = {}): Promise<Re
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'x-client-timestamp': clientTimestamp,
     };
+    
+    // Add timestamp only client-side (SSR safe)
+    if (typeof window !== 'undefined') {
+      headers['x-client-timestamp'] = clientTimestamp;
+    }
 
     // Fallback auth token from localStorage (backup for cookie issues)
     const token = typeof window !== 'undefined' ? localStorage.getItem('finops-auth-token') : null;

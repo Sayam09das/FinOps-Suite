@@ -32,21 +32,17 @@ export const useRegisterMutation = () => {
   })
 }
 
+// SSR-safe useAuthMeQuery - localStorage only client-side
 export const useAuthMeQuery = () => {
-  const cachedUser = typeof window !== 'undefined' 
-    ? localStorage.getItem('finops-user') 
-    : null
-  const initialData = cachedUser ? JSON.parse(cachedUser) : undefined
-  
   return useQuery({
     queryKey: ['auth', 'me'],
     queryFn: () => api.get(ENDPOINTS.AUTH.ME),
-    initialData,
-    staleTime: 10 * 60 * 1000, // 10 min
+    initialData: undefined, // Set via useAuth optimistic update
+    staleTime: 10 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: false,              // Never retry 401 during grace period
+    retry: false,
     refetchOnWindowFocus: false,
-    refetchOnMount: 'always',  // But refetch after grace period
+    refetchOnMount: true,
     refetchOnReconnect: false,
   })
 }

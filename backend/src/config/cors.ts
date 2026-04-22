@@ -34,7 +34,7 @@ export const corsOptions = {
   },
   credentials: true, // CRITICAL: Allow cookies to be sent/received
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With', 'x-client-timestamp'],
   exposedHeaders: ['Content-Length', 'X-JSON-Response-Type', 'Set-Cookie'],
   preflightContinue: false,
   optionsSuccessStatus: 200,
