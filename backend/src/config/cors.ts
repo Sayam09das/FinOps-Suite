@@ -32,10 +32,10 @@ export const corsOptions = {
     console.warn(`CORS rejected origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
     callback(new Error('Not allowed by CORS'));
   },
-  credentials: true,
+  credentials: true, // CRITICAL: Allow cookies to be sent/received
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
-  exposedHeaders: ['Content-Length', 'X-JSON-Response-Type'],
+  exposedHeaders: ['Content-Length', 'X-JSON-Response-Type', 'Set-Cookie'],
   preflightContinue: false,
   optionsSuccessStatus: 200,
 };

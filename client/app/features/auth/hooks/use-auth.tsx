@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLoginMutation, useRegisterMutation, useLogoutMutation, useAuthMeQuery } from '@/app/lib/api/queries';
 import { useToast } from '@/app/components/ui/use-toast';
+import { api } from '@/app/lib/api/client';
 
 interface User {
   id: string;
@@ -34,74 +35,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isLoading = meLoading || loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
 
-  // Toast handler
   const { toast } = useToast();
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      // Step 1: Call login endpoint
-      await loginMutation.mutateAsync({ email, password });
+      console.log('[AUTH] Step 1: Calling login endpoint...');
+      // Step 1: Call login endpoint (sets cookies in response)
+      const response = await loginMutation.mutateAsync({ email, password });
+      console.log('[AUTH] Step 1 success:', response);
       
-      // Step 2: Invalidate and refetch auth queries
-      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-      await queryClient.refetchQueries({ 
+      // Step 2: Wait for browser to process Set-Cookie headers
+      console.log('[AUTH] Step 2: Waiting for cookies...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Step 3: Refetch auth/me query to validate cookie was set
+      console.log('[AUTH] Step 3: Fetching /auth/me with cookie...');
+      const meResult = await queryClient.fetchQuery({
         queryKey: ['auth', 'me'],
-        type: 'active'
+        queryFn: () => api.get('/auth/me'),
+        staleTime: 0, // Force fresh fetch
       });
+      console.log('[AUTH] Step 3 success:', meResult);
       
-      // Step 3: Add small delay to ensure state updates
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Step 4: Update React Query state
+      queryClient.setQueryData(['auth', 'me'], meResult);
       
-      console.log('Login success, redirecting...');
+      console.log('[AUTH] Login successful, redirecting...');
       toast({
         title: "Success",
         description: "Login successful!",
       });
       
-      // Step 4: Navigate to dashboard
+      // Step 5: Navigate to dashboard
       router.replace('/dashboard/maindashboard');
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('[AUTH] Login failed:', errorMsg);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Login failed. Check credentials.",
+        description: errorMsg.includes('401') ? 'Invalid email or password' : 'Login failed',
       });
     }
-  }, [loginMutation, queryClient, router, toast]);
+  }, [loginMutation, queryClient, router, toast, api]);
 
   // Register handler
   const register = useCallback(async (data: { name: string; email: string; password: string }) => {
     try {
+      console.log('[AUTH] Registering new account...');
       await registerMutation.mutateAsync(data);
       toast({
         title: "Success",
         description: "Account created! Logging you in...",
       });
+      
       // Auto login after register
-      await loginMutation.mutateAsync({ 
-        email: data.email, 
-        password: data.password 
-      });
-      
-      // Refetch auth state
-      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-      await queryClient.refetchQueries({ 
-        queryKey: ['auth', 'me'],
-        type: 'active'
-      });
-      
-      // Wait for state updates
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      router.replace('/dashboard/maindashboard');
+      await login(data.email, data.password);
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('[AUTH] Registration failed:', errorMsg);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Registration failed. Try again.",
+        description: errorMsg.includes('already') ? 'Email already registered' : 'Registration failed',
       });
     }
-  }, [registerMutation, loginMutation, queryClient, router, toast]);
+  }, [registerMutation, login, toast]);
 
   // Logout handler
   const logout = useCallback(async () => {
@@ -145,4 +144,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

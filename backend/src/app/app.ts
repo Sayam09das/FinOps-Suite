@@ -22,9 +22,11 @@ const app = express();
 // Trust proxy for rate limiting behind reverse proxy (Render)
 app.set('trust proxy', 1);
 
-// Middleware
+// Middleware - ORDER MATTERS!
+// 1. CORS must come first (to handle preflight OPTIONS requests)
+// 2. Cookie parser must come before routes (to parse cookies)
 app.use(corsMiddleware);
-app.use(cookieParser());
+app.use(cookieParser()); // CRITICAL: Parse cookies from requests
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 

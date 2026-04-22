@@ -20,11 +20,13 @@ const allowedOrigins = (
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+// Socket.io CORS - must match backend CORS
 export const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
-    credentials: true,
+    credentials: true, // CRITICAL: Allow cookies with socket connections
     methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   },
 });
 
