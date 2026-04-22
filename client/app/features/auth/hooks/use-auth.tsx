@@ -50,24 +50,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Step 3: Refetch auth/me query to validate cookie was set
       console.log('[AUTH] Step 3: Fetching /auth/me with cookie...');
-      const meResult = await queryClient.fetchQuery({
+      const meResponse = await queryClient.fetchQuery({
         queryKey: ['auth', 'me'],
         queryFn: () => api.get('/auth/me'),
         staleTime: 0, // Force fresh fetch
       });
-      console.log('[AUTH] Step 3 success:', meResult);
+      console.log('[AUTH] Step 3 response:', meResponse);
       
-      // Step 4: Update React Query state
+      // Step 4: Extract user data from API response wrapper
+      // API returns { success: true, data: { user }, message: "..." }
+      const meResult = meResponse?.data || meResponse;
+      console.log('[AUTH] Step 3 success (extracted user):', meResult);
+      
+      // Step 5: Update React Query state with just the user data (not the wrapper)
       queryClient.setQueryData(['auth', 'me'], meResult);
       
-      console.log('[AUTH] Login successful, redirecting...');
+      console.log('[AUTH] Login successful, redirecting to dashboard...');
       toast({
         title: "Success",
         description: "Login successful!",
       });
       
-      // Step 5: Navigate to dashboard
+      // Step 6: Wait a bit to ensure query cache is updated
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Step 7: Navigate to dashboard
+      console.log('[AUTH] Calling router.replace...');
       router.replace('/dashboard/maindashboard');
+      console.log('[AUTH] router.replace called');
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       console.error('[AUTH] Login failed:', errorMsg);

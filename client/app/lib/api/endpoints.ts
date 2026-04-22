@@ -2,17 +2,17 @@ import { HTTP_STATUS } from "../constants/api"
 
 export const ENDPOINTS = {
   AUTH: {
-    LOGIN: "/api/auth/login",
-    REGISTER: "/api/auth/register",
-    REFRESH: "/api/auth/refresh",
-    LOGOUT: "/api/auth/logout",
-    ME: "/api/auth/me",
+    LOGIN: "/auth/login",
+    REGISTER: "/auth/register",
+    REFRESH: "/auth/refresh",
+    LOGOUT: "/auth/logout",
+    ME: "/auth/me",
   },
   USER: {
-    LIST: "/users",
-    DETAIL: (id: string) => `/users/${id}`,
-    UPDATE: (id: string) => `/users/${id}`,
-    DELETE: (id: string) => `/users/${id}`,
+    LIST: "/user",
+    DETAIL: (id: string) => `/user/${id}`,
+    UPDATE: (id: string) => `/user/${id}`,
+    DELETE: (id: string) => `/user/${id}`,
   },
   BUDGET: {
     LIST: "/budgets",
