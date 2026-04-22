@@ -13,7 +13,7 @@ export function useDashboard() {
   const { user, isLoading: authLoading } = useAuth()
   const isAuthenticated = !!user?.id
 
-  const { data: overview, isLoading: overviewLoading } = useDashboardOverviewQuery()
+const { data: overview, isLoading: overviewLoading } = useDashboardOverviewQuery()
   const { data: budgets, isLoading: budgetsLoading } = useBudgetsQuery()
   const { data: transactions, isLoading: transactionsLoading } = useTransactionsQuery()
 

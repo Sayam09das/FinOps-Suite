@@ -51,16 +51,17 @@ export const useLogoutMutation = () => useMutation({
 export const useBudgetsQuery = (page = 1) => {
   return useQuery({
     queryKey: ['budgets', page],
-    queryFn: () => api.get(`/api/budgets?page=${page}`), 
+    queryFn: () => api.get(ENDPOINTS.BUDGET.LIST + `?page=${page}`), 
     staleTime: 2 * 60 * 1000,
   })
 }
 
 // Transaction queries
-export const useTransactionsQuery = () => {
+export const useTransactionsQuery = (page = 1) => {
   return useQuery({
-    queryKey: ['transactions'],
+    queryKey: ['transactions', page],
     queryFn: () => api.get(ENDPOINTS.TRANSACTION.LIST),
+    staleTime: 2 * 60 * 1000,
   })
 }
 

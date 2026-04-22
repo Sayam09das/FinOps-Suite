@@ -55,11 +55,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Step 3: Update React Query state with user data
       queryClient.setQueryData(['auth', 'me'], userData);
-      // Longer delay + refetch for cookie sync on Render.com serverless
+      // Production serverless delay for cookie sync
       setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ['auth', 'me'] });
-        console.log('[AUTH] Queries refetched after sync delay');
-      }, 3000);
+        queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+        console.log('[AUTH] Invalidated auth query for refetch');
+      }, 5000);
       
       console.log('[AUTH] Login successful, redirecting to dashboard...');
       toast({
