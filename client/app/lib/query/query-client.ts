@@ -8,15 +8,20 @@ export const getQueryClient = () => {
         gcTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: false,
         refetchOnReconnect: true,
-        retry: (failureCount, error: any) => {
-          if (error.status === 404) return false
-          return failureCount < 3
+        retry: (failureCount: number, error: any) => {
+          if (error?.status === 401) {
+            localStorage.removeItem('finops-auth-token');
+            localStorage.removeItem('finops-user');
+            return false;
+          }
+          if (error?.status === 404) return false;
+          return failureCount < 3;
         },
       },
       mutations: {
-        retry: (failureCount, error: any) => {
-          if (error.status === 404) return false
-          return failureCount < 1
+        retry: (failureCount: number, error: any) => {
+          if (error?.status === 401 || error?.status === 404) return false;
+          return failureCount < 1;
         },
       },
     },

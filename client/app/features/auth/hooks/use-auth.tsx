@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
+import { setAuthData } from '../utils/auth-utils';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLoginMutation, useRegisterMutation, useLogoutMutation, useAuthMeQuery } from '@/app/lib/api/queries';
@@ -49,10 +50,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = response?.data || response;
       console.log('[AUTH] Step 2: Extracted user data:', userData);
       
+      // Store in localStorage as fallback (no token since httpOnly cookies)
+      setAuthData('', userData);
+      
       // Step 3: Update React Query state with user data
       queryClient.setQueryData(['auth', 'me'], userData);
-      // Also invalidate to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+      // Delay invalidate to allow cookie sync on Render.com
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+        console.log('[AUTH] Queries invalidated after delay');
+      }, 1200);
       
       console.log('[AUTH] Login successful, redirecting to dashboard...');
       toast({

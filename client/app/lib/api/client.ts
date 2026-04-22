@@ -13,6 +13,13 @@ const createRequest = async (url: string, options: RequestInit = {}): Promise<Re
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
+
+    // Fallback auth token from localStorage (backup for cookie issues)
+    const token = typeof window !== 'undefined' ? localStorage.getItem('finops-auth-token') : null;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     Object.entries(options.headers || {}).forEach(([key, value]) => {
       headers[key as string] = value as string;
     });
