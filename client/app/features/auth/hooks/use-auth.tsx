@@ -64,6 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Step 5: Update React Query state with just the user data (not the wrapper)
       queryClient.setQueryData(['auth', 'me'], meResult);
+      // Also invalidate to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
       
       console.log('[AUTH] Login successful, redirecting to dashboard...');
       toast({
@@ -71,13 +73,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "Login successful!",
       });
       
-      // Step 6: Wait a bit to ensure query cache is updated
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Step 6: Wait longer to ensure query cache is updated and auth state propagates
+      console.log('[AUTH] Waiting for auth state to propagate...');
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Step 7: Navigate to dashboard
-      console.log('[AUTH] Calling router.replace...');
-      router.replace('/dashboard/maindashboard');
-      console.log('[AUTH] router.replace called');
+      console.log('[AUTH] Calling router.push...');
+      try {
+        router.push('/dashboard/maindashboard');
+        console.log('[AUTH] router.push called successfully');
+      } catch (navError) {
+        console.error('[AUTH] Navigation failed:', navError);
+        // Fallback: try window.location
+        window.location.href = '/dashboard/maindashboard';
+      }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       console.error('[AUTH] Login failed:', errorMsg);

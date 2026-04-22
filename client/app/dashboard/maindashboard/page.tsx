@@ -19,15 +19,20 @@ export default function Page() {
   const redirectedRef = useRef(false)
 
   useEffect(() => {
-    console.log('[DASHBOARD] Auth state:', { user, isAuthenticated, authLoading })
-  }, [user, isAuthenticated, authLoading])
-
-  useEffect(() => {
+    console.log('[DASHBOARD] Auth state check:', { authLoading, isAuthenticated, redirectedRef: redirectedRef.current })
     // Prevent multiple redirects
     if (!authLoading && !isAuthenticated && !redirectedRef.current) {
       console.log('[DASHBOARD] User not authenticated, redirecting to login')
       redirectedRef.current = true
-      router.replace('/login')
+      // Add a small delay to prevent immediate redirect
+      setTimeout(() => {
+        console.log('[DASHBOARD] Executing redirect to login')
+        router.replace('/login')
+      }, 100)
+    } else if (!authLoading && isAuthenticated) {
+      console.log('[DASHBOARD] User authenticated, loading dashboard')
+    }
+  }, [authLoading, isAuthenticated, router])
     } else if (!authLoading && isAuthenticated) {
       console.log('[DASHBOARD] User is authenticated, showing dashboard:', user)
     }
