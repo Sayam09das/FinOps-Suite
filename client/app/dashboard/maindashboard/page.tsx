@@ -19,7 +19,7 @@ export default function Page() {
   const redirectedRef = useRef(false)
 
   useEffect(() => {
-    console.log('[DASHBOARD] Auth state check:', { authLoading, isAuthenticated, redirectedRef: redirectedRef.current })
+    console.log('[DASHBOARD] Auth state check:', { authLoading, isAuthenticated, user: user ? 'present' : 'null', redirectedRef: redirectedRef.current })
     // Prevent multiple redirects
     if (!authLoading && !isAuthenticated && !redirectedRef.current) {
       console.log('[DASHBOARD] User not authenticated, redirecting to login')

@@ -44,26 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await loginMutation.mutateAsync({ email, password });
       console.log('[AUTH] Step 1 success:', response);
       
-      // Step 2: Wait for browser to process Set-Cookie headers
-      console.log('[AUTH] Step 2: Waiting for cookies...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Step 2: Extract user data from login response
+      // Login response should contain user data
+      const userData = response?.data || response;
+      console.log('[AUTH] Step 2: Extracted user data:', userData);
       
-      // Step 3: Refetch auth/me query to validate cookie was set
-      console.log('[AUTH] Step 3: Fetching /auth/me with cookie...');
-      const meResponse = await queryClient.fetchQuery({
-        queryKey: ['auth', 'me'],
-        queryFn: () => api.get('/auth/me'),
-        staleTime: 0, // Force fresh fetch
-      });
-      console.log('[AUTH] Step 3 response:', meResponse);
-      
-      // Step 4: Extract user data from API response wrapper
-      // API returns { success: true, data: { user }, message: "..." }
-      const meResult = meResponse?.data || meResponse;
-      console.log('[AUTH] Step 3 success (extracted user):', meResult);
-      
-      // Step 5: Update React Query state with just the user data (not the wrapper)
-      queryClient.setQueryData(['auth', 'me'], meResult);
+      // Step 3: Update React Query state with user data
+      queryClient.setQueryData(['auth', 'me'], userData);
       // Also invalidate to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
       
@@ -73,11 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "Login successful!",
       });
       
-      // Step 6: Wait longer to ensure query cache is updated and auth state propagates
-      console.log('[AUTH] Waiting for auth state to propagate...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Step 7: Navigate to dashboard
+      // Step 4: Navigate to dashboard immediately
       console.log('[AUTH] Calling router.push...');
       try {
         router.push('/dashboard/maindashboard');
@@ -96,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: errorMsg.includes('401') ? 'Invalid email or password' : 'Login failed',
       });
     }
-  }, [loginMutation, queryClient, router, toast, api]);
+  }, [loginMutation, queryClient, router, toast]);
 
   // Register handler
   const register = useCallback(async (data: { name: string; email: string; password: string }) => {

@@ -17,13 +17,14 @@ export const sendAuthResponse = (
   // Cookie configuration: environment-aware for dev/prod
   const isProduction = process.env.NODE_ENV === 'production';
   
-  // In production (HTTPS): secure + sameSite: none
+  // In production (HTTPS): secure + sameSite: none (no domain for cross-site)
   // In development (HTTP): no secure flag, sameSite: lax
   const cookieOptions = {
     httpOnly: true,
     secure: isProduction, // Only true in production
     sameSite: isProduction ? ('none' as const) : ('lax' as const),
     path: '/' as const,
+    // Don't set domain for cross-site cookies - let browser handle it
   };
 
   res.cookie('finops.access-token', session.accessToken, {
