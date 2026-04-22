@@ -55,11 +55,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Step 3: Update React Query state with user data
       queryClient.setQueryData(['auth', 'me'], userData);
-      // Delay invalidate to allow cookie sync on Render.com
+      // Longer delay + refetch for cookie sync on Render.com serverless
       setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-        console.log('[AUTH] Queries invalidated after delay');
-      }, 1200);
+        queryClient.refetchQueries({ queryKey: ['auth', 'me'] });
+        console.log('[AUTH] Queries refetched after sync delay');
+      }, 3000);
       
       console.log('[AUTH] Login successful, redirecting to dashboard...');
       toast({
@@ -68,14 +68,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       // Step 4: Navigate to dashboard immediately
-      console.log('[AUTH] Calling router.push...');
+      // Navigate with replace + refresh for clean state
+      console.log('[AUTH] Calling router.replace + refresh...');
       try {
-        router.push('/dashboard/maindashboard');
-        console.log('[AUTH] router.push called successfully');
+        router.replace('/dashboard/maindashboard');
+        router.refresh();
+        console.log('[AUTH] Navigation succeeded');
       } catch (navError) {
         console.error('[AUTH] Navigation failed:', navError);
-        // Fallback: try window.location
-        window.location.href = '/dashboard/maindashboard';
+        window.location.replace('/dashboard/maindashboard');
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';

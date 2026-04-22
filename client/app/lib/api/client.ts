@@ -96,11 +96,7 @@ export const api = {
       ...config,
     });
     if (!res.ok) {
-      if (res.status === HTTP_STATUS.UNAUTHORIZED) {
-        localStorage.removeItem(AUTH.LOCAL_STORAGE_TOKEN);
-        localStorage.removeItem(AUTH.LOCAL_STORAGE_USER);
-        window.location.href = AUTH.LOGIN_PATH;
-      }
+
       const errorText = await res.text();
       throw new Error(`API Error ${res.status}: ${errorText}`);
     }

@@ -4,15 +4,27 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Protect only dashboard routes
-  if (pathname.startsWith('/dashboard') ) {
-    // Get auth token from cookies
-  const accessToken = request.cookies.get('finops.access-token')?.value
-  const refreshToken = request.cookies.get('finops.refresh-token')?.value
-  const token = accessToken || refreshToken
+  // Protect dashboard routes with cookie sync grace period
+  if (pathname.startsWith('/dashboard')) {
+    const accessToken = request.cookies.get('finops.access-token')?.value
+    const refreshToken = request.cookies.get('finops.refresh-token')?.value
+    const token = accessToken || refreshToken
 
-    if (!token) {
+    // Grace period: 3s sync window for serverless (Render.com)
+    const now = Date.now()
+    const clientTimestamp = request.headers.get('x-client-timestamp') 
+      ? parseInt(request.headers.get('x-client-timestamp')!) 
+      : now
+    const syncWindow = 3000 // 3s
+
+    if (!token && (now - clientTimestamp > syncWindow)) {
+      console.log(`[MIDDLEWARE] No token after ${syncWindow}ms grace: ${pathname}`)
       return NextResponse.redirect(new URL('/login', request.url))
+    }
+    
+    // Allow recent requests during sync
+    if (clientTimestamp > (now - syncWindow)) {
+      console.log(`[MIDDLEWARE] Grace period active: ${pathname}`)
     }
   }
 

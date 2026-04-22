@@ -36,9 +36,10 @@ export const useAuthMeQuery = () => {
     queryKey: ['auth', 'me'],
     queryFn: () => api.get(ENDPOINTS.AUTH.ME),
     staleTime: 5 * 60 * 1000, // 5 min
-    retry: 3,
+    gcTime: 5 * 60 * 1000,   // Preserve cache during sync
+    retry: 1,                // Reduce 401 spam
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    refetchOnMount: false,   // Prevent immediate refetch spam
   })
 }
 

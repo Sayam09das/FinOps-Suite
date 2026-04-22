@@ -1,13 +1,21 @@
 "use client"
 
-import { useDashboardOverviewQuery, useBudgetsQuery, useTransactionsQuery } from '@/app/lib/api/queries'
+import { useAuth } from '@/app/features/auth'
+import { 
+  useDashboardOverviewQuery, 
+  useBudgetsQuery, 
+  useTransactionsQuery 
+} from '@/app/lib/api/queries'
 import { useMemo } from 'react'
 import { DashboardStats, Transaction, Budget } from '../types/dashboard'
 
 export function useDashboard() {
-  const { data: overview } = useDashboardOverviewQuery()
-  const { data: budgets } = useBudgetsQuery()
-  const { data: transactions } = useTransactionsQuery()
+  const { user, isLoading: authLoading } = useAuth()
+  const isAuthenticated = !!user?.id
+
+  const { data: overview, isLoading: overviewLoading } = useDashboardOverviewQuery()
+  const { data: budgets, isLoading: budgetsLoading } = useBudgetsQuery()
+  const { data: transactions, isLoading: transactionsLoading } = useTransactionsQuery()
 
   const stats = useMemo<DashboardStats | null>(() => {
     if (!overview || !budgets || !transactions) return null
@@ -26,7 +34,6 @@ export function useDashboard() {
     stats,
     budgets: budgets as Budget[] || [],
     transactions: transactions as Transaction[] || [],
-    isLoading: !overview || !budgets || !transactions,
+    isLoading: authLoading || overviewLoading || budgetsLoading || transactionsLoading || !isAuthenticated,
   }
 }
-
