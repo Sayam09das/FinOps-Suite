@@ -9,11 +9,7 @@ export const getQueryClient = () => {
         refetchOnWindowFocus: false,
         refetchOnReconnect: true,
         retry: (failureCount: number, error: any) => {
-          if (error?.status === 401) {
-            localStorage.removeItem('finops-auth-token');
-            localStorage.removeItem('finops-user');
-            return false;
-          }
+          if (error?.status === 401) return false;
           if (error?.status === 404) return false;
           return failureCount < 3;
         },
@@ -27,4 +23,3 @@ export const getQueryClient = () => {
     },
   })
 }
-

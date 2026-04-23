@@ -5,7 +5,7 @@ export const APP = {
 } as const
 
 export const API = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api",
+  BASE_URL: "",
   TIMEOUT: 10000,
   VERSION: "v1" as const,
 } as const
@@ -44,4 +44,3 @@ export const COLORS = {
   PRIMARY: "hsl(var(--primary))",
   SECONDARY: "hsl(var(--secondary))",
 } as const
-
