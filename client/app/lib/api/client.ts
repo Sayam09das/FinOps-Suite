@@ -1,6 +1,11 @@
 import { API } from "../constants"
-import { AUTH } from "../constants/auth"
-import { HTTP_STATUS } from "../constants/api"
+
+type ApiEnvelope<T> = {
+  success?: boolean
+  data?: T
+  message?: string
+  meta?: unknown
+}
 
 /**
  * Base fetch request creator with auth, timeout, and error handling
@@ -48,24 +53,64 @@ const createRequest = async (url: string, options: RequestInit = {}): Promise<Re
   }
 };
 
+const parseSuccessResponse = async <T>(res: Response): Promise<T> => {
+  if (res.status === 204) {
+    return undefined as T
+  }
+
+  const text = await res.text()
+  if (!text) {
+    return undefined as T
+  }
+
+  const payload = JSON.parse(text) as ApiEnvelope<T> | T
+
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'success' in payload &&
+    ('data' in payload || 'message' in payload)
+  ) {
+    return (payload as ApiEnvelope<T>).data as T
+  }
+
+  return payload as T
+}
+
+const createApiError = async (res: Response, prefix: string) => {
+  const errorText = await res.text()
+  let message = errorText
+
+  try {
+    const parsed = JSON.parse(errorText) as ApiEnvelope<unknown>
+    if (parsed?.message) {
+      message = parsed.message
+    }
+  } catch {
+    // Keep raw text when response is not JSON.
+  }
+
+  const error = new Error(`${prefix} ${res.status}: ${message}`) as Error & { status?: number }
+  error.status = res.status
+  return error
+}
+
 /**
  * API wrapper matching previous fetch methods
  */
 export const api = {
-  get: async <T = any>(url: string, config: RequestInit = {}): Promise<T> => {
+  get: async <T = unknown>(url: string, config: RequestInit = {}): Promise<T> => {
     const res = await createRequest(url, {
       method: 'GET',
       ...config,
     });
     if (!res.ok) {
-      // Remove automatic redirect - let components handle auth failures
-      const errorText = await res.text();
-      throw new Error(`API Error ${res.status}: ${errorText}`);
+      throw await createApiError(res, 'API Error')
     }
-    return res.json() as Promise<T>;
+    return parseSuccessResponse<T>(res)
   },
 
-  post: async <T = any>(url: string, data?: any, config: RequestInit = {}): Promise<T> => {
+  post: async <T = unknown>(url: string, data?: unknown, config: RequestInit = {}): Promise<T> => {
     const body = data instanceof FormData ? data : JSON.stringify(data);
     const res = await createRequest(url, {
       method: 'POST',
@@ -73,14 +118,12 @@ export const api = {
       ...config,
     });
     if (!res.ok) {
-      // Remove automatic redirect - let components handle auth failures
-      const errorText = await res.text();
-      throw new Error(`API Error ${res.status}: ${errorText}`);
+      throw await createApiError(res, 'API Error')
     }
-    return res.json() as Promise<T>;
+    return parseSuccessResponse<T>(res)
   },
 
-  put: async <T = any>(url: string, data?: any, config: RequestInit = {}): Promise<T> => {
+  put: async <T = unknown>(url: string, data?: unknown, config: RequestInit = {}): Promise<T> => {
     const body = data instanceof FormData ? data : JSON.stringify(data);
     const res = await createRequest(url, {
       method: 'PUT',
@@ -88,14 +131,12 @@ export const api = {
       ...config,
     });
     if (!res.ok) {
-      // Remove automatic redirect - let components handle auth failures
-      const errorText = await res.text();
-      throw new Error(`API Error ${res.status}: ${errorText}`);
+      throw await createApiError(res, 'API Error')
     }
-    return res.json() as Promise<T>;
+    return parseSuccessResponse<T>(res)
   },
 
-  patch: async <T = any>(url: string, data?: any, config: RequestInit = {}): Promise<T> => {
+  patch: async <T = unknown>(url: string, data?: unknown, config: RequestInit = {}): Promise<T> => {
     const body = data instanceof FormData ? data : JSON.stringify(data);
     const res = await createRequest(url, {
       method: 'PATCH',
@@ -103,44 +144,37 @@ export const api = {
       ...config,
     });
     if (!res.ok) {
-
-      const errorText = await res.text();
-      throw new Error(`API Error ${res.status}: ${errorText}`);
+      throw await createApiError(res, 'API Error')
     }
-    return res.json() as Promise<T>;
+    return parseSuccessResponse<T>(res)
   },
 
-  del: async <T = any>(url: string, config: RequestInit = {}): Promise<T> => {
+  del: async <T = unknown>(url: string, config: RequestInit = {}): Promise<T> => {
     const res = await createRequest(url, {
       method: 'DELETE',
       ...config,
     });
     if (!res.ok) {
-      // Remove automatic redirect - let components handle auth failures
-      const errorText = await res.text();
-      throw new Error(`API Error ${res.status}: ${errorText}`);
+      throw await createApiError(res, 'API Error')
     }
-    return res.json() as Promise<T>;
+    return parseSuccessResponse<T>(res)
   },
 
-  upload: async <T = any>(url: string, formData: FormData, config: RequestInit = {}): Promise<T> => {
+  upload: async <T = unknown>(url: string, formData: FormData, config: RequestInit = {}): Promise<T> => {
     // Don't set Content-Type for FormData - let browser set
-    const headers = config.headers ? (config.headers as any) : {};
-    delete headers['Content-Type']; // Ensure no Content-Type for multipart
+    const headers = new Headers(config.headers)
+    headers.delete('Content-Type') // Ensure no Content-Type for multipart
 
     const res = await createRequest(url, {
       method: 'POST',
       body: formData,
-      headers: headers,
+      headers,
     });
     if (!res.ok) {
-      // Remove automatic redirect - let components handle auth failures
-      const errorText = await res.text();
-      throw new Error(`Upload Error ${res.status}: ${errorText}`);
+      throw await createApiError(res, 'Upload Error')
     }
-    return res.json() as Promise<T>;
+    return parseSuccessResponse<T>(res)
   },
 };
 
 export default api;
-

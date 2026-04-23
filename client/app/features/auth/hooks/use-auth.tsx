@@ -1,12 +1,12 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
-import { setAuthData } from '../utils/auth-utils';
+import { clearAuthData, getGraceUser, setAuthData } from '../utils/auth-utils';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLoginMutation, useRegisterMutation, useLogoutMutation, useAuthMeQuery } from '@/app/lib/api/queries';
 import { useToast } from '@/app/components/ui/use-toast';
-import { api } from '@/app/lib/api/client';
+import { AUTH } from '@/app/lib/constants/auth';
 
 interface User {
   id: string;
@@ -33,8 +33,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginMutation = useLoginMutation();
   const registerMutation = useRegisterMutation();
   const logoutMutation = useLogoutMutation();
+  const graceUser = getGraceUser<User>();
+  const effectiveUser = user || graceUser || null;
 
-  const isLoading = meLoading || loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
+  const isLoading =
+    loginMutation.isPending ||
+    registerMutation.isPending ||
+    logoutMutation.isPending ||
+    (meLoading && !effectiveUser);
 
   const { toast } = useToast();
 
@@ -47,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Step 2: Extract user data from login response
       // Login response should contain user data
-      const userData = response?.data || response;
+      const userData = response;
       console.log('[AUTH] Step 2: Extracted user data:', userData);
       
       // Store in localStorage as fallback + grace flag (8s TTL)
@@ -58,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Grace period flag for dashboard (8s)
       const graceUntil = Date.now() + 8000;
-      localStorage.setItem('authGraceUntil', graceUntil.toString());
+      localStorage.setItem(AUTH.GRACE_UNTIL_KEY, graceUntil.toString());
       
       console.log('[AUTH] Grace flag set until:', new Date(graceUntil).toISOString());
       
@@ -68,17 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "Login successful! (grace active)",
       });
       
-      // Step 4: Navigate to dashboard immediately
-      // Navigate with replace + refresh for clean state
-      console.log('[AUTH] Calling router.replace + refresh...');
-      try {
-        router.replace('/dashboard/maindashboard');
-        router.refresh();
-        console.log('[AUTH] Navigation succeeded');
-      } catch (navError) {
-        console.error('[AUTH] Navigation failed:', navError);
-        window.location.replace('/dashboard/maindashboard');
-      }
+      // Step 4: Navigate to dashboard without refreshing the login route.
+      console.log('[AUTH] Calling router.replace...');
+      router.replace('/dashboard/maindashboard');
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       console.error('[AUTH] Login failed:', errorMsg);
@@ -117,29 +115,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await logoutMutation.mutateAsync();
+      clearAuthData();
+      queryClient.setQueryData(['auth', 'me'], null);
       toast({
         title: "Success",
         description: "Logged out successfully",
       });
       router.push("/login");
       router.refresh();
-    } catch (error) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Logout failed",
       });
     }
-  }, [logoutMutation, router, toast]);
+  }, [logoutMutation, queryClient, router, toast]);
 
   const value: AuthContextType = useMemo(() => ({
-    user: user || null,
+    user: effectiveUser,
     isLoading,
     login,
     register,
     logout,
-    isAuthenticated: !!user,
-  }), [user, isLoading, login, register, logout]);
+    isAuthenticated: !!effectiveUser,
+  }), [effectiveUser, isLoading, login, register, logout]);
 
   return (
     <AuthContext.Provider value={value}>

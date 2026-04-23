@@ -9,55 +9,30 @@ import { RecentTransactions } from '@/app/features/dashboard/components/RecentTr
 import { BudgetOverview } from '@/app/features/dashboard/components/BudgetOverview'
 import { QuickActions } from '@/app/features/dashboard/components/QuickActions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
-import { DollarSign, CreditCard, Target, TrendingUp, TrendingDown, Activity } from 'lucide-react'
-import { cn } from '@/app/lib/utils/cn'
+import { DollarSign, CreditCard, Target, TrendingUp, Activity } from 'lucide-react'
 
 export default function Page() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
-  const { stats, budgets, transactions, isLoading: dashboardLoading } = useDashboard()
+  const { isLoading: dashboardLoading } = useDashboard()
   const router = useRouter()
   const redirectedRef = useRef(false)
 
-  // Enhanced loading guard - prevent dashboard queries during auth sync
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Authenticating...</p>
-        </div>
-      </div>
-    )
-  }
-
   useEffect(() => {
-    const graceUntil = parseInt(localStorage.getItem('authGraceUntil') || '0')
-    const inGrace = Date.now() < graceUntil
-    
     console.log('[DASHBOARD] Auth state:', { 
       authLoading, 
       isAuthenticated, 
       user: user ? 'present' : 'null', 
-      inGrace,
-      graceUntil: new Date(graceUntil).toLocaleTimeString(),
       redirectedRef: redirectedRef.current 
     })
     
-    // Respect grace period + prevent multiple redirects
-    if (!authLoading && !isAuthenticated && !inGrace && !redirectedRef.current) {
-      console.log('[DASHBOARD] No auth + no grace → login')
+    if (!authLoading && !isAuthenticated && !redirectedRef.current) {
+      console.log('[DASHBOARD] No auth session → login')
       redirectedRef.current = true
-      setTimeout(() => {
-        console.log('[DASHBOARD] Executing redirect to login')
-        router.replace('/login')
-      }, 500) // Increased delay
-    } else if (inGrace) {
-      console.log('[DASHBOARD] Grace period active - waiting...')
+      router.replace('/login')
     } else if (!authLoading && isAuthenticated) {
       console.log('[DASHBOARD] Auth OK - dashboard ready')
-      localStorage.removeItem('authGraceUntil') // Cleanup
     }
-  }, [authLoading, isAuthenticated, router])
+  }, [authLoading, isAuthenticated, router, user])
 
   if (authLoading || dashboardLoading) {
     return (
@@ -97,7 +72,7 @@ export default function Page() {
                 Welcome back, {user?.name?.split(' ')[0]}! 👋
               </h1>
               <p className="text-muted-foreground mt-1">
-                Here's what's happening with your finances today.
+                Here&apos;s what&apos;s happening with your finances today.
               </p>
             </div>
             <div className="text-right">

@@ -1,5 +1,6 @@
 import { useDashboardOverviewQuery, useBudgetsQuery, useTransactionsQuery } from '@/app/lib/api/queries'
 import { useMemo } from 'react'
+import type { Transaction } from './types/dashboard'
 
 interface DashboardStats {
   totalBudgets: number
@@ -10,17 +11,21 @@ interface DashboardStats {
 
 export function useDashboard() {
   const { data: overview } = useDashboardOverviewQuery()
-  const { data: budgets } = useBudgetsQuery()
-  const { data: transactions } = useTransactionsQuery()
+  const { data: budgets = [] } = useBudgetsQuery()
+  const { data: transactionsResponse } = useTransactionsQuery()
+  const transactions = useMemo(
+    () => (Array.isArray(transactionsResponse) ? transactionsResponse : transactionsResponse?.data || []),
+    [transactionsResponse],
+  )
 
   const stats = useMemo<DashboardStats | null>(() => {
     if (!overview || !budgets || !transactions) return null
 
     return {
       totalBudgets: budgets.length,
-      totalSpend: overview.totalSpend || 0,
-      transactionsThisMonth: transactions.filter((t: any) => 
-        new Date(t.date).getMonth() === new Date().getMonth()
+      totalSpend: overview.totalSpend ?? overview.expense ?? 0,
+      transactionsThisMonth: transactions.filter((t: Transaction) => 
+        new Date(t.date || '').getMonth() === new Date().getMonth()
       ).length,
       budgetUtilization: overview.budgetUtilization || 0,
     }
@@ -28,9 +33,8 @@ export function useDashboard() {
 
   return {
     stats,
-    budgets: budgets || [],
-    transactions: transactions || [],
+    budgets,
+    transactions,
     isLoading: !overview || !budgets || !transactions,
   }
 }
-

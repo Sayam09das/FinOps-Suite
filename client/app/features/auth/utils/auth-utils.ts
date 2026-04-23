@@ -4,10 +4,35 @@ export function getAuthToken() {
   return typeof window !== 'undefined' ? localStorage.getItem(AUTH.LOCAL_STORAGE_TOKEN) : null
 }
 
-export function setAuthData(token: string, user: any) {
+export function getStoredUser<T = unknown>(): T | null {
+  if (typeof window === 'undefined') return null
+
+  const rawUser = localStorage.getItem(AUTH.LOCAL_STORAGE_USER)
+  if (!rawUser) return null
+
+  try {
+    return JSON.parse(rawUser) as T
+  } catch {
+    localStorage.removeItem(AUTH.LOCAL_STORAGE_USER)
+    return null
+  }
+}
+
+export function isAuthGraceActive() {
+  if (typeof window === 'undefined') return false
+
+  const graceUntil = Number(localStorage.getItem(AUTH.GRACE_UNTIL_KEY) || '0')
+  return Number.isFinite(graceUntil) && graceUntil > Date.now()
+}
+
+export function getGraceUser<T = unknown>(): T | null {
+  return isAuthGraceActive() ? getStoredUser<T>() : null
+}
+
+export function setAuthData(token: string, user: unknown) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('finops-auth-token', token)
-    localStorage.setItem('finops-user', JSON.stringify(user))
+    localStorage.setItem(AUTH.LOCAL_STORAGE_TOKEN, token)
+    localStorage.setItem(AUTH.LOCAL_STORAGE_USER, JSON.stringify(user))
   }
 }
 
@@ -15,10 +40,10 @@ export function clearAuthData() {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(AUTH.LOCAL_STORAGE_TOKEN)
     localStorage.removeItem(AUTH.LOCAL_STORAGE_USER)
+    localStorage.removeItem(AUTH.GRACE_UNTIL_KEY)
   }
 }
 
 export function isValidToken(token: string | null): boolean {
   return !!token && token.length > 10
 }
-
