@@ -11,12 +11,13 @@ export const getQueryClient = () => {
         retry: (failureCount: number, error: any) => {
           if (error?.status === 401) return false;
           if (error?.status === 404) return false;
+          if (error?.status === 408) return false;
           return failureCount < 3;
         },
       },
       mutations: {
         retry: (failureCount: number, error: any) => {
-          if (error?.status === 401 || error?.status === 404) return false;
+          if (error?.status === 401 || error?.status === 404 || error?.status === 408) return false;
           return failureCount < 1;
         },
       },

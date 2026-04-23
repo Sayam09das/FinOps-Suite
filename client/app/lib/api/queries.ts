@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from './client'
 import { ENDPOINTS } from './endpoints'
+import { API } from '../constants'
 import type { Budget, DashboardOverview, Transaction } from '@/app/features/dashboard/types/dashboard'
 
 type AuthUser = {
@@ -25,7 +26,7 @@ type RegisterCredentials = {
 export const useLoginMutation = () => {
   return useMutation({
     mutationFn: ({ email, password }: LoginCredentials) =>
-      api.post<AuthUser>(ENDPOINTS.AUTH.LOGIN, { email, password }),
+      api.post<AuthUser>(ENDPOINTS.AUTH.LOGIN, { email, password }, { timeoutMs: API.AUTH_TIMEOUT }),
     onSuccess: () => {
       // Don't invalidate during grace period - use setQueryData in useAuth instead
       console.log('[QUERIES] Login success - cache preserved')
@@ -39,7 +40,7 @@ export const useLoginMutation = () => {
 export const useRegisterMutation = () => {
   return useMutation({
     mutationFn: (data: RegisterCredentials) =>
-      api.post<AuthUser>(ENDPOINTS.AUTH.REGISTER, data),
+      api.post<AuthUser>(ENDPOINTS.AUTH.REGISTER, data, { timeoutMs: API.AUTH_TIMEOUT }),
     onSuccess: () => {
       console.log('[QUERIES] Register success')
     },
@@ -50,7 +51,7 @@ export const useRegisterMutation = () => {
 export const useAuthMeQuery = () => {
   return useQuery<AuthUser>({
     queryKey: ['auth', 'me'],
-    queryFn: () => api.get<AuthUser>(ENDPOINTS.AUTH.ME),
+    queryFn: () => api.get<AuthUser>(ENDPOINTS.AUTH.ME, { timeoutMs: API.AUTH_TIMEOUT }),
     initialData: undefined, // Set via useAuth optimistic update
     staleTime: 10 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

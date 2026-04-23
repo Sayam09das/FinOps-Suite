@@ -7,47 +7,58 @@ type ApiEnvelope<T> = {
   meta?: unknown
 }
 
+type ApiRequestConfig = RequestInit & {
+  timeoutMs?: number
+}
+
 /**
  * Base fetch request creator with auth, timeout, and error handling
  */
-const createRequest = async (url: string, options: RequestInit = {}): Promise<Response> => {
+const createRequest = async (url: string, options: ApiRequestConfig = {}): Promise<Response> => {
   const clientTimestamp = Date.now().toString();
+  const {
+    timeoutMs = API.TIMEOUT,
+    headers: customHeaders,
+    credentials,
+    ...fetchOptions
+  } = options;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), API.TIMEOUT);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const headers = new Headers(customHeaders);
+    const isFormData = fetchOptions.body instanceof FormData;
+
+    if (!isFormData && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
     
     // Add timestamp only client-side (SSR safe)
-    if (typeof window !== 'undefined') {
-      headers['x-client-timestamp'] = clientTimestamp;
+    if (typeof window !== 'undefined' && !headers.has('x-client-timestamp')) {
+      headers.set('x-client-timestamp', clientTimestamp);
     }
 
     // Fallback auth token from localStorage (backup for cookie issues)
     const token = typeof window !== 'undefined' ? localStorage.getItem('finops-auth-token') : null;
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`);
     }
 
-    Object.entries(options.headers || {}).forEach(([key, value]) => {
-      headers[key as string] = value as string;
-    });
-
     const res = await fetch(API.BASE_URL + url, {
+      ...fetchOptions,
       signal: controller.signal,
       headers,
-      credentials: 'include',
-      ...options,
+      credentials: credentials ?? 'include',
     });
     clearTimeout(timeoutId);
     return res;
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && 'name' in error && error.name === 'AbortError') {
-      throw new Error('Request timeout');
+      const timeoutError = new Error('Request timeout') as Error & { status?: number }
+      timeoutError.status = 408
+      throw timeoutError
     }
     throw error;
   }
@@ -99,7 +110,7 @@ const createApiError = async (res: Response, prefix: string) => {
  * API wrapper matching previous fetch methods
  */
 export const api = {
-  get: async <T = unknown>(url: string, config: RequestInit = {}): Promise<T> => {
+  get: async <T = unknown>(url: string, config: ApiRequestConfig = {}): Promise<T> => {
     const res = await createRequest(url, {
       method: 'GET',
       ...config,
@@ -110,7 +121,7 @@ export const api = {
     return parseSuccessResponse<T>(res)
   },
 
-  post: async <T = unknown>(url: string, data?: unknown, config: RequestInit = {}): Promise<T> => {
+  post: async <T = unknown>(url: string, data?: unknown, config: ApiRequestConfig = {}): Promise<T> => {
     const body = data instanceof FormData ? data : JSON.stringify(data);
     const res = await createRequest(url, {
       method: 'POST',
@@ -123,7 +134,7 @@ export const api = {
     return parseSuccessResponse<T>(res)
   },
 
-  put: async <T = unknown>(url: string, data?: unknown, config: RequestInit = {}): Promise<T> => {
+  put: async <T = unknown>(url: string, data?: unknown, config: ApiRequestConfig = {}): Promise<T> => {
     const body = data instanceof FormData ? data : JSON.stringify(data);
     const res = await createRequest(url, {
       method: 'PUT',
@@ -136,7 +147,7 @@ export const api = {
     return parseSuccessResponse<T>(res)
   },
 
-  patch: async <T = unknown>(url: string, data?: unknown, config: RequestInit = {}): Promise<T> => {
+  patch: async <T = unknown>(url: string, data?: unknown, config: ApiRequestConfig = {}): Promise<T> => {
     const body = data instanceof FormData ? data : JSON.stringify(data);
     const res = await createRequest(url, {
       method: 'PATCH',
@@ -149,7 +160,7 @@ export const api = {
     return parseSuccessResponse<T>(res)
   },
 
-  del: async <T = unknown>(url: string, config: RequestInit = {}): Promise<T> => {
+  del: async <T = unknown>(url: string, config: ApiRequestConfig = {}): Promise<T> => {
     const res = await createRequest(url, {
       method: 'DELETE',
       ...config,
@@ -160,15 +171,11 @@ export const api = {
     return parseSuccessResponse<T>(res)
   },
 
-  upload: async <T = unknown>(url: string, formData: FormData, config: RequestInit = {}): Promise<T> => {
-    // Don't set Content-Type for FormData - let browser set
-    const headers = new Headers(config.headers)
-    headers.delete('Content-Type') // Ensure no Content-Type for multipart
-
+  upload: async <T = unknown>(url: string, formData: FormData, config: ApiRequestConfig = {}): Promise<T> => {
     const res = await createRequest(url, {
       method: 'POST',
       body: formData,
-      headers,
+      ...config,
     });
     if (!res.ok) {
       throw await createApiError(res, 'Upload Error')

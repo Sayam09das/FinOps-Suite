@@ -10,7 +10,7 @@ import { useMemo } from 'react'
 import { DashboardStats, Transaction } from '../types/dashboard'
 
 export function useDashboard() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { isAuthenticated, isInitializing: authLoading } = useAuth()
 
   const { data: overview, isLoading: overviewLoading } = useDashboardOverviewQuery(isAuthenticated)
   const { data: budgets = [], isLoading: budgetsLoading } = useBudgetsQuery(1, isAuthenticated)

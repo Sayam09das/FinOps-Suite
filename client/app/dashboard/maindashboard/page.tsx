@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app
 import { DollarSign, CreditCard, Target, TrendingUp, Activity } from 'lucide-react'
 
 export default function Page() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { user, isAuthenticated, isInitializing: authLoading } = useAuth()
   const { isLoading: dashboardLoading } = useDashboard()
   const router = useRouter()
   const redirectedRef = useRef(false)

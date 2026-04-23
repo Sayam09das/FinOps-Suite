@@ -18,6 +18,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isInitializing: boolean;
   login: (email: string, password: string) => void;
   register: (data: { name: string; email: string; password: string }) => void;
   logout: () => void;
@@ -39,8 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isLoading =
     loginMutation.isPending ||
     registerMutation.isPending ||
-    logoutMutation.isPending ||
-    (meLoading && !effectiveUser);
+    logoutMutation.isPending;
+  const isInitializing = meLoading && !effectiveUser;
 
   const { toast } = useToast();
 
@@ -83,7 +84,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: errorMsg.includes('401') ? 'Invalid email or password' : 'Login failed',
+        description: errorMsg === 'Request timeout'
+          ? 'The server is waking up. Please wait a few seconds and try again.'
+          : errorMsg.includes('401')
+            ? 'Invalid email or password'
+            : 'Login failed',
       });
     }
   }, [loginMutation, queryClient, router, toast]);
@@ -106,7 +111,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: errorMsg.includes('already') ? 'Email already registered' : 'Registration failed',
+        description: errorMsg === 'Request timeout'
+          ? 'The server is waking up. Please wait a few seconds and try again.'
+          : errorMsg.includes('already')
+            ? 'Email already registered'
+            : 'Registration failed',
       });
     }
   }, [registerMutation, login, toast]);
@@ -135,11 +144,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = useMemo(() => ({
     user: effectiveUser,
     isLoading,
+    isInitializing,
     login,
     register,
     logout,
     isAuthenticated: !!effectiveUser,
-  }), [effectiveUser, isLoading, login, register, logout]);
+  }), [effectiveUser, isInitializing, isLoading, login, register, logout]);
 
   return (
     <AuthContext.Provider value={value}>

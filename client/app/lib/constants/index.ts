@@ -6,7 +6,8 @@ export const APP = {
 
 export const API = {
   BASE_URL: "",
-  TIMEOUT: 10000,
+  TIMEOUT: 15000,
+  AUTH_TIMEOUT: 60000,
   VERSION: "v1" as const,
 } as const
 
