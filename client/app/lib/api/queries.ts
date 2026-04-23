@@ -55,7 +55,8 @@ export const useAuthMeQuery = () => {
     initialData: undefined, // Set via useAuth optimistic update
     staleTime: 10 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: false,
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     refetchOnReconnect: false,

@@ -22,7 +22,7 @@ export const sendAuthResponse = (
   const cookieOptions = {
     httpOnly: true,
     secure: isProduction, // Only true in production
-    sameSite: isProduction ? ('none' as const) : ('lax' as const),
+    sameSite: 'none' as const,
     path: '/' as const,
     // Don't set domain for cross-site cookies - let browser handle it
   };
@@ -36,10 +36,14 @@ export const sendAuthResponse = (
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7d
   });
   
-  // Return user only (tokens in cookies, not JSON for security)
+// Return user + accessToken for frontend localStorage fallback
   ApiResponse.success(
-    session.user,
+    { 
+      ...session.user, 
+      accessToken: session.accessToken 
+    },
     res,
+
     statusCode,
     message,
   );

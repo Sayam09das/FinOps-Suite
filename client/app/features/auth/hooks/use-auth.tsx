@@ -57,14 +57,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = response;
       console.log('[AUTH] Step 2: Extracted user data:', userData);
       
-      // Store in localStorage as fallback + grace flag (8s TTL)
-      setAuthData('', userData);
+      // Store real accessToken + user in localStorage (Bearer fallback)
+      const accessToken = (userData as any).accessToken;
+      setAuthData(accessToken || '', userData);
       
       // Set RQ cache directly (no invalidate during grace)
       queryClient.setQueryData(['auth', 'me'], userData);
       
-      // Grace period flag for dashboard (8s)
-      const graceUntil = Date.now() + 8000;
+      // Grace period flag for dashboard (30s)
+      const graceUntil = Date.now() + 30000;
       localStorage.setItem(AUTH.GRACE_UNTIL_KEY, graceUntil.toString());
       
       console.log('[AUTH] Grace flag set until:', new Date(graceUntil).toISOString());

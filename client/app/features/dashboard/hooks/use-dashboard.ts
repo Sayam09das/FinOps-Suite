@@ -1,6 +1,7 @@
 "use client"
 
 import { useAuth } from '@/app/features/auth'
+import { getGraceUser } from '@/app/features/auth/utils/auth-utils'
 import { 
   useDashboardOverviewQuery, 
   useBudgetsQuery, 
@@ -11,10 +12,11 @@ import { DashboardStats, Transaction } from '../types/dashboard'
 
 export function useDashboard() {
   const { isAuthenticated, isInitializing: authLoading } = useAuth()
+  const graceUser = getGraceUser()
 
-  const { data: overview, isLoading: overviewLoading } = useDashboardOverviewQuery(isAuthenticated)
-  const { data: budgets = [], isLoading: budgetsLoading } = useBudgetsQuery(1, isAuthenticated)
-  const { data: transactionsResponse, isLoading: transactionsLoading } = useTransactionsQuery(1, isAuthenticated)
+  const { data: overview, isLoading: overviewLoading } = useDashboardOverviewQuery(isAuthenticated || !!graceUser)
+  const { data: budgets = [], isLoading: budgetsLoading } = useBudgetsQuery(1, isAuthenticated || !!graceUser)
+  const { data: transactionsResponse, isLoading: transactionsLoading } = useTransactionsQuery(1, isAuthenticated || !!graceUser)
   const transactions = useMemo(
     () => (Array.isArray(transactionsResponse) ? transactionsResponse : transactionsResponse?.data || []),
     [transactionsResponse],
