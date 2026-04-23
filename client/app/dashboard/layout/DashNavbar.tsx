@@ -111,7 +111,7 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
   };
 
   return (
-    <div className="sticky top-20 z-30 px-3 pt-3 md:px-4">
+    <div className="sticky top-3 z-30 px-3 pt-3 md:px-4">
       <div
         ref={navRef}
         className="nav-frame relative mx-auto flex w-full max-w-[1600px] flex-col gap-3 rounded-[2rem] px-3 py-3 md:px-4"
@@ -127,7 +127,7 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
               <Menu className="h-5 w-5" />
             </button>
 
-            <Link href="/dashboard/maindashboard" className="flex min-w-0 items-center gap-3">
+            <Link href="/dashboard" className="flex min-w-0 items-center gap-3">
               <div className="primary-wash flex h-11 w-11 items-center justify-center rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
                 <Sparkles className="h-5 w-5 text-foreground" />
               </div>

@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
 import "./utilities.css";
+import { AppProvider } from "./providers/app-provider"
+import AppShell from "@/app/components/layout/AppShell"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,11 +71,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { AppProvider } from "./providers/app-provider"
-import Navbar from "@/app/components/layout/Navbar"
-import Footer from "@/app/components/layout/Footer"
-import BackToTop from "@/app/components/layout/BackToTop"
-
 export default function RootLayout({
   children,
 }: {
@@ -89,10 +86,7 @@ export default function RootLayout({
       <body className="min-h-full bg-background font-sans text-foreground" suppressHydrationWarning>
         <main className="relative flex min-h-full flex-col">
           <AppProvider>
-            <Navbar />
-            <div className="relative flex-1">{children}</div>
-            <Footer />
-            <BackToTop />
+            <AppShell>{children}</AppShell>
           </AppProvider>
         </main>
       </body>

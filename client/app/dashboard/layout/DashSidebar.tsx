@@ -68,7 +68,7 @@ const navSections: NavSection[] = [
         title: "Dashboard",
         description: "Main analytics and activity pulse",
         icon: LayoutDashboard,
-        href: "/dashboard/maindashboard",
+        href: "/dashboard",
         badge: "Live",
         tone: "live",
       },

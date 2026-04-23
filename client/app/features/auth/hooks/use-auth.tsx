@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Step 4: Navigate to dashboard without refreshing the login route.
       console.log('[AUTH] Calling router.replace...');
-      router.replace('/dashboard/maindashboard');
+      router.replace('/dashboard');
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       console.error('[AUTH] Login failed:', errorMsg);
