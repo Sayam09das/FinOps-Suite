@@ -78,10 +78,10 @@ export const useBudgetsQuery = (page = 1, enabled = true) => {
 }
 
 // Transaction queries
-export const useTransactionsQuery = (page = 1, enabled = true) => {
+export const useTransactionsQuery = (page = 1, enabled = true, limit = 50) => {
   return useQuery<{ data?: Transaction[] } | Transaction[]>({
-    queryKey: ['transactions', page],
-    queryFn: () => api.get<{ data?: Transaction[] } | Transaction[]>(ENDPOINTS.TRANSACTION.LIST),
+    queryKey: ['transactions', page, limit],
+    queryFn: () => api.get<{ data?: Transaction[] } | Transaction[]>(`${ENDPOINTS.TRANSACTION.LIST}?page=${page}&limit=${limit}`),
     enabled,
     staleTime: 2 * 60 * 1000,
   })
@@ -89,9 +89,9 @@ export const useTransactionsQuery = (page = 1, enabled = true) => {
 
 // Dashboard
 export const useDashboardOverviewQuery = (enabled = true) => {
-  return useQuery<DashboardOverview & { expense?: number }>({
+  return useQuery<DashboardOverview>({
     queryKey: ['dashboard', 'overview'],
-    queryFn: () => api.get<DashboardOverview & { expense?: number }>('/api/dashboard/'), // Backend serves GET / at /api/dashboard
+    queryFn: () => api.get<DashboardOverview>('/api/dashboard/'), // Backend serves GET / at /api/dashboard
     enabled,
     staleTime: 2 * 60 * 1000,
   })
