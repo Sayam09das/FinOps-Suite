@@ -99,7 +99,9 @@ const navSections: NavSection[] = [
         title: "All Transactions",
         description: "Browse every money event",
         icon: ReceiptText,
-        badge: "Soon",
+        href: "/dashboard/transactions",
+        badge: "Live",
+        tone: "live",
       },
       {
         title: "Add Transaction",
