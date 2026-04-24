@@ -16,9 +16,11 @@ import CategoryPieChart from './Overview/CategoryPieChart'
 import GoalsProgress from './Overview/GoalsProgress'
 import InsightsPanel from './Overview/InsightsPanel'
 import OverviewSkeleton from './Overview/OverviewSkeleton'
+import FinanceSummaryPage from './Overview/FinanceSummaryPage'
 import RecentTransactions from './Overview/RecentTransactions'
 import SummaryCards from './Overview/SummaryCards'
 import { buildOverviewViewModel } from './Overview/view-model'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs'
 
 export default function DashboardHome() {
   const { user, isAuthenticated, isInitializing: authLoading } = useAuth()
@@ -56,6 +58,7 @@ export default function DashboardHome() {
     return null
   }
 
+  const [activeTab, setActiveTab] = useState('overview')
   const firstName = user?.name?.split(' ')[0] || 'Operator'
 
   return (
@@ -66,7 +69,7 @@ export default function DashboardHome() {
             <div className="max-w-3xl">
               <Badge variant="accent" className="bg-accent/18 text-accent-foreground">
                 <Sparkles className="h-3.5 w-3.5" />
-                Main Overview
+                Dashboard
               </Badge>
               <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-foreground md:text-4xl">
                 Welcome back, {firstName}. Your finance system is live.
