@@ -76,7 +76,9 @@ const navSections: NavSection[] = [
         title: "Financial Summary",
         description: "Revenue, expenses, and balances",
         icon: Wallet,
-        badge: "Soon",
+        href: "/dashboard/finance-summary",
+        badge: "Live",
+        tone: "live",
       },
       {
         title: "Net Worth Snapshot",

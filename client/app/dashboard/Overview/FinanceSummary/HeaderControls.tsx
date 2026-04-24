@@ -48,12 +48,12 @@ export default function HeaderControls({ dateRange, onDateRangeChange, compare, 
       </div>
 
       <div className="flex flex-wrap gap-3 items-center">
-        {/* Date Range */}
+      {/* Date Range */}
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" className="gap-2">
               <Calendar className="h-4 w-4" />
-              <SelectValue />
+              {dateRanges.find(r => r.value === dateRange)?.label ?? 'Select Range'}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-48 p-1">

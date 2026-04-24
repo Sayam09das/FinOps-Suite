@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { CalendarDays, Sparkles } from 'lucide-react'
 
@@ -16,7 +16,6 @@ import CategoryPieChart from './Overview/Dashboard/CategoryPieChart'
 import GoalsProgress from './Overview/Dashboard/GoalsProgress'
 import InsightsPanel from './Overview/Dashboard/InsightsPanel'
 import OverviewSkeleton from './Overview/Dashboard/OverviewSkeleton'
-import FinanceSummaryPage from './Overview/FinanceSummaryPage'
 import RecentTransactions from './Overview/Dashboard/RecentTransactions'
 import SummaryCards from './Overview/Dashboard/SummaryCards'
 import { buildOverviewViewModel } from './Overview/view-model'
@@ -27,6 +26,7 @@ export default function DashboardHome() {
   const { overview, transactions, budgetStatus, isLoading: dashboardLoading } = useDashboard()
   const router = useRouter()
   const redirectedRef = useRef(false)
+  const firstName = user?.name?.split(' ')[0] || 'Operator'
 
   useEffect(() => {
     console.log('[DASHBOARD] Auth state:', {
@@ -57,9 +57,6 @@ export default function DashboardHome() {
   if (!isAuthenticated) {
     return null
   }
-
-  const [activeTab, setActiveTab] = useState('overview')
-  const firstName = user?.name?.split(' ')[0] || 'Operator'
 
   return (
     <div className="min-h-screen bg-background">
