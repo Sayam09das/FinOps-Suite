@@ -86,7 +86,7 @@ const quickActions = [
   },
 ];
 
-function useOutsideClick(ref: React.RefObject<HTMLElement>, handler: () => void) {
+function useOutsideClick(ref: React.RefObject<HTMLElement | null>, handler: () => void) {
   useEffect(() => {
     const listener = (e: MouseEvent) => {
       if (!ref.current?.contains(e.target as Node)) handler();
