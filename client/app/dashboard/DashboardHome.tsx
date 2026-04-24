@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CalendarDays, Sparkles } from 'lucide-react'
 
@@ -8,19 +8,19 @@ import { Badge } from '@/app/components/ui/badge'
 import { useAuth } from '@/app/features/auth'
 import { useDashboard } from '@/app/features/dashboard'
 
-import AccountsList from './Overview/AccountsList'
-import AlertsPanel from './Overview/AlertsPanel'
-import BudgetStatus from './Overview/BudgetStatus'
-import CashFlowChart from './Overview/CashFlowChart'
-import CategoryPieChart from './Overview/CategoryPieChart'
-import GoalsProgress from './Overview/GoalsProgress'
-import InsightsPanel from './Overview/InsightsPanel'
-import OverviewSkeleton from './Overview/OverviewSkeleton'
+import AccountsList from './Overview/Dashboard/AccountsList'
+import AlertsPanel from './Overview/Dashboard/AlertsPanel'
+import BudgetStatus from './Overview/Dashboard/BudgetStatus'
+import CashFlowChart from './Overview/Dashboard/CashFlowChart'
+import CategoryPieChart from './Overview/Dashboard/CategoryPieChart'
+import GoalsProgress from './Overview/Dashboard/GoalsProgress'
+import InsightsPanel from './Overview/Dashboard/InsightsPanel'
+import OverviewSkeleton from './Overview/Dashboard/OverviewSkeleton'
 import FinanceSummaryPage from './Overview/FinanceSummaryPage'
-import RecentTransactions from './Overview/RecentTransactions'
-import SummaryCards from './Overview/SummaryCards'
+import RecentTransactions from './Overview/Dashboard/RecentTransactions'
+import SummaryCards from './Overview/Dashboard/SummaryCards'
 import { buildOverviewViewModel } from './Overview/view-model'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs'
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs'
 
 export default function DashboardHome() {
   const { user, isAuthenticated, isInitializing: authLoading } = useAuth()
