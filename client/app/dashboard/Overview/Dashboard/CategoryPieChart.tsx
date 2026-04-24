@@ -5,7 +5,7 @@ import { Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip }
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { formatAmount } from "@/app/lib/utils/currency";
 
-import type { CategorySlice } from "./types";
+import type { CategorySlice } from "../types";
 
 export default function CategoryPieChart({ items }: { items: CategorySlice[] }) {
   return (

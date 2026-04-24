@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app
 import { cn } from "@/app/lib/utils/cn";
 import { formatAmount } from "@/app/lib/utils/currency";
 
-import type { CashFlowPoint, ChartRange } from "./types";
+import type { CashFlowPoint, ChartRange } from "../types";
 
 const ranges: ChartRange[] = ["Weekly", "Monthly", "Yearly"];
 

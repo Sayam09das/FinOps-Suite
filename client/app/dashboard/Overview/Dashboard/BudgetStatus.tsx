@@ -7,7 +7,7 @@ import { Progress } from "@/app/components/ui/progress";
 import { formatAmount } from "@/app/lib/utils/currency";
 import { cn } from "@/app/lib/utils/cn";
 
-import type { BudgetHealthItem } from "./types";
+import type { BudgetHealthItem } from "../types";
 
 const toneClasses = {
   positive: "text-emerald-700",

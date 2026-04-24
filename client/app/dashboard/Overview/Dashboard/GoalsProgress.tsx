@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app
 import { Progress } from "@/app/components/ui/progress";
 import { formatAmount } from "@/app/lib/utils/currency";
 
-import type { GoalItem } from "./types";
+import type { GoalItem } from "../types";
 
 export default function GoalsProgress({ items }: { items: GoalItem[] }) {
   return (

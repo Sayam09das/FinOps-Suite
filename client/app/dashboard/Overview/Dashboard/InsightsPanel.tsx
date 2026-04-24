@@ -3,7 +3,7 @@
 import { Card } from "@/app/components/ui/card";
 import { cn } from "@/app/lib/utils/cn";
 
-import type { InsightItem } from "./types";
+import type { InsightItem } from "../types";
 
 const insightToneStyles = {
   positive: "bg-emerald-100 text-emerald-700",

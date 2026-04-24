@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { cn } from "@/app/lib/utils/cn";
 
-import type { AlertItem } from "./types";
+import type { AlertItem } from "../types";
 
 const alertToneStyles = {
   positive: "bg-emerald-100 text-emerald-700",

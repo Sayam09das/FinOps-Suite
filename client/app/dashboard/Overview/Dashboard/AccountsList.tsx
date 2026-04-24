@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app
 import { formatAmount } from "@/app/lib/utils/currency";
 import { cn } from "@/app/lib/utils/cn";
 
-import type { AccountItem } from "./types";
+import type { AccountItem } from "../types";
 
 export default function AccountsList({ items }: { items: AccountItem[] }) {
   return (

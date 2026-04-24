@@ -7,7 +7,7 @@ import { cn } from "@/app/lib/utils/cn";
 import { formatAmount, formatPercent } from "@/app/lib/utils/currency";
 import { formatNumber } from "@/app/lib/utils/number";
 
-import type { SummaryMetric } from "./types";
+import type { SummaryMetric } from "../types";
 
 const toneStyles = {
   positive: {
