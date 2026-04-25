@@ -13,16 +13,16 @@ import {
   BulkActionsBar,
   Pagination,
   TransactionsSkeleton,
-} from "../Transactions"
+} from "."
 import { useAuth } from "@/app/features/auth"
 
-import type { Transaction, TransactionFilterState } from "../Transactions/types"
+import type { Transaction, TransactionFilterState } from "./types"
 import {
   allTransactions,
   defaultFilters,
   filterTransactions,
   computeSummary,
-} from "../Transactions/view-model"
+} from "./view-model"
 
 const PAGE_SIZE = 15
 
