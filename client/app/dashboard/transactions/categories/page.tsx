@@ -2,16 +2,15 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Plus, Repeat } from "lucide-react"
+import { ArrowLeft, Plus, Tag } from "lucide-react"
 import Link from "next/link"
 
 import { Button } from "@/app/components/ui/button"
-import RecurringList from "../Recurring/RecurringList"
-import UpcomingTimeline from "../Recurring/UpcomingTimeline"
-import AddRecurringForm from "../Recurring/AddRecurringForm"
+import CategoryList from "../categories/CategoryList"
+import AddCategoryModal from "../categories/AddCategoryModal"
 
-export default function RecurringPage() {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+export default function CategoriesPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,49 +28,39 @@ export default function RecurringPage() {
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-foreground md:text-3xl">
-                Recurring Transactions
+                Categories
               </h1>
               <p className="mt-1 text-sm text-foreground/60">
-                Automate tracking of subscriptions, EMIs, and salaries
+                Organize your spending with custom categories
               </p>
             </div>
           </div>
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
-              onClick={() => setIsDrawerOpen(true)}
+              onClick={() => setIsModalOpen(true)}
               className="rounded-2xl shadow-lg shadow-primary/10"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Add Recurring
+              Add Category
             </Button>
           </motion.div>
         </motion.div>
 
-        {/* Timeline + List Grid */}
-        <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <UpcomingTimeline />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <RecurringList />
-          </motion.div>
-        </div>
+        {/* Category List */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+        >
+          <CategoryList />
+        </motion.div>
       </div>
 
-      {/* Add Recurring Drawer */}
+      {/* Add Category Modal */}
       <AnimatePresence>
-        {isDrawerOpen && (
-          <AddRecurringForm onClose={() => setIsDrawerOpen(false)} />
+        {isModalOpen && (
+          <AddCategoryModal onClose={() => setIsModalOpen(false)} />
         )}
       </AnimatePresence>
     </div>
