@@ -169,4 +169,72 @@ export default function ComparisonChart({ series }: ComparisonChartProps) {
                 <CartesianGrid
                   stroke="rgba(91,107,100,0.12)"
                   strokeDasharray="4 4"
-                  vertical={
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{
+                    fill: "rgba(33,49,43,0.55)",
+                    fontSize: 12,
+                  }}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{
+                    fill: "rgba(33,49,43,0.55)",
+                    fontSize: 12,
+                  }}
+                  tickFormatter={(value) => `₹${Math.round(value / 1000)}k`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "1rem",
+                    border: "1px solid rgba(211,221,210,0.9)",
+                    background: "rgba(255,255,255,0.92)",
+                    boxShadow: "0 20px 60px rgba(33,49,43,0.12)",
+                  }}
+                  formatter={(value) => [
+                    formatCurrency(Number(value ?? 0), "INR"),
+                    "",
+                  ]}
+                  labelStyle={{
+                    color: "rgba(33,49,43,0.62)",
+                    fontWeight: 600,
+                  }}
+                />
+                <Legend
+                  wrapperStyle={{ paddingTop: 12 }}
+                  formatter={(value) => (
+                    <span className="text-sm font-medium text-foreground/70">{value}</span>
+                  )}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="income"
+                  name="Income"
+                  stroke="#10B981"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: "#10B981" }}
+                  activeDot={{ r: 5 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="expense"
+                  name="Expense"
+                  stroke="#EF4444"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: "#EF4444" }}
+                  activeDot={{ r: 5 }}
+                />
+              </ComposedChart>
+            )}
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </motion.div>
+  )
+}
+
