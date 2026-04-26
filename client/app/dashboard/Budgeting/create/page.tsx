@@ -4,11 +4,11 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { CheckCircle2, Save } from "lucide-react"
 
-import Header from "../../budgeting/CreateBudgetPage/Header"
-import Form from "../../budgeting/CreateBudgetPage/Form"
-import Preview from "../../budgeting/CreateBudgetPage/Preview"
-import Suggestions from "../../budgeting/CreateBudgetPage/Suggestions"
-import Snapshot from "../../budgeting/CreateBudgetPage/Snapshot"
+import Header from "../../Budgeting/CreateBudgetPage/Header"
+import Form from "../../Budgeting/CreateBudgetPage/Form"
+import Preview from "../../Budgeting/CreateBudgetPage/Preview"
+import Suggestions from "../../Budgeting/CreateBudgetPage/Suggestions"
+import Snapshot from "../../Budgeting/CreateBudgetPage/Snapshot"
 
 import { demoBudgets } from "../demo-data"
 
