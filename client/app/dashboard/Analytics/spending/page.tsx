@@ -9,12 +9,12 @@ import {
   CategoryChart,
   TopList,
   Trend,
-} from "../../Analytics/SpendingAnalysisPage"
+} from "../../analytics/SpendingAnalysisPage"
 import {
   demoCategories,
   demoTrendSeries,
   demoTotalSpend,
-} from "../../Analytics/SpendingAnalysisPage/demo-data"
+} from "../../analytics/SpendingAnalysisPage/demo-data"
 
 export default function SpendingAnalysisPage() {
   const [dateRange, setDateRange] = useState("thisMonth")

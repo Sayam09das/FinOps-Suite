@@ -9,13 +9,13 @@ import {
   ComparisonChart,
   SavingsRate,
   Insights,
-} from "../../Analytics/IncomeVsExpensePage"
+} from "../../analytics/IncomeVsExpensePage"
 import {
   demoIncomeExpenseSeries,
   demoSummary,
   demoSavingsRate,
   demoInsights,
-} from "../../Analytics/IncomeVsExpensePage/demo-data"
+} from "../../analytics/IncomeVsExpensePage/demo-data"
 
 export default function IncomeVsExpensePage() {
   const [dateRange, setDateRange] = useState("thisMonth")
