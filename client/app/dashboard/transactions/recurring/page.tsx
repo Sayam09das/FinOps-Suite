@@ -6,9 +6,9 @@ import { ArrowLeft, Plus, Repeat } from "lucide-react"
 import Link from "next/link"
 
 import { Button } from "@/app/components/ui/button"
-import RecurringList from "../Recurring/RecurringList"
-import UpcomingTimeline from "../Recurring/UpcomingTimeline"
-import AddRecurringForm from "../Recurring/AddRecurringForm"
+import RecurringList from "./RecurringList"
+import UpcomingTimeline from "./UpcomingTimeline"
+import AddRecurringForm from "./AddRecurringForm"
 
 export default function RecurringPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)

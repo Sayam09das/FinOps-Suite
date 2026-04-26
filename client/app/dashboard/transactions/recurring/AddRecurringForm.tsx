@@ -7,8 +7,8 @@ import { X, Plus, Calendar, Repeat } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { toast } from "@/app/components/ui/use-toast"
 import { cn } from "@/app/lib/utils/cn"
-import CategorySelect from "../AddTransaction/CategorySelect"
-import AccountSelect from "../AddTransaction/AccountSelect"
+import CategorySelect from "../addTransaction/CategorySelect"
+import AccountSelect from "../addTransaction/AccountSelect"
 
 interface AddRecurringFormProps {
   onClose: () => void

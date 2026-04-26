@@ -6,8 +6,8 @@ import { ArrowLeft, Plus, Tag } from "lucide-react"
 import Link from "next/link"
 
 import { Button } from "@/app/components/ui/button"
-import CategoryList from "../Categories/CategoryList"
-import AddCategoryModal from "../Categories/AddCategoryModal"
+import CategoryList from "./CategoryList"
+import AddCategoryModal from "./AddCategoryModal"
 
 export default function CategoriesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
