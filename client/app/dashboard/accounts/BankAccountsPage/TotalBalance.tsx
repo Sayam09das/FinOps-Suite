@@ -59,7 +59,7 @@ export default function TotalBalance({ total, changePercent, history, currency =
                 </linearGradient>
               </defs>
               <Tooltip
-                formatter={(value: number) => [formatCurrency(value, currency, "en-IN"), "Balance"]}
+                formatter={(value) => [formatCurrency(Number(value), currency, "en-IN"), "Balance"]}
                 contentStyle={{ borderRadius: "1rem", border: "1px solid #e5e7eb" }}
               />
               <Area

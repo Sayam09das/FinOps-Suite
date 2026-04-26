@@ -98,8 +98,8 @@ export default function DetailsDrawer({ account, activities, isOpen, onClose }: 
                       <XAxis dataKey="date" hide />
                       <YAxis hide domain={["dataMin - 5000", "dataMax + 5000"]} />
                       <Tooltip
-                        formatter={(value: number) => [
-                          formatCurrency(value, account.currency, "en-IN"),
+                        formatter={(value) => [
+                          formatCurrency(Number(value), account.currency, "en-IN"),
                           "Balance",
                         ]}
                         contentStyle={{ borderRadius: "1rem", border: "1px solid #e5e7eb" }}
