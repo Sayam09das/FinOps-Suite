@@ -2,11 +2,11 @@
 
 import { useMemo } from "react"
 
-import Header from "../../budgeting/BudgetVsActualPage/Header"
-import Summary from "../../budgeting/BudgetVsActualPage/Summary"
-import Table from "../../budgeting/BudgetVsActualPage/Table"
-import Chart from "../../budgeting/BudgetVsActualPage/Chart"
-import Alerts from "../../budgeting/BudgetVsActualPage/Alerts"
+import Header from "../BudgetVsActualPage/Header"
+import Summary from "../BudgetVsActualPage/Summary"
+import Table from "../BudgetVsActualPage/Table"
+import Chart from "../BudgetVsActualPage/Chart"
+import Alerts from "../BudgetVsActualPage/Alerts"
 
 import { demoBudgets } from "../demo-data"
 import type { Budget } from "../types"

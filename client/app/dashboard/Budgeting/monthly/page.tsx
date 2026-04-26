@@ -2,11 +2,11 @@
 
 import { useState, useMemo } from "react"
 
-import Header from "../../budgeting/MonthlyBudgetsPage/Header"
-import MonthSelector from "../../budgeting/MonthlyBudgetsPage/MonthSelector"
-import Summary from "../../budgeting/MonthlyBudgetsPage/Summary"
-import CategoryCards from "../../budgeting/MonthlyBudgetsPage/CategoryCards"
-import Insights from "../../budgeting/MonthlyBudgetsPage/Insights"
+import Header from "../MonthlyBudgetsPage/Header"
+import MonthSelector from "../MonthlyBudgetsPage/MonthSelector"
+import Summary from "../MonthlyBudgetsPage/Summary"
+import CategoryCards from "../MonthlyBudgetsPage/CategoryCards"
+import Insights from "../MonthlyBudgetsPage/Insights"
 
 import { demoBudgets } from "../demo-data"
 import type { Budget } from "../types"
