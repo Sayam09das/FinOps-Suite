@@ -3,11 +3,11 @@
 import { useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
-import Header from "../../Accounts/TransfersPage/Header"
-import Form from "../../Accounts/TransfersPage/Form"
-import BalancePreview from "../../Accounts/TransfersPage/BalancePreview"
-import RecentTransfers from "../../Accounts/TransfersPage/RecentTransfers"
-import DetailsDrawer from "../../Accounts/TransfersPage/DetailsDrawer"
+import Header from "../../accounts/TransfersPage/Header"
+import Form from "../../accounts/TransfersPage/Form"
+import BalancePreview from "../../accounts/TransfersPage/BalancePreview"
+import RecentTransfers from "../../accounts/TransfersPage/RecentTransfers"
+import DetailsDrawer from "../../accounts/TransfersPage/DetailsDrawer"
 
 export default function TransfersPage() {
   const [selectedTransferId, setSelectedTransferId] = useState<string | null>(null)

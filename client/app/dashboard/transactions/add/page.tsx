@@ -5,7 +5,7 @@ import { ArrowLeft, PlusCircle } from "lucide-react"
 import Link from "next/link"
 
 import { Button } from "@/app/components/ui/button"
-import TransactionForm from "../AddTransaction/TransactionForm"
+import TransactionForm from "../addTransaction/TransactionForm"
 
 export default function AddTransactionPage() {
   return (

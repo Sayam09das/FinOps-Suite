@@ -3,11 +3,11 @@
 import { useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
-import Header from "../../Accounts/CreditCardsPage/Header"
-import Utilization from "../../Accounts/CreditCardsPage/Utilization"
-import CardsList from "../../Accounts/CreditCardsPage/CardsList"
-import Billing from "../../Accounts/CreditCardsPage/Billing"
-import Payments from "../../Accounts/CreditCardsPage/Payments"
+import Header from "../../accounts/CreditCardsPage/Header"
+import Utilization from "../../accounts/CreditCardsPage/Utilization"
+import CardsList from "../../accounts/CreditCardsPage/CardsList"
+import Billing from "../../accounts/CreditCardsPage/Billing"
+import Payments from "../../accounts/CreditCardsPage/Payments"
 
 export default function CreditCardsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
