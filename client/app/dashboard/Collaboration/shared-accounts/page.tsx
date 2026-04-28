@@ -3,14 +3,14 @@
 import { useState, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
-import Header from "../../collaboration/SharedAccountsPage/Header"
-import Summary from "../../collaboration/SharedAccountsPage/Summary"
-import AccountsList from "../../collaboration/SharedAccountsPage/AccountsList"
-import Members from "../../collaboration/SharedAccountsPage/Members"
-import ActivityFeed from "../../collaboration/SharedAccountsPage/ActivityFeed"
+import Header from "../../Collaboration/SharedAccountsPage/Header"
+import Summary from "../../Collaboration/SharedAccountsPage/Summary"
+import AccountsList from "../../Collaboration/SharedAccountsPage/AccountsList"
+import Members from "../../Collaboration/SharedAccountsPage/Members"
+import ActivityFeed from "../../Collaboration/SharedAccountsPage/ActivityFeed"
 
-import { demoSharedAccounts } from "../../collaboration/demo-data"
-import type { SharedAccount } from "../../collaboration/types"
+import { demoSharedAccounts } from "../../Collaboration/demo-data"
+import type { SharedAccount } from "../../Collaboration/types"
 
 export default function SharedAccountsPage() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)

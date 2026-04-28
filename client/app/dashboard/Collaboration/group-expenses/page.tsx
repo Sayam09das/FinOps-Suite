@@ -3,14 +3,14 @@
 import { useState, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
-import Header from "../../collaboration/GroupExpensesPage/Header"
-import GroupsList from "../../collaboration/GroupExpensesPage/GroupsList"
-import Expenselist from "../../collaboration/GroupExpensesPage/Expenselist"
-import SplitDetails from "../../collaboration/GroupExpensesPage/SplitDetails"
-import Settlement from "../../collaboration/GroupExpensesPage/Settlement"
+import Header from "../../Collaboration/GroupExpensesPage/Header"
+import GroupsList from "../../Collaboration/GroupExpensesPage/GroupsList"
+import Expenselist from "../../Collaboration/GroupExpensesPage/Expenselist"
+import SplitDetails from "../../Collaboration/GroupExpensesPage/SplitDetails"
+import Settlement from "../../Collaboration/GroupExpensesPage/Settlement"
 
-import { demoExpenseGroups, getSettlementForGroup } from "../../collaboration/demo-data-group-expenses"
-import type { ExpenseGroup, Expense } from "../../collaboration/types"
+import { demoExpenseGroups, getSettlementForGroup } from "../../Collaboration/demo-data-group-expenses"
+import type { ExpenseGroup, Expense } from "../../Collaboration/types"
 
 const CURRENT_USER_ID = "u-you"
 
