@@ -3,11 +3,11 @@
 import { useState, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
-import Header from "../../collaboration/GroupExpensesPage/Header"
-import GroupsList from "../../collaboration/GroupExpensesPage/GroupsList"
-import Expenselist from "../../collaboration/GroupExpensesPage/Expenselist"
-import SplitDetails from "../../collaboration/GroupExpensesPage/SplitDetails"
-import Settlement from "../../collaboration/GroupExpensesPage/Settlement"
+import Header from "../group-expenses-page/Header"
+import GroupsList from "../group-expenses-page/GroupsList"
+import Expenselist from "../group-expenses-page/Expenselist"
+import SplitDetails from "../group-expenses-page/SplitDetails"
+import Settlement from "../group-expenses-page/Settlement"
 
 import { demoExpenseGroups, getSettlementForGroup } from "../../collaboration/demo-data-group-expenses"
 import type { ExpenseGroup, Expense } from "../../collaboration/types"

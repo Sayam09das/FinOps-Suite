@@ -3,11 +3,11 @@
 import { useState, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
-import Header from "../../collaboration/SharedAccountsPage/Header"
-import Summary from "../../collaboration/SharedAccountsPage/Summary"
-import AccountsList from "../../collaboration/SharedAccountsPage/AccountsList"
-import Members from "../../collaboration/SharedAccountsPage/Members"
-import ActivityFeed from "../../collaboration/SharedAccountsPage/ActivityFeed"
+import Header from "../shared-accounts-page/Header"
+import Summary from "../shared-accounts-page/Summary"
+import AccountsList from "../shared-accounts-page/AccountsList"
+import Members from "../shared-accounts-page/Members"
+import ActivityFeed from "../shared-accounts-page/ActivityFeed"
 
 import { demoSharedAccounts } from "../../collaboration/demo-data"
 import type { SharedAccount } from "../../collaboration/types"

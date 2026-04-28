@@ -3,10 +3,10 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 
-import Header from "../../collaboration/InviteUsersPage/Header"
-import InviteForm from "../../collaboration/InviteUsersPage/InviteForm"
-import PendingInvites from "../../collaboration/InviteUsersPage/PendingInvites"
-import MembersList from "../../collaboration/InviteUsersPage/MembersList"
+import Header from "../invite-users-page/Header"
+import InviteForm from "../invite-users-page/InviteForm"
+import PendingInvites from "../invite-users-page/PendingInvites"
+import MembersList from "../invite-users-page/MembersList"
 
 import { demoInvites, demoTeamMembers } from "../../collaboration/demo-data-invites"
 import type { Invite, TeamMember, MemberRole } from "../../collaboration/types"
