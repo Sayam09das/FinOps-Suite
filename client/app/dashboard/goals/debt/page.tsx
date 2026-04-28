@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 
-import Header from "../../Goals/DebtTrackerPage/Header"
-import Summary from "../../Goals/DebtTrackerPage/Summary"
-import DebtList from "../../Goals/DebtTrackerPage/DebtList"
-import Timeline from "../../Goals/DebtTrackerPage/Timeline"
-import Payments from "../../Goals/DebtTrackerPage/Payments"
-import { demoDebtSummary, demoDebts } from "../../Goals/DebtTrackerPage/demo-data"
-import type { Debt } from "../../Goals/DebtTrackerPage/demo-data"
+import Header from "../../goals/DebtTrackerPage/Header"
+import Summary from "../../goals/DebtTrackerPage/Summary"
+import DebtList from "../../goals/DebtTrackerPage/DebtList"
+import Timeline from "../../goals/DebtTrackerPage/Timeline"
+import Payments from "../../goals/DebtTrackerPage/Payments"
+import { demoDebtSummary, demoDebts } from "../../goals/DebtTrackerPage/demo-data"
+import type { Debt } from "../../goals/DebtTrackerPage/demo-data"
 
 export default function DebtTrackerPage() {
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null)

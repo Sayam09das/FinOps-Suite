@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 
-import Header from "../../Goals/SavingsGoalsPage/Header"
-import Summary from "../../Goals/SavingsGoalsPage/Summary"
-import GoalsList from "../../Goals/SavingsGoalsPage/GoalsList"
-import DetailsDrawer from "../../Goals/SavingsGoalsPage/DetailsDrawer"
-import AddModal from "../../Goals/SavingsGoalsPage/AddModal"
-import { demoSavingsSummary, demoSavingsGoals } from "../../Goals/SavingsGoalsPage/demo-data"
-import type { SavingsGoal } from "../../Goals/SavingsGoalsPage/demo-data"
+import Header from "../../goals/SavingsGoalsPage/Header"
+import Summary from "../../goals/SavingsGoalsPage/Summary"
+import GoalsList from "../../goals/SavingsGoalsPage/GoalsList"
+import DetailsDrawer from "../../goals/SavingsGoalsPage/DetailsDrawer"
+import AddModal from "../../goals/SavingsGoalsPage/AddModal"
+import { demoSavingsSummary, demoSavingsGoals } from "../../goals/SavingsGoalsPage/demo-data"
+import type { SavingsGoal } from "../../goals/SavingsGoalsPage/demo-data"
 
 export default function SavingsGoalsPage() {
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null)

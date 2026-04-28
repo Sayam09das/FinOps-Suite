@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 
-import Header from "../../Goals/InvestmentTrackingPage/Header"
-import Summary from "../../Goals/InvestmentTrackingPage/Summary"
-import HoldingsList from "../../Goals/InvestmentTrackingPage/HoldingsList"
-import Chart from "../../Goals/InvestmentTrackingPage/Chart"
-import Details from "../../Goals/InvestmentTrackingPage/Details"
-import { demoInvestmentSummary, demoHoldings, portfolioHistory } from "../../Goals/InvestmentTrackingPage/demo-data"
-import type { Holding } from "../../Goals/InvestmentTrackingPage/demo-data"
+import Header from "../../goals/InvestmentTrackingPage/Header"
+import Summary from "../../goals/InvestmentTrackingPage/Summary"
+import HoldingsList from "../../goals/InvestmentTrackingPage/HoldingsList"
+import Chart from "../../goals/InvestmentTrackingPage/Chart"
+import Details from "../../goals/InvestmentTrackingPage/Details"
+import { demoInvestmentSummary, demoHoldings, portfolioHistory } from "../../goals/InvestmentTrackingPage/demo-data"
+import type { Holding } from "../../goals/InvestmentTrackingPage/demo-data"
 
 export default function InvestmentTrackingPage() {
   const [selectedHolding, setSelectedHolding] = useState<Holding | null>(null)
