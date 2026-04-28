@@ -247,7 +247,7 @@ const navSections: NavSection[] = [
         title: "Savings Goals",
         description: "Track milestones and pace",
         icon: Target,
-        href: "/dashboard/goals/savings-goals",
+        href: "/dashboard/goals/savings",
         badge: "Live",
         tone: "live"
       },
@@ -255,7 +255,7 @@ const navSections: NavSection[] = [
         title: "Investment Tracking",
         description: "Monitor growth over time",
         icon: TrendingUp,
-        href: "/dashboard/goals/investment-tracking",
+        href: "/dashboard/goals/investments",
         badge: "Live",
         tone: "live",
       },
@@ -263,7 +263,7 @@ const navSections: NavSection[] = [
         title: "Debt Tracker",
         description: "Reduce liabilities deliberately",
         icon: ShieldCheck,
-        href: "/dashboard/goals/debt-tracker",
+        href: "/dashboard/goals/debt",
         badge: "Live",
         tone: "live"
       },
