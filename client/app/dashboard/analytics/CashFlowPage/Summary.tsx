@@ -64,7 +64,7 @@ export default function Summary({ data }: SummaryProps) {
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
     >
       {cards.map((card, index) => {
-        const change = ((card.value - card.previous) / card.previous) * 100
+        const change = card.previous !== 0 ? ((card.value - card.previous) / card.previous) * 100 : 0
         const isPositive = change >= 0
 
         return (
