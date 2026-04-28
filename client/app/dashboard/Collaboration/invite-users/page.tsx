@@ -11,6 +11,7 @@ import MembersList from "../../Collaboration/InviteUsersPage/MembersList"
 import { demoInvites, demoTeamMembers } from "../../Collaboration/demo-data-invites"
 import type { Invite, TeamMember, MemberRole } from "../../Collaboration/types"
 
+
 export default function InviteUsersPage() {
   const [invites, setInvites] = useState<Invite[]>(demoInvites)
   const [members, setMembers] = useState<TeamMember[]>(demoTeamMembers)
