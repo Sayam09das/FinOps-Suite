@@ -3,13 +3,13 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 
-import Header from "../../Collaboration/InviteUsersPage/Header"
-import InviteForm from "../../Collaboration/InviteUsersPage/InviteForm"
-import PendingInvites from "../../Collaboration/InviteUsersPage/PendingInvites"
-import MembersList from "../../Collaboration/InviteUsersPage/MembersList"
+import Header from "../../collaboration/InviteUsersPage/Header"
+import InviteForm from "../../collaboration/InviteUsersPage/InviteForm"
+import PendingInvites from "../../collaboration/InviteUsersPage/PendingInvites"
+import MembersList from "../../collaboration/InviteUsersPage/MembersList"
 
-import { demoInvites, demoTeamMembers } from "../../Collaboration/demo-data-invites"
-import type { Invite, TeamMember, MemberRole } from "../../Collaboration/types"
+import { demoInvites, demoTeamMembers } from "../../collaboration/demo-data-invites"
+import type { Invite, TeamMember, MemberRole } from "../../collaboration/types"
 
 export default function InviteUsersPage() {
   const [invites, setInvites] = useState<Invite[]>(demoInvites)
