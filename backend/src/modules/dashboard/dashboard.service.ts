@@ -1,26 +1,6 @@
 import prisma from "../../config/db";
-import redis, { ensureRedisConnection } from "../../infrastructure/cache/redis";
 
 export const getDashboardData = async (userId: string) => {
-  const cacheKey = `dashboard:${userId}`;
-
-  // 🔥 1. Check cache
-  let cached;
-  try {
-    if (await ensureRedisConnection()) {
-      cached = await redis.get(cacheKey);
-      if (cached) {
-        console.log("⚡ Serving from Redis");
-        return JSON.parse(cached);
-      }
-    }
-  } catch {
-    // Skip cache when Redis is unavailable.
-  }
-
-  console.log("🐢 Fetching from DB");
-
-  // 🔹 DB logic
   const transactions = await prisma.transaction.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -28,16 +8,22 @@ export const getDashboardData = async (userId: string) => {
 
   let income = 0;
   let expense = 0;
-  const categoryMap: any = {};
+  const categoryMap: Record<string, number> = {};
 
   transactions.forEach((t) => {
-    if (t.type === "income") income += t.amount;
-    else expense += t.amount;
+    const amount = Number(t.amount) || 0;
+    const type = t.type.toLowerCase();
+
+    if (type === "income") {
+      income += amount;
+    } else {
+      expense += amount;
+    }
 
     if (!categoryMap[t.category]) {
       categoryMap[t.category] = 0;
     }
-    categoryMap[t.category] += t.amount;
+    categoryMap[t.category] += amount;
   });
 
   const currentMonth = new Date().toISOString().slice(0, 7);
@@ -46,7 +32,7 @@ export const getDashboardData = async (userId: string) => {
     where: { userId, month: currentMonth },
   });
 
-  const budgetMap: any = {};
+  const budgetMap: Record<string, { budget: number; spent: number; remaining: number; alert?: string }> = {};
 
   budgets.forEach((b) => {
     budgetMap[b.category] = {
@@ -57,9 +43,10 @@ export const getDashboardData = async (userId: string) => {
   });
 
   transactions.forEach((t) => {
+    if (t.type.toLowerCase() !== "expense") return;
     if (!budgetMap[t.category]) return;
 
-    budgetMap[t.category].spent += t.amount;
+    budgetMap[t.category].spent += Number(t.amount) || 0;
     budgetMap[t.category].remaining =
       budgetMap[t.category].budget - budgetMap[t.category].spent;
 
@@ -68,7 +55,7 @@ export const getDashboardData = async (userId: string) => {
     }
   });
 
-  const result = {
+  return {
     income,
     expense,
     balance: income - expense,
@@ -76,15 +63,4 @@ export const getDashboardData = async (userId: string) => {
     categoryAnalytics: categoryMap,
     budgets: budgetMap,
   };
-
-  // 🔥 2. Store in cache (TTL = 60 sec)
-  try {
-    if (await ensureRedisConnection()) {
-      await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
-    }
-  } catch {
-    // Skip cache writes when Redis is unavailable.
-  }
-
-  return result;
 };

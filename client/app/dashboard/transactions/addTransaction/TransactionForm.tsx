@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useQueryClient } from "@tanstack/react-query"
+import { motion } from "framer-motion"
 import {
   Calendar,
   Hash,
@@ -15,6 +16,8 @@ import {
 
 import { Button } from "@/app/components/ui/button"
 import { toast } from "@/app/components/ui/use-toast"
+import { api } from "@/app/lib/api/client"
+import { ENDPOINTS } from "@/app/lib/api/endpoints"
 import { cn } from "@/app/lib/utils/cn"
 
 import TransactionTypeToggle, { type TransactionType } from "./TransactionTypeToggle"
@@ -94,6 +97,8 @@ export default function TransactionForm() {
   const [note, setNote] = useState("")
   const [isRecurring, setIsRecurring] = useState(false)
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const queryClient = useQueryClient()
 
   const amountRef = useRef<HTMLInputElement>(null)
 
@@ -137,31 +142,59 @@ export default function TransactionForm() {
   }, [])
 
   const handleSubmit = useCallback(
-    (saveAndAdd = false) => {
+    async (saveAndAdd = false) => {
       if (!amount || !description || !category || !account) {
         toast({ title: "Missing fields", description: "Please fill all required fields" })
         return
       }
 
-      toast({
-        title: "Transaction saved",
-        description: `${type === "income" ? "+" : "-"}₹${Number(amount).toLocaleString("en-IN")} — ${description}`,
-      })
+      try {
+        setIsSaving(true)
 
-      if (saveAndAdd) {
-        setAmount("")
-        setDescription("")
-        setCategory("")
-        setAccount("")
-        setTags([])
-        setNote("")
-        setIsRecurring(false)
-        setReceiptFile(null)
-        setTagInput("")
-        amountRef.current?.focus()
+        await api.post(ENDPOINTS.TRANSACTION.CREATE, {
+          amount: Number(amount),
+          type,
+          category,
+          note: note || description,
+          date,
+          createdAt: date,
+        })
+
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+          queryClient.invalidateQueries({ queryKey: ["transactions"] }),
+        ])
+
+        toast({
+          title: "Transaction saved",
+          description: `${type === "income" ? "+" : "-"}₹${Number(amount).toLocaleString("en-IN")} - ${description}`,
+          variant: "success",
+        })
+
+        if (saveAndAdd) {
+          setAmount("")
+          setDescription("")
+          setCategory("")
+          setAccount("")
+          setTags([])
+          setNote("")
+          setIsRecurring(false)
+          setReceiptFile(null)
+          setTagInput("")
+          amountRef.current?.focus()
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Could not save transaction"
+        toast({
+          title: "Save failed",
+          description: message,
+          variant: "destructive",
+        })
+      } finally {
+        setIsSaving(false)
       }
     },
-    [amount, description, category, account, type, tags, note, isRecurring]
+    [account, amount, category, date, description, note, queryClient, type]
   )
 
   const handleKeyDown = useCallback(
@@ -383,16 +416,18 @@ export default function TransactionForm() {
             <motion.div className="flex-1" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
                 onClick={() => handleSubmit(false)}
+                disabled={isSaving}
                 className="w-full rounded-2xl py-3.5 shadow-lg shadow-primary/15"
               >
                 <Check className="mr-2 h-4 w-4" />
-                Save Transaction
+                {isSaving ? "Saving..." : "Save Transaction"}
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
                 variant="secondary"
                 onClick={() => handleSubmit(true)}
+                disabled={isSaving}
                 className="w-full rounded-2xl border border-border/70 py-3.5 sm:w-auto"
               >
                 <Plus className="mr-2 h-4 w-4" />
@@ -420,4 +455,3 @@ export default function TransactionForm() {
     </div>
   )
 }
-

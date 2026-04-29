@@ -83,7 +83,9 @@ export const useTransactionsQuery = (page = 1, enabled = true, limit = 50) => {
     queryKey: ['transactions', page, limit],
     queryFn: () => api.get<{ data?: Transaction[] } | Transaction[]>(`${ENDPOINTS.TRANSACTION.LIST}?page=${page}&limit=${limit}`),
     enabled,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
+    refetchInterval: enabled ? 5000 : false,
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -93,7 +95,9 @@ export const useDashboardOverviewQuery = (enabled = true) => {
     queryKey: ['dashboard', 'overview'],
     queryFn: () => api.get<DashboardOverview>('/api/dashboard/'), // Backend serves GET / at /api/dashboard
     enabled,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
+    refetchInterval: enabled ? 5000 : false,
+    refetchOnWindowFocus: true,
   })
 }
 

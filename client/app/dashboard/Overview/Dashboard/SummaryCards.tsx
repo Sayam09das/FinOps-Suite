@@ -12,7 +12,7 @@ import { api } from '@/app/lib/api/client';
 import type { SummaryMetric } from '../types';
 import type { DashboardOverview } from '@/app/features/dashboard/types/dashboard';
 
-const POLL_INTERVAL = 30000; // 30s
+const POLL_INTERVAL = 5000;
 
 const toneStyles = {
   positive: {
@@ -150,7 +150,11 @@ export default function SummaryCards() {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.get<DashboardOverview>('/api/dashboard/');
+      const data = await api.get<DashboardOverview>('/api/dashboard/', {
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       const newMetrics = transformToMetrics(data);
       setMetrics(newMetrics);
     } catch (err) {
@@ -205,4 +209,3 @@ export default function SummaryCards() {
     </div>
   );
 }
-
