@@ -50,9 +50,9 @@ export default function DashboardHome() {
     [budgetStatus, overview, transactions],
   )
 
-  if (authLoading || dashboardLoading) {
-    return <OverviewSkeleton />
-  }
+  // if (authLoading || dashboardLoading) {
+  //   return <OverviewSkeleton />
+  // }
 
   if (!isAuthenticated) {
     return null
@@ -103,7 +103,7 @@ export default function DashboardHome() {
         <SummaryCards />
 
         <div className="grid gap-6 xl:grid-cols-[1.65fr_0.95fr]">
-<CashFlowChart />
+          <CashFlowChart />
           <InsightsPanel items={viewModel.insights} />
         </div>
 
