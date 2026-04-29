@@ -43,104 +43,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logoutMutation.isPending;
   const isInitializing = meLoading && !effectiveUser;
 
-  const { toast } = useToast();
+  const { toastPromise } = useToast();
 
   const login = useCallback(async (email: string, password: string) => {
-    try {
+    const promiseFn = async () => {
       console.log('[AUTH] Step 1: Calling login endpoint...');
-      // Step 1: Call login endpoint (sets cookies in response)
       const response = await loginMutation.mutateAsync({ email, password });
       console.log('[AUTH] Step 1 success:', response);
       
-      // Step 2: Extract user data from login response
-      // Login response should contain user data
       const userData = response;
       console.log('[AUTH] Step 2: Extracted user data:', userData);
       
-      // Store real accessToken + user in localStorage (Bearer fallback)
       const accessToken = (userData as any).accessToken;
       setAuthData(accessToken || '', userData);
       
-      // Set RQ cache directly (no invalidate during grace)
       queryClient.setQueryData(['auth', 'me'], userData);
       
-      // Grace period flag for dashboard (30s)
       const graceUntil = Date.now() + 30000;
       localStorage.setItem(AUTH.GRACE_UNTIL_KEY, graceUntil.toString());
       
-      console.log('[AUTH] Grace flag set until:', new Date(graceUntil).toISOString());
-      
       console.log('[AUTH] Login successful, redirecting to dashboard...');
-      toast({
-        title: "Success",
-        description: "Login successful! (grace active)",
-      });
-      
-      // Step 4: Navigate to dashboard without refreshing the login route.
       console.log('[AUTH] Calling router.replace...');
       router.replace('/dashboard');
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      console.error('[AUTH] Login failed:', errorMsg);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMsg === 'Request timeout'
-          ? 'The server is waking up. Please wait a few seconds and try again.'
-          : errorMsg.includes('401')
-            ? 'Invalid email or password'
-            : 'Login failed',
-      });
-    }
-  }, [loginMutation, queryClient, router, toast]);
+      
+      return { name: 'Sonner' };
+    };
 
-  // Register handler
+    toastPromise(promiseFn, {
+      loading: 'Signing in...',
+      success: (data) => `${data.name} toast has been added`,
+      error: 'Login request failed. Please try again.',
+    });
+  }, [loginMutation, queryClient, router, toastPromise]);
+
   const register = useCallback(async (data: { name: string; email: string; password: string }) => {
-    try {
+    const promiseFn = async () => {
       console.log('[AUTH] Registering new account...');
       await registerMutation.mutateAsync(data);
-      toast({
-        title: "Success",
-        description: "Account created! Logging you in...",
-      });
       
       // Auto login after register
       await login(data.email, data.password);
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      console.error('[AUTH] Registration failed:', errorMsg);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMsg === 'Request timeout'
-          ? 'The server is waking up. Please wait a few seconds and try again.'
-          : errorMsg.includes('already')
-            ? 'Email already registered'
-            : 'Registration failed',
-      });
-    }
-  }, [registerMutation, login, toast]);
+      
+      return { name: 'Sonner' };
+    };
 
-  // Logout handler
+    toastPromise(promiseFn, {
+      loading: 'Creating account...',
+      success: (data) => `${data.name} toast has been added`,
+      error: 'Registration failed. Please try again.',
+    });
+  }, [registerMutation, login, toastPromise]);
+
   const logout = useCallback(async () => {
-    try {
+    const promiseFn = async () => {
       await logoutMutation.mutateAsync();
       clearAuthData();
       queryClient.setQueryData(['auth', 'me'], null);
-      toast({
-        title: "Success",
-        description: "Logged out successfully",
-      });
       router.push("/login");
       router.refresh();
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Logout failed",
-      });
-    }
-  }, [logoutMutation, queryClient, router, toast]);
+      
+      return { name: 'Sonner' };
+    };
+
+    toastPromise(promiseFn, {
+      loading: 'Signing out...',
+      success: (data) => `${data.name} toast has been added`,
+      error: 'Logout failed.',
+    });
+  }, [logoutMutation, queryClient, router, toastPromise]);
 
   const value: AuthContextType = useMemo(() => ({
     user: effectiveUser,

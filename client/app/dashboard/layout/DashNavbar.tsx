@@ -417,7 +417,7 @@ export default function DashNavbar({
                       className="flex w-full items-center gap-3 rounded-[1.1rem] border border-destructive/20 bg-destructive/6 px-4 py-3 text-left text-[13px] font-medium text-destructive transition hover:bg-destructive/10 disabled:opacity-55"
                     >
                       <LogOut className="h-4 w-4 shrink-0" />
-                      Sign out
+                      Log out
                     </button>
                   </div>
                 </div>

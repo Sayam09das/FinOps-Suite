@@ -5,14 +5,16 @@ import { cn } from "@/app/lib/utils/cn"
 
 const TOAST_LIMIT = 5
 const TOAST_REMOVE_DELAY = 1000000
+const DEFAULT_DURATION = 3000
 
 interface Toast {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastAction
-  variant: "default" | "destructive"
+  variant: "default" | "destructive" | "loading" | "success"
   className?: string
+  promiseState?: "loading" | "success" | "error"
 }
 
 interface ToastAction {
@@ -43,7 +45,8 @@ function Toaster() {
         description, 
         action, 
         variant = "default" as const,
-        className 
+        className,
+        promiseState
       }) => (
         <Toast 
           key={id}
@@ -53,6 +56,7 @@ function Toaster() {
           title={title}
           description={description}
           action={action}
+          promiseState={promiseState}
         />
       ))}
     </div>
@@ -63,18 +67,19 @@ interface ToastProps {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
-  variant?: "default" | "destructive"
+  variant?: "default" | "destructive" | "loading" | "success"
   action?: ToastAction
   className?: string
+  promiseState?: "loading" | "success" | "error"
 }
 
-function Toast({ id, className, variant, title, description, action }: ToastProps) {
+function Toast({ id, className, variant, title, description, action, promiseState }: ToastProps) {
   const { dismiss } = useToast()
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
       dismiss(id)
-    }, 5000)
+    }, DEFAULT_DURATION)
 
     return () => {
       clearTimeout(timer)
@@ -83,7 +88,9 @@ function Toast({ id, className, variant, title, description, action }: ToastProp
 
   const variantStyles = {
     default: "bg-background border text-foreground shadow-lg",
-    destructive: "destructive border-destructive bg-destructive text-destructive-foreground shadow"
+    destructive: "destructive border-destructive bg-destructive text-destructive-foreground shadow",
+    loading: "border-blue-300 bg-blue-50/50 text-blue-900 shadow-lg animate-pulse border-2",
+    success: "border-emerald-300 bg-emerald-50 text-emerald-900 shadow-lg border-2"
   }
 
   return (
@@ -94,13 +101,21 @@ function Toast({ id, className, variant, title, description, action }: ToastProp
         className
       )}
     >
-      <div className="w-full">
-        {title && (
-          <div className="font-medium mb-1">{title}</div>
+      <div className="w-full flex items-center gap-3">
+        {variant === "loading" && (
+          <div className="w-5 h-5 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
         )}
-        {description && (
-          <div className="text-sm opacity-90">{description}</div>
+        {variant === "success" && (
+          <div className="w-5 h-5 bg-emerald-500 rounded-full" />
         )}
+        <div>
+          {title && (
+            <div className="font-medium mb-1">{title}</div>
+          )}
+          {description && (
+            <div className="text-sm opacity-90">{description}</div>
+          )}
+        </div>
       </div>
       {action && (
         <button 
