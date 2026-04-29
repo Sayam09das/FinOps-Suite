@@ -65,49 +65,39 @@ function Toast({
 
   const variantStyles = {
     default: "bg-background border text-foreground",
-    destructive: "bg-red-50 border-red-300 text-red-900",
-    loading: "bg-blue-50 border-blue-300 text-blue-900",
-    success: "bg-emerald-50 border-emerald-300 text-emerald-900"
+    destructive: "bg-destructive text-destructive-foreground border-destructive",
+    loading: "bg-background border text-foreground",
+    success: "bg-background border text-foreground"
   }
 
   return (
     <div
       className={cn(
-        "relative flex items-center gap-3 rounded-lg border p-4 shadow-md transition-all",
-        variantStyles[variant],
+        "group relative pointer-events-auto flex w-full items-start rounded-md border bg-background p-4 text-foreground shadow transition-all",
+        variant === "destructive" &&
+        "border-destructive bg-destructive text-destructive-foreground",
         className
       )}
     >
-      {/* ✅ Icons */}
-      {variant === "loading" && (
-        <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-      )}
-      {variant === "success" && (
-        <div className="w-5 h-5 bg-emerald-500 rounded-full" />
-      )}
-
-      {/* ✅ Content */}
-      <div className="flex-1">
-        {title && <div className="font-medium">{title}</div>}
+      <div className="flex-1 space-y-1">
+        {title && <div className="text-sm font-medium">{title}</div>}
         {description && (
           <div className="text-sm opacity-80">{description}</div>
         )}
       </div>
 
-      {/* ✅ Action */}
       {action && (
         <button
-          className="ml-2 text-sm px-2 py-1 rounded-md border hover:bg-accent"
           onClick={action.onClick}
+          className="ml-4 text-sm font-medium underline"
         >
           {action.label}
         </button>
       )}
 
-      {/* ✅ Close */}
       <button
-        className="absolute top-2 right-2 text-sm opacity-60 hover:opacity-100"
         onClick={() => dismiss(id)}
+        className="absolute right-2 top-2 text-sm opacity-60 transition-opacity hover:opacity-100"
       >
         ✕
       </button>
