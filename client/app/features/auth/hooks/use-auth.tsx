@@ -30,7 +30,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: user, isLoading: meLoading } = useAuthMeQuery();
+  const { data: user, isLoading: meLoading } = useAuthMeQuery({ enabled: true });
   const loginMutation = useLoginMutation();
   const registerMutation = useRegisterMutation();
   const logoutMutation = useLogoutMutation();
@@ -62,8 +62,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const graceUntil = Date.now() + 30000;
       localStorage.setItem(AUTH.GRACE_UNTIL_KEY, graceUntil.toString());
       
-      console.log('[AUTH] Login successful, redirecting to dashboard...');
-      console.log('[AUTH] Calling router.replace...');
+      console.log('[AUTH] Login successful, refetching queries...');
+      
+      await queryClient.refetchQueries({ type: 'active' });
+      
+      console.log('[AUTH] Redirecting to dashboard...');
       router.replace('/dashboard');
       
       return { name: 'Sonner' };

@@ -21,17 +21,36 @@ const failedRequests: Array<() => void> = [];
 
 async function refreshAuth() {
   try {
-    const response = await api.post(ENDPOINTS.AUTH.REFRESH, {}, { timeoutMs: 5000 });
-    const newToken = (response as any).accessToken;
-    if (newToken && typeof window !== 'undefined') {
-      localStorage.setItem('finops-auth-token', newToken);
+    // Extract refresh token from localStorage (matches backend cookie name)
+    const refreshToken = typeof window !== 'undefined' 
+      ? localStorage.getItem('finops-refresh-token') 
+      : null;
+    
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
     }
-    return newToken;
+
+    const response = await api.post(ENDPOINTS.AUTH.REFRESH, { 
+      refreshToken 
+    }, { timeoutMs: 5000 });
+    
+    const newAccessToken = (response as any).accessToken;
+    if (newAccessToken && typeof window !== 'undefined') {
+      localStorage.setItem('finops-auth-token', newAccessToken);
+      // Also store new refresh token if provided
+      const newRefreshToken = (response as any).refreshToken;
+      if (newRefreshToken) {
+        localStorage.setItem('finops-refresh-token', newRefreshToken);
+      }
+    }
+    return newAccessToken;
   } catch (error) {
-    // Refresh failed, clear auth
+    console.error('[AUTH] Refresh failed:', error);
+    // Refresh failed, clear ALL auth data
     if (typeof window !== 'undefined') {
       localStorage.removeItem('finops-auth-token');
       localStorage.removeItem('finops-user');
+      localStorage.removeItem('finops-refresh-token');
       localStorage.removeItem('authGraceUntil');
     }
     failedRequests.forEach(callback => callback());

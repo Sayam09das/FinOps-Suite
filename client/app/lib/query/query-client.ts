@@ -1,11 +1,12 @@
 import { QueryClient } from '@tanstack/react-query'
+import { getAuthToken } from '@/app/features/auth/utils/auth-utils'
 
 export const getQueryClient = () => {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60 * 1000, // 1 minute
-        gcTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 60 * 1000,
+        gcTime: 5 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnReconnect: true,
         retry: (failureCount: number, error: any) => {
@@ -24,3 +25,4 @@ export const getQueryClient = () => {
     },
   })
 }
+

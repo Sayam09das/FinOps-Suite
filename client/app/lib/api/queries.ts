@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from './client'
 import { ENDPOINTS } from './endpoints'
 import { API } from '../constants'
+import { getAuthToken } from '@/app/features/auth/utils/auth-utils'
 import type { Budget, DashboardOverview, Transaction } from '@/app/features/dashboard/types/dashboard'
 
 type AuthUser = {
@@ -48,11 +49,12 @@ export const useRegisterMutation = () => {
 }
 
 // SSR-safe useAuthMeQuery - localStorage only client-side
-export const useAuthMeQuery = () => {
+export const useAuthMeQuery = ({ enabled }: { enabled?: boolean } = {}) => {
   return useQuery<AuthUser>({
     queryKey: ['auth', 'me'],
     queryFn: () => api.get<AuthUser>(ENDPOINTS.AUTH.ME, { timeoutMs: API.AUTH_TIMEOUT }),
-    initialData: undefined, // Set via useAuth optimistic update
+    enabled: enabled ?? !!getAuthToken(), // Wait for token!
+    initialData: undefined,
     staleTime: 10 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 3,
@@ -78,7 +80,7 @@ export const useBudgetsQuery = (page = 1, enabled = true) => {
 }
 
 // Transaction queries
-export const useTransactionsQuery = (page = 1, enabled = true, limit = 50) => {
+export const useTransactionsQuery = (page = 1, enabled = !!getAuthToken(), limit = 50) => {
   return useQuery<{ data?: Transaction[] } | Transaction[]>({
     queryKey: ['transactions', page, limit],
     queryFn: () => api.get<{ data?: Transaction[] } | Transaction[]>(`${ENDPOINTS.TRANSACTION.LIST}?page=${page}&limit=${limit}`),
@@ -90,10 +92,10 @@ export const useTransactionsQuery = (page = 1, enabled = true, limit = 50) => {
 }
 
 // Dashboard
-export const useDashboardOverviewQuery = (enabled = true) => {
+export const useDashboardOverviewQuery = (enabled = !!getAuthToken()) => {
   return useQuery<DashboardOverview>({
     queryKey: ['dashboard', 'overview'],
-    queryFn: () => api.get<DashboardOverview>('/api/dashboard/'), // Backend serves GET / at /api/dashboard
+    queryFn: () => api.get<DashboardOverview>('/api/dashboard/'),
     enabled,
     staleTime: 0,
     refetchInterval: enabled ? 5000 : false,
