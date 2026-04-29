@@ -1,4 +1,6 @@
 import { API } from "../constants"
+import { ENDPOINTS } from './endpoints'
+import { getAuthToken } from '@/app/features/auth/utils/auth-utils'
 
 type ApiEnvelope<T> = {
   success?: boolean
@@ -14,6 +16,30 @@ type ApiRequestConfig = RequestInit & {
 /**
  * Base fetch request creator with auth, timeout, and error handling
  */
+let isRefreshing = false;
+const failedRequests: Array<() => void> = [];
+
+async function refreshAuth() {
+  try {
+    const response = await api.post(ENDPOINTS.AUTH.REFRESH, {}, { timeoutMs: 5000 });
+    const newToken = (response as any).accessToken;
+    if (newToken && typeof window !== 'undefined') {
+      localStorage.setItem('finops-auth-token', newToken);
+    }
+    return newToken;
+  } catch (error) {
+    // Refresh failed, clear auth
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('finops-auth-token');
+      localStorage.removeItem('finops-user');
+      localStorage.removeItem('authGraceUntil');
+    }
+    failedRequests.forEach(callback => callback());
+    failedRequests.length = 0;
+    throw error;
+  }
+}
+
 const createRequest = async (url: string, options: ApiRequestConfig = {}): Promise<Response> => {
   const clientTimestamp = Date.now().toString();
   const {
@@ -39,8 +65,8 @@ const createRequest = async (url: string, options: ApiRequestConfig = {}): Promi
       headers.set('x-client-timestamp', clientTimestamp);
     }
 
-    // Fallback auth token from localStorage (backup for cookie issues)
-    const token = typeof window !== 'undefined' ? localStorage.getItem('finops-auth-token') : null;
+// Auth token from localStorage (Bearer fallback for cookies)
+    const token = getAuthToken();
     if (token && !headers.has('Authorization')) {
       headers.set('Authorization', `Bearer ${token}`);
     }
@@ -52,6 +78,32 @@ const createRequest = async (url: string, options: ApiRequestConfig = {}): Promi
       credentials: credentials ?? 'include',
     });
     clearTimeout(timeoutId);
+
+    // 401 handling
+    if (res.status === 401 && !isRefreshing) {
+      isRefreshing = true;
+      try {
+        await refreshAuth();
+        // Retry the original request
+        const retryRes = await fetch(API.BASE_URL + url, {
+          ...fetchOptions,
+          signal: controller.signal,
+          headers,
+          credentials: credentials ?? 'include',
+        });
+        clearTimeout(timeoutId);
+        return retryRes;
+      } catch (refreshError) {
+        clearTimeout(timeoutId);
+        throw refreshError;
+      } finally {
+        isRefreshing = false;
+        // Retry queued requests
+        failedRequests.forEach(callback => callback());
+        failedRequests.length = 0;
+      }
+    }
+
     return res;
   } catch (error) {
     clearTimeout(timeoutId);

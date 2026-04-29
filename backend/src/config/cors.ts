@@ -5,7 +5,7 @@ const normalizeOrigin = (origin: string): string => origin.replace(/\/+$/, '');
 const allowedOrigins = (
   process.env.FRONTEND_URLS ??
   process.env.FRONTEND_URL ??
-  'http://localhost:3000,http://localhost:3001,https://finops-suite.vercel.app,https://fin-ops-suite.vercel.app'
+'http://localhost:3000,http://localhost:3001,https://finops-suite.vercel.app,https://fin-ops-suite.vercel.app,https://fin-ops-suite-git-*.vercel.app'
 )
   .split(',')
   .map((origin) => origin.trim())
