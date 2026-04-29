@@ -4,7 +4,6 @@ import { useToast } from "./use-toast"
 import { cn } from "@/app/lib/utils/cn"
 
 const TOAST_LIMIT = 5
-const TOAST_REMOVE_DELAY = 1000000
 const DEFAULT_DURATION = 3000
 
 interface Toast {
@@ -12,9 +11,8 @@ interface Toast {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastAction
-  variant: "default" | "destructive" | "loading" | "success"
+  variant?: "default" | "destructive" | "loading" | "success"
   className?: string
-  promiseState?: "loading" | "success" | "error"
 }
 
 interface ToastAction {
@@ -23,41 +21,15 @@ interface ToastAction {
 }
 
 function Toaster() {
-  const { toasts, dismiss: dismissToast } = useToast()
+  const { toasts } = useToast()
 
-  React.useEffect(() => {
-    if (toasts.length > TOAST_LIMIT) {
-      const delayToast = toasts[TOAST_LIMIT]
-      if (delayToast) {
-        const timeout = setTimeout(() => {
-          dismissToast(delayToast.id)
-        }, TOAST_REMOVE_DELAY)
-        return () => clearTimeout(timeout)
-      }
-    }
-  }, [toasts, dismissToast])
+  // ✅ limit number of toasts (simple + instant)
+  const visibleToasts = toasts.slice(0, TOAST_LIMIT)
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col-reverse sm:bottom-8 sm:right-8 md:bottom-12 md:right-12 space-y-3 max-w-md mx-4 sm:mx-0">
-      {toasts.map(({ 
-        id, 
-        title, 
-        description, 
-        action, 
-        variant = "default" as const,
-        className,
-        promiseState
-      }) => (
-        <Toast 
-          key={id}
-          id={id}
-          variant={variant} 
-          className={cn(className)}
-          title={title}
-          description={description}
-          action={action}
-          promiseState={promiseState}
-        />
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 w-[350px] max-w-[90vw]">
+      {visibleToasts.map((toast) => (
+        <Toast key={toast.id} {...toast} />
       ))}
     </div>
   )
@@ -70,63 +42,71 @@ interface ToastProps {
   variant?: "default" | "destructive" | "loading" | "success"
   action?: ToastAction
   className?: string
-  promiseState?: "loading" | "success" | "error"
 }
 
-function Toast({ id, className, variant, title, description, action, promiseState }: ToastProps) {
+function Toast({
+  id,
+  className,
+  variant = "default",
+  title,
+  description,
+  action
+}: ToastProps) {
   const { dismiss } = useToast()
 
+  // ✅ auto dismiss
   React.useEffect(() => {
     const timer = setTimeout(() => {
       dismiss(id)
     }, DEFAULT_DURATION)
 
-    return () => {
-      clearTimeout(timer)
-    }
+    return () => clearTimeout(timer)
   }, [id, dismiss])
 
   const variantStyles = {
-    default: "bg-background border text-foreground shadow-lg",
-    destructive: "destructive border-destructive bg-destructive text-destructive-foreground shadow",
-    loading: "border-blue-300 bg-blue-50/50 text-blue-900 shadow-lg animate-pulse border-2",
-    success: "border-emerald-300 bg-emerald-50 text-emerald-900 shadow-lg border-2"
+    default: "bg-background border text-foreground",
+    destructive: "bg-red-50 border-red-300 text-red-900",
+    loading: "bg-blue-50 border-blue-300 text-blue-900",
+    success: "bg-emerald-50 border-emerald-300 text-emerald-900"
   }
 
   return (
-    <div 
+    <div
       className={cn(
-        "group pointer-events-auto flex w-full items-center rounded-lg border p-4 pr-4 shadow-lg transition-all data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=enter]:animate-in data-[swipe=leave]:animate-out duration-300 ease-in-out",
-        variantStyles[variant || "default"],
+        "relative flex items-center gap-3 rounded-lg border p-4 shadow-md transition-all",
+        variantStyles[variant],
         className
       )}
     >
-      <div className="w-full flex items-center gap-3">
-        {variant === "loading" && (
-          <div className="w-5 h-5 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
+      {/* ✅ Icons */}
+      {variant === "loading" && (
+        <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+      )}
+      {variant === "success" && (
+        <div className="w-5 h-5 bg-emerald-500 rounded-full" />
+      )}
+
+      {/* ✅ Content */}
+      <div className="flex-1">
+        {title && <div className="font-medium">{title}</div>}
+        {description && (
+          <div className="text-sm opacity-80">{description}</div>
         )}
-        {variant === "success" && (
-          <div className="w-5 h-5 bg-emerald-500 rounded-full" />
-        )}
-        <div>
-          {title && (
-            <div className="font-medium mb-1">{title}</div>
-          )}
-          {description && (
-            <div className="text-sm opacity-90">{description}</div>
-          )}
-        </div>
       </div>
+
+      {/* ✅ Action */}
       {action && (
-        <button 
-          className="ml-4 h-8 w-8 rounded-md border p-0 hover:bg-accent hover:text-accent-foreground"
+        <button
+          className="ml-2 text-sm px-2 py-1 rounded-md border hover:bg-accent"
           onClick={action.onClick}
         >
           {action.label}
         </button>
       )}
-      <button 
-        className="absolute right-2 top-2 h-6 w-8 rounded-md text-sm opacity-0 group-hover:opacity-100 transition-all"
+
+      {/* ✅ Close */}
+      <button
+        className="absolute top-2 right-2 text-sm opacity-60 hover:opacity-100"
         onClick={() => dismiss(id)}
       >
         ✕
