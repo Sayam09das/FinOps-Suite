@@ -2,20 +2,12 @@
 
 import React from 'react'
 import { Button } from '@/app/components/ui/button'
-import { Calendar, Download, ArrowLeftRight, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Download, ArrowLeftRight, CalendarDays } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select'
 import { Switch } from '@/app/components/ui/switch'
-import { Popover, PopoverContent, PopoverTrigger } from '@/app/components/ui/popover'
+import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/app/lib/utils/cn'
 import { format } from 'date-fns'
-
-// Ensure UI components are available
-if (typeof SelectContent === 'undefined') {
-  console.warn('SelectContent component not available')
-}
-if (typeof Popover === 'undefined') {
-  console.warn('Popover component not available')
-}
 
 interface HeaderControlsProps {
   dateRange: string
@@ -25,15 +17,28 @@ interface HeaderControlsProps {
 }
 
 export default function HeaderControls({ dateRange, onDateRangeChange, compare, onCompareToggle }: HeaderControlsProps) {
+  const queryClient = useQueryClient()
+  
   const dateRanges = [
     { value: 'thisMonth', label: 'This Month' },
+    { value: 'lastMonth', label: 'Last Month' },
     { value: 'last3Months', label: 'Last 3 Months' },
-    { value: 'custom', label: 'Custom' }
+    { value: 'ytd', label: 'Year to Date' },
+    { value: 'custom', label: 'Custom Range' }
   ]
 
-  const exportOptions = ['CSV', 'PDF']
-
   const currentDate = format(new Date(), 'MMMM yyyy')
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] })
+  }
+
+  const handleExport = async (format: 'csv') => {
+    const dateRangeParam = dateRange || 'thisMonth';
+    const url = `/api/export/${format}?dateRange=${dateRangeParam}`;
+    
+    window.open(url, '_blank');
+  }
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-background/80 backdrop-blur-sm rounded-2xl border p-6 shadow-xl">
@@ -43,38 +48,29 @@ export default function HeaderControls({ dateRange, onDateRangeChange, compare, 
         </h1>
         <p className="text-sm text-muted-foreground flex items-center gap-1">
           <CalendarDays className="h-4 w-4" />
-          {currentDate}
+          {currentDate} • Live data from your transactions
         </p>
       </div>
 
       <div className="flex flex-wrap gap-3 items-center">
-      {/* Date Range */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              {dateRanges.find(r => r.value === dateRange)?.label ?? 'Select Range'}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-48 p-1">
-            <Select value={dateRange} onValueChange={onDateRangeChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {dateRanges.map((range) => (
-                  <SelectItem key={range.value} value={range.value}>
-                    {range.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </PopoverContent>
-        </Popover>
+        {/* Date Range - Controls real API data */}
+        <Select value={dateRange} onValueChange={onDateRangeChange}>
+          <SelectTrigger className="w-[180px]">
+            <Calendar className="h-4 w-4 mr-2" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {dateRanges.map((range) => (
+              <SelectItem key={range.value} value={range.value}>
+                {range.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Compare Toggle */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl border bg-background/50">
-          <span className="text-sm font-medium text-muted-foreground">Compare</span>
+          <span className="text-sm font-medium text-muted-foreground">Compare Period</span>
           <Switch 
             checked={compare} 
             onCheckedChange={onCompareToggle}
@@ -83,26 +79,22 @@ export default function HeaderControls({ dateRange, onDateRangeChange, compare, 
         </div>
 
         {/* Export */}
-        <Select>
+        <Select onValueChange={(value) => handleExport('csv' as const)}>
           <SelectTrigger className="w-32">
             <Download className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Export" />
           </SelectTrigger>
-          <SelectContent>
-            {exportOptions.map((opt) => (
-              <SelectItem key={opt} value={opt}>
-                {opt}
-              </SelectItem>
-            ))}
-          </SelectContent>
+        <SelectContent>
+          <SelectItem value="csv">CSV</SelectItem>
+        </SelectContent>
         </Select>
 
-        <Button size="sm" variant="ghost" className="gap-2">
+        {/* Refresh - Real data refetch */}
+        <Button size="sm" variant="ghost" onClick={handleRefresh} className="gap-2">
           <ArrowLeftRight className="h-4 w-4" />
-          Refresh
+          Refresh Data
         </Button>
       </div>
     </div>
   )
 }
-
