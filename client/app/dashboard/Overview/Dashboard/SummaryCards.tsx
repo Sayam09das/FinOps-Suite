@@ -150,7 +150,7 @@ export default function SummaryCards() {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.get<DashboardOverview>('/dashboard/');
+      const data = await api.get<DashboardOverview>('/api/dashboard/');
       const newMetrics = transformToMetrics(data);
       setMetrics(newMetrics);
     } catch (err) {
