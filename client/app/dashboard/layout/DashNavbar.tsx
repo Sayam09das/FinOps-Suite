@@ -7,33 +7,33 @@ import {
   Bell,
   Bot,
   ChevronDown,
-  CirclePlus,
   CreditCard,
-  Landmark,
   LogOut,
   Menu,
-  PiggyBank,
   Search,
   Settings2,
   Sparkles,
   UserRound,
-  Wallet,
   X,
 } from "lucide-react";
 
 import { Badge } from "@/app/components/ui/badge";
-import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { useAuth } from "@/app/features/auth";
 import { cn } from "@/app/lib/utils/cn";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 type DashNavbarProps = {
+  /** Toggles the sidebar — wired from the parent layout */
   onMenuClick?: () => void;
 };
 
-type PanelName = "notifications" | "quick-add" | "profile" | null;
+type PanelName = "notifications" | "profile" | null;
 
-const notifications = [
+// ─── Static data ──────────────────────────────────────────────────────────────
+
+const NOTIFICATIONS = [
   {
     title: "Budget alert",
     detail: "Marketing spend is at 88% of the monthly budget.",
@@ -52,144 +52,141 @@ const notifications = [
     icon: CreditCard,
     accent: "text-emerald-700 bg-emerald-100/80",
   },
-];
+] as const;
 
-const quickActions = [
-  {
-    title: "Add Expense",
-    detail: "Capture a spend event instantly.",
-    icon: Wallet,
-  },
-  {
-    title: "Add Income",
-    detail: "Log salary, invoices, or one-off credits.",
-    icon: Landmark,
-  },
-  {
-    title: "Create Budget",
-    detail: "Start a new control plan for a category.",
-    icon: PiggyBank,
-  },
-];
+const CURRENCIES = ["USD", "INR", "EUR", "GBP"] as const;
 
-function panelClassName(isOpen: boolean) {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function dropdownCn(open: boolean) {
   return cn(
-    // On mobile: full-width anchored to right edge; on sm+: fixed width
-    "absolute right-0 top-[calc(100%+0.9rem)] z-40",
-    "w-[min(calc(100vw-1.5rem),23rem)]",
-    "rounded-[1.7rem] border border-border/80",
-    "bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.42))]",
-    "p-3 shadow-[0_28px_80px_rgba(33,49,43,0.14)] backdrop-blur-2xl transition",
-    isOpen
+    "absolute right-0 top-[calc(100%+0.75rem)] z-40",
+    "w-[min(calc(100vw-1.5rem),22rem)]",
+    "rounded-[1.6rem] border border-border/80",
+    "bg-[linear-gradient(160deg,rgba(255,255,255,0.80),rgba(255,255,255,0.48))]",
+    "p-3 shadow-[0_24px_72px_rgba(33,49,43,0.14)] backdrop-blur-2xl",
+    "transition-all duration-200 ease-out",
+    open
       ? "pointer-events-auto translate-y-0 opacity-100"
       : "pointer-events-none translate-y-2 opacity-0",
   );
 }
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
   const { user, logout, isLoading } = useAuth();
-  const [openPanel, setOpenPanel] = useState<PanelName>(null);
-  const [currency, setCurrency] = useState("USD");
-  const [searchOpen, setSearchOpen] = useState(false);
-  const navRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Close panels when clicking outside
+  const [openPanel, setOpenPanel] = useState<PanelName>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>("USD");
+
+  const navRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  /* ── Side-effects ── */
+
   useEffect(() => {
-    const handlePointerDown = (event: MouseEvent) => {
-      if (!navRef.current?.contains(event.target as Node)) {
+    const onDown = (e: MouseEvent) => {
+      if (!navRef.current?.contains(e.target as Node)) {
         setOpenPanel(null);
         setSearchOpen(false);
       }
     };
-    document.addEventListener("mousedown", handlePointerDown);
-    return () => document.removeEventListener("mousedown", handlePointerDown);
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
   }, []);
 
-  // Focus search input when opened on mobile
   useEffect(() => {
-    if (searchOpen) {
-      setTimeout(() => searchInputRef.current?.focus(), 50);
-    }
+    if (!searchOpen) return;
+    const t = setTimeout(() => searchRef.current?.focus(), 60);
+    return () => clearTimeout(t);
   }, [searchOpen]);
 
-  // Close search on Escape
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setOpenPanel(null);
         setSearchOpen(false);
       }
     };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, []);
 
+  /* ── Derived values ── */
+
   const userInitials = useMemo(() => {
-    const source = user?.name?.trim() || "Finance Operator";
-    return source
+    const src = user?.name?.trim() || "Finance Operator";
+    return src
       .split(/\s+/)
       .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() ?? "")
+      .map((w) => w[0]?.toUpperCase() ?? "")
       .join("");
   }, [user?.name]);
 
   const envLabel = process.env.NODE_ENV === "production" ? "Prod" : "Dev";
 
-  const togglePanel = (panel: Exclude<PanelName, null>) => {
-    setOpenPanel((current) => (current === panel ? null : panel));
-  };
+  const togglePanel = (panel: Exclude<PanelName, null>) =>
+    setOpenPanel((cur) => (cur === panel ? null : panel));
+
+  /* ── Render ── */
 
   return (
     <div className="sticky top-3 z-30 px-3 pt-3 md:px-4">
       <div
         ref={navRef}
-        className="nav-frame relative mx-auto flex w-full max-w-[1600px] flex-col gap-3 rounded-[2rem] px-3 py-3 md:px-4"
+        className="nav-frame relative mx-auto flex w-full max-w-[1600px] flex-col rounded-[2rem] px-3 py-3 md:px-4"
       >
-        {/* ── Row 1: Logo + Actions ───────────────────────────────────── */}
+        {/* ── Top bar ─────────────────────────────────────────────────── */}
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
 
-          {/* Mobile hamburger */}
+          {/* Hamburger — always visible, controls sidebar open/close */}
           <button
             type="button"
             onClick={onMenuClick}
-            className="nav-mobile-toggle flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl lg:hidden"
-            aria-label="Open dashboard navigation"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-background/75 text-foreground shadow-[0_8px_22px_rgba(33,49,43,0.07)] transition hover:-translate-y-0.5 hover:bg-white/88"
+            aria-label="Toggle sidebar"
           >
             <Menu className="h-5 w-5" />
           </button>
 
-          {/* Logo */}
-          <Link href="/dashboard" className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <div className="primary-wash flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
+          {/* Brand */}
+          <Link href="/dashboard" className="flex min-w-0 items-center gap-2.5">
+            <div className="primary-wash flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
               <Sparkles className="h-5 w-5 text-foreground" />
             </div>
             <div className="hidden min-w-0 sm:block">
-              <p className="truncate text-sm font-semibold text-foreground">FinOps Suite</p>
-              <p className="hidden truncate text-xs text-foreground/58 md:block">
-                Quick control layer for finance operations
+              <p className="truncate text-sm font-semibold leading-tight text-foreground">
+                FinOps Suite
+              </p>
+              <p className="mt-0.5 hidden truncate text-[11px] leading-none text-foreground/50 md:block">
+                Finance control layer
               </p>
             </div>
           </Link>
 
           <Badge
             variant="outline"
-            className="hidden border-border/75 bg-background/70 text-xs md:flex"
+            className="hidden shrink-0 border-border/68 bg-background/62 text-[10px] md:flex"
           >
             {envLabel}
           </Badge>
 
-          {/* ── Right-side action cluster ── */}
+          {/* ── Right actions ── */}
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
 
-            {/* Mobile search toggle */}
+            {/* Search toggle */}
             <button
               type="button"
-              onClick={() => setSearchOpen((v) => !v)}
-              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/80 bg-background/75 text-foreground shadow-[0_12px_30px_rgba(33,49,43,0.08)] transition hover:-translate-y-0.5 hover:bg-white/85 lg:hidden"
+              onClick={() => {
+                setSearchOpen((v) => !v);
+                setOpenPanel(null);
+              }}
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/80 bg-background/75 text-foreground shadow-[0_8px_22px_rgba(33,49,43,0.07)] transition hover:-translate-y-0.5 hover:bg-white/88"
               aria-label={searchOpen ? "Close search" : "Open search"}
             >
-              {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+              {searchOpen ? <X className="h-[18px] w-[18px]" /> : <Search className="h-[18px] w-[18px]" />}
             </button>
 
             {/* Notifications */}
@@ -197,49 +194,47 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
               <button
                 type="button"
                 onClick={() => togglePanel("notifications")}
-                className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-border/80 bg-background/75 text-foreground shadow-[0_12px_30px_rgba(33,49,43,0.08)] transition hover:-translate-y-0.5 hover:bg-white/85"
-                aria-label="Open notifications"
+                className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-border/80 bg-background/75 text-foreground shadow-[0_8px_22px_rgba(33,49,43,0.07)] transition hover:-translate-y-0.5 hover:bg-white/88"
+                aria-label="Notifications"
                 aria-expanded={openPanel === "notifications"}
+                aria-haspopup="true"
               >
-                <Bell className="h-5 w-5" />
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
-                  {notifications.length}
+                <Bell className="h-[18px] w-[18px]" />
+                <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-bold leading-none text-accent-foreground">
+                  {NOTIFICATIONS.length}
                 </span>
               </button>
 
-              <div className={panelClassName(openPanel === "notifications")}>
-                <div className="rounded-[1.35rem] border border-border/70 bg-white/45 p-4">
-                  <div className="flex items-center justify-between gap-3">
+              <div className={dropdownCn(openPanel === "notifications")} role="dialog" aria-label="Notifications panel">
+                <div className="rounded-[1.3rem] border border-border/62 bg-white/38 p-4">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="eyebrow text-foreground/45">Notifications</p>
-                      <h3 className="mt-1 truncate text-lg font-semibold text-foreground">
-                        Budget signals and reminders
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-foreground/40">
+                        Inbox
+                      </p>
+                      <h3 className="mt-1 text-base font-semibold text-foreground">
+                        Signals &amp; reminders
                       </h3>
                     </div>
-                    <Badge variant="accent" className="shrink-0">
-                      {notifications.length} new
+                    <Badge variant="accent" className="shrink-0 text-[10px]">
+                      {NOTIFICATIONS.length} new
                     </Badge>
                   </div>
 
-                  <div className="mt-4 space-y-3">
-                    {notifications.map((item) => {
+                  <div className="mt-4 space-y-2">
+                    {NOTIFICATIONS.map((item) => {
                       const Icon = item.icon;
                       return (
                         <div
                           key={item.title}
-                          className="flex items-start gap-3 rounded-[1.2rem] border border-border/65 bg-background/72 p-3"
+                          className="flex items-start gap-3 rounded-[1.1rem] border border-border/58 bg-background/65 p-3"
                         >
-                          <div
-                            className={cn(
-                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl",
-                              item.accent,
-                            )}
-                          >
-                            <Icon className="h-4 w-4" />
+                          <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", item.accent)}>
+                            <Icon className="h-[14px] w-[14px]" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                            <p className="mt-1 text-xs leading-5 text-foreground/62">{item.detail}</p>
+                            <p className="text-[13px] font-semibold text-foreground">{item.title}</p>
+                            <p className="mt-0.5 text-[11px] leading-[1.6] text-foreground/56">{item.detail}</p>
                           </div>
                         </div>
                       );
@@ -249,71 +244,20 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
               </div>
             </div>
 
-            {/* Quick Add */}
-            <div className="relative">
-              <Button
-                variant="primary"
-                size="sm"
-                className="rounded-2xl px-3 py-2.5 sm:px-4"
-                onClick={() => togglePanel("quick-add")}
-                aria-expanded={openPanel === "quick-add"}
-              >
-                <CirclePlus className="h-4 w-4 shrink-0" />
-                <span className="hidden sm:inline">Quick Add</span>
-              </Button>
-
-              <div className={panelClassName(openPanel === "quick-add")}>
-                <div className="rounded-[1.35rem] border border-border/70 bg-white/45 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="eyebrow text-foreground/45">Quick Add</p>
-                      <h3 className="mt-1 text-lg font-semibold text-foreground">
-                        Instant money movement tools
-                      </h3>
-                    </div>
-                    <Badge variant="subtle" className="shrink-0">Fast path</Badge>
-                  </div>
-
-                  <div className="mt-4 space-y-2.5">
-                    {quickActions.map((action) => {
-                      const Icon = action.icon;
-                      return (
-                        <button
-                          key={action.title}
-                          type="button"
-                          onClick={() => setOpenPanel(null)}
-                          className="flex w-full items-start gap-3 rounded-[1.2rem] border border-border/70 bg-background/72 p-3 text-left transition hover:-translate-y-0.5 hover:bg-white/90"
-                        >
-                          <div className="primary-wash flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl">
-                            <Icon className="h-4 w-4 text-foreground" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-foreground">{action.title}</p>
-                            <p className="mt-1 text-xs leading-5 text-foreground/62">{action.detail}</p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* FX selector — desktop only */}
-            <label className="hidden items-center gap-2 rounded-2xl border border-border/80 bg-background/75 px-3 py-2 shadow-[0_12px_30px_rgba(33,49,43,0.08)] lg:flex">
-              <span className="text-xs font-semibold uppercase tracking-[0.22em] text-foreground/45">
+            {/* FX selector — desktop */}
+            <label className="hidden cursor-pointer items-center gap-2 rounded-2xl border border-border/80 bg-background/75 px-3 py-[0.58rem] shadow-[0_8px_22px_rgba(33,49,43,0.07)] lg:flex">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-foreground/40">
                 FX
               </span>
               <select
                 value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
+                onChange={(e) => setCurrency(e.target.value as typeof currency)}
                 className="bg-transparent text-sm font-medium text-foreground outline-none"
-                aria-label="Select currency"
+                aria-label="Display currency"
               >
-                <option value="USD">USD</option>
-                <option value="INR">INR</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
+                {CURRENCIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
               </select>
             </label>
 
@@ -322,78 +266,89 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
               <button
                 type="button"
                 onClick={() => togglePanel("profile")}
-                className="flex items-center gap-2 rounded-2xl border border-border/80 bg-background/75 px-2 py-2 pr-2 shadow-[0_12px_30px_rgba(33,49,43,0.08)] transition hover:-translate-y-0.5 hover:bg-white/90 md:pr-3"
-                aria-label="Open user profile menu"
+                className="flex items-center gap-2 rounded-2xl border border-border/80 bg-background/75 p-2 shadow-[0_8px_22px_rgba(33,49,43,0.07)] transition hover:-translate-y-0.5 hover:bg-white/88 md:pr-3"
+                aria-label="Profile menu"
                 aria-expanded={openPanel === "profile"}
+                aria-haspopup="true"
               >
-                <div className="primary-wash flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold text-foreground">
+                <div className="primary-wash flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl text-[13px] font-bold text-foreground">
                   {userInitials}
                 </div>
                 <div className="hidden min-w-0 text-left md:block">
-                  <p className="max-w-[8rem] truncate text-sm font-semibold text-foreground lg:max-w-[10rem]">
+                  <p className="max-w-[9rem] truncate text-[13px] font-semibold leading-tight text-foreground">
                     {user?.name || "Finance Operator"}
                   </p>
-                  <p className="max-w-[8rem] truncate text-xs text-foreground/55 lg:max-w-[10rem]">
+                  <p className="mt-0.5 max-w-[9rem] truncate text-[11px] leading-none text-foreground/50">
                     {user?.email || "Operator console"}
                   </p>
                 </div>
-                <ChevronDown className="hidden h-4 w-4 shrink-0 text-foreground/55 md:block" />
+                <ChevronDown
+                  className="hidden h-4 w-4 shrink-0 text-foreground/48 transition-transform duration-200 md:block"
+                  style={{ transform: openPanel === "profile" ? "rotate(180deg)" : "rotate(0deg)" }}
+                />
               </button>
 
-              <div className={panelClassName(openPanel === "profile")}>
-                <div className="rounded-[1.35rem] border border-border/70 bg-white/45 p-4">
-                  <div className="rounded-[1.2rem] border border-border/70 bg-background/72 p-4">
-                    <p className="text-sm font-semibold text-foreground">
-                      {user?.name || "Finance Operator"}
-                    </p>
-                    <p className="mt-1 text-xs text-foreground/58">
-                      {user?.email || "Signed into FinOps Suite"}
-                    </p>
+              <div className={dropdownCn(openPanel === "profile")} role="dialog" aria-label="Profile panel">
+                <div className="rounded-[1.3rem] border border-border/62 bg-white/38 p-4">
+
+                  {/* Identity card */}
+                  <div className="flex items-center gap-3 rounded-[1.1rem] border border-border/58 bg-background/65 p-3">
+                    <div className="primary-wash flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-foreground">
+                      {userInitials}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-semibold text-foreground">
+                        {user?.name || "Finance Operator"}
+                      </p>
+                      <p className="truncate text-[11px] text-foreground/52">
+                        {user?.email || "Signed into FinOps Suite"}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* FX inside profile on mobile/tablet */}
-                  <div className="mt-3 rounded-[1.15rem] border border-border/65 bg-background/72 px-4 py-3 lg:hidden">
+                  {/* FX — visible only below lg */}
+                  <div className="mt-2.5 rounded-[1.1rem] border border-border/55 bg-background/62 px-4 py-3 lg:hidden">
                     <label className="flex items-center gap-3">
-                      <span className="text-xs font-semibold uppercase tracking-[0.22em] text-foreground/45">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-foreground/40">
                         Currency
                       </span>
                       <select
                         value={currency}
-                        onChange={(e) => setCurrency(e.target.value)}
+                        onChange={(e) => setCurrency(e.target.value as typeof currency)}
                         className="ml-auto bg-transparent text-sm font-medium text-foreground outline-none"
-                        aria-label="Select currency"
+                        aria-label="Display currency"
                       >
-                        <option value="USD">USD</option>
-                        <option value="INR">INR</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
+                        {CURRENCIES.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
                       </select>
                     </label>
                   </div>
 
-                  <div className="mt-3 space-y-2">
+                  {/* Actions */}
+                  <div className="mt-2.5 space-y-1.5">
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between rounded-[1.15rem] border border-border/65 bg-background/72 px-4 py-3 text-left text-sm font-medium text-foreground transition hover:bg-white/90"
+                      className="flex w-full items-center justify-between rounded-[1.1rem] border border-border/55 bg-background/62 px-4 py-3 text-left text-[13px] font-medium text-foreground transition hover:bg-white/85"
                     >
                       <span className="flex items-center gap-3">
-                        <UserRound className="h-4 w-4 shrink-0" />
+                        <UserRound className="h-4 w-4 shrink-0 text-foreground/65" />
                         Profile
                       </span>
-                      <Badge variant="outline" className="text-[10px] uppercase">
+                      <Badge variant="outline" className="text-[9px] uppercase tracking-wider">
                         Soon
                       </Badge>
                     </button>
 
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between rounded-[1.15rem] border border-border/65 bg-background/72 px-4 py-3 text-left text-sm font-medium text-foreground transition hover:bg-white/90"
+                      className="flex w-full items-center justify-between rounded-[1.1rem] border border-border/55 bg-background/62 px-4 py-3 text-left text-[13px] font-medium text-foreground transition hover:bg-white/85"
                     >
                       <span className="flex items-center gap-3">
-                        <Settings2 className="h-4 w-4 shrink-0" />
+                        <Settings2 className="h-4 w-4 shrink-0 text-foreground/65" />
                         Settings
                       </span>
-                      <Badge variant="outline" className="text-[10px] uppercase">
+                      <Badge variant="outline" className="text-[9px] uppercase tracking-wider">
                         Soon
                       </Badge>
                     </button>
@@ -402,10 +357,10 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
                       type="button"
                       onClick={logout}
                       disabled={isLoading}
-                      className="flex w-full items-center gap-3 rounded-[1.15rem] border border-destructive/25 bg-destructive/8 px-4 py-3 text-left text-sm font-medium text-destructive transition hover:bg-destructive/12 disabled:opacity-60"
+                      className="flex w-full items-center gap-3 rounded-[1.1rem] border border-destructive/20 bg-destructive/6 px-4 py-3 text-left text-[13px] font-medium text-destructive transition hover:bg-destructive/10 disabled:opacity-55"
                     >
                       <LogOut className="h-4 w-4 shrink-0" />
-                      Logout
+                      Sign out
                     </button>
                   </div>
                 </div>
@@ -414,35 +369,24 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
           </div>
         </div>
 
-        {/* ── Row 2: Search + Badges ──────────────────────────────────── */}
-        {/* Mobile: collapsible search row */}
+        {/* ── Collapsible search ───────────────────────────────────────── */}
         <div
           className={cn(
-            "flex flex-col gap-3 overflow-hidden transition-all duration-200 lg:flex-row lg:items-center",
-            // On mobile/tablet: only show when searchOpen OR always show on lg+
-            searchOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0 lg:max-h-40 lg:opacity-100",
+            "overflow-hidden transition-all duration-200 ease-in-out",
+            searchOpen ? "mt-3 max-h-[4rem] opacity-100" : "max-h-0 opacity-0",
           )}
         >
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/38" />
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/34" />
             <Input
-              ref={searchInputRef}
-              aria-label="Search transactions, accounts, and users"
-              placeholder="Search transactions, accounts, users, budgets..."
-              className="h-12 rounded-[1.4rem] border-border/75 bg-background/76 pl-11 pr-24"
+              ref={searchRef}
+              aria-label="Search"
+              placeholder="Search transactions, accounts, budgets, users…"
+              className="h-12 rounded-[1.35rem] border-border/70 bg-background/72 pl-11 pr-[4.5rem] text-sm placeholder:text-foreground/38"
             />
-            <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-full border border-border/75 bg-white/65 px-2.5 py-1 text-[11px] font-semibold text-foreground/48 md:inline-flex">
+            <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded-lg border border-border/68 bg-white/60 px-2 py-1 text-[10px] font-semibold text-foreground/42 md:inline-flex">
               Ctrl K
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="accent" className="bg-accent/20">
-              AI insights live
-            </Badge>
-            <Badge variant="subtle" className="hidden sm:flex">
-              3 alerts need attention
-            </Badge>
+            </kbd>
           </div>
         </div>
       </div>
