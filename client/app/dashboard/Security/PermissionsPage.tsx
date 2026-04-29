@@ -25,7 +25,6 @@ import {
   type PermissionAction,
   type Role,
 } from "./demo-data"
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
