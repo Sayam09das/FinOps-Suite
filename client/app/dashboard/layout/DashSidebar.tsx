@@ -203,59 +203,65 @@ function NavItemRow({
       {/* Icon */}
       <div
         className={cn(
-          "flex shrink-0 items-center justify-center rounded-xl border transition-colors duration-200",
-          collapsed ? "h-9 w-9" : "h-9 w-9",
+          "flex shrink-0 items-center justify-center rounded-xl border transition-all duration-200",
+          collapsed ? "h-8 w-8" : "h-9 w-9",
           active
             ? "border-primary/68 bg-primary text-primary-foreground"
             : "border-border/68 bg-white/55 text-foreground/68",
         )}
       >
-        <Icon className="h-[15px] w-[15px]" />
+        <Icon className="h-[14px] w-[14px]" />
       </div>
 
-      {/* Text — hidden when collapsed */}
-      <div
-        className={cn(
-          "min-w-0 flex-1 transition-all duration-200",
-          collapsed ? "w-0 overflow-hidden opacity-0" : "opacity-100",
-        )}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <p className="truncate text-[13px] font-semibold text-foreground">
-            {item.title}
+      {/* Text */}
+      {!collapsed && (
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <p className="truncate text-[13px] font-semibold text-foreground">
+              {item.title}
+            </p>
+            {item.badge && (
+              <span className={badgeCn(item.tone)}>{item.badge}</span>
+            )}
+          </div>
+          <p className="mt-0.5 text-[11px] leading-[1.55] text-foreground/55">
+            {item.description}
           </p>
-          {item.badge && (
-            <span className={badgeCn(item.tone)}>{item.badge}</span>
-          )}
         </div>
-        <p className="mt-0.5 text-[11px] leading-[1.55] text-foreground/55">
-          {item.description}
-        </p>
-      </div>
+      )}
     </>
   );
 
   const cls = cn(
-    "group relative flex w-full items-center text-left transition-all duration-200",
-    collapsed ? "justify-center rounded-2xl px-0 py-2" : "gap-3 rounded-[1.25rem] border px-3 py-2.5",
-    !collapsed && (
-      active
-        ? "border-primary/72 bg-primary/44 shadow-[0_12px_32px_rgba(33,49,43,0.09)]"
-        : "border-border/65 bg-background/65 hover:-translate-y-0.5 hover:border-primary/38 hover:bg-white/85"
-    ),
-    collapsed && active && "text-primary",
+    "group relative flex w-full text-left transition-all duration-200",
+
+    // 🔥 KEY FIX HERE
+    collapsed
+      ? "justify-center py-1.5"   // ⬅️ reduced vertical spacing
+      : "items-center gap-3 rounded-[1.25rem] border px-3 py-2.5",
+
+    !collapsed &&
+    (active
+      ? "border-primary/72 bg-primary/44 shadow-[0_12px_32px_rgba(33,49,43,0.09)]"
+      : "border-border/65 bg-background/65 hover:-translate-y-0.5 hover:border-primary/38 hover:bg-white/85"),
+
+    collapsed && active && "text-primary"
   );
 
-  // Tooltip shown only when collapsed
   const tooltip = collapsed ? (
-    <span className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-xl border border-border/80 bg-background/95 px-3 py-1.5 text-[12px] font-medium text-foreground opacity-0 shadow-lg backdrop-blur-sm transition-opacity duration-150 group-hover:opacity-100">
+    <span className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap rounded-xl border border-border/80 bg-background/95 px-2.5 py-1 text-[11px] font-medium text-foreground opacity-0 shadow-lg backdrop-blur-sm transition-opacity duration-150 group-hover:opacity-100">
       {item.title}
     </span>
   ) : null;
 
   if (item.href) {
     return (
-      <Link href={item.href} className={cls} onClick={onNavigate} title={collapsed ? item.title : undefined}>
+      <Link
+        href={item.href}
+        className={cls}
+        onClick={onNavigate}
+        title={collapsed ? item.title : undefined}
+      >
         {inner}
         {tooltip}
       </Link>
@@ -367,59 +373,6 @@ function SidebarContent({
             </section>
           );
         })}
-      </div>
-
-      {/* AI insight card — hidden when collapsed */}
-      <div
-        className={cn(
-          "shrink-0 overflow-hidden rounded-[1.7rem] border border-foreground/10 bg-foreground text-background shadow-[0_24px_72px_rgba(33,49,43,0.22)] transition-all duration-300",
-          collapsed ? "max-h-0 border-transparent p-0 opacity-0 shadow-none" : "max-h-[280px] p-4 opacity-100",
-        )}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[9px] font-semibold uppercase tracking-widest text-background/42">
-              Pro add-ons
-            </p>
-            <h3 className="mt-0.5 text-base font-semibold">AI insight deck</h3>
-          </div>
-          <Badge
-            variant="contrast"
-            className="shrink-0 border-white/14 bg-white/10 text-[10px] text-background"
-          >
-            Live
-          </Badge>
-        </div>
-
-        <div className="mt-3 space-y-2 text-[12px] text-background/68">
-          <div className="flex items-start gap-3 rounded-[1.1rem] border border-white/10 bg-white/5 p-3">
-            <Bot className="mt-0.5 h-[14px] w-[14px] shrink-0" />
-            <p className="leading-[1.6]">
-              You overspent on dining this week vs. your four-week average.
-            </p>
-          </div>
-          <div className="flex items-start gap-3 rounded-[1.1rem] border border-white/10 bg-white/5 p-3">
-            <Sparkles className="mt-0.5 h-[14px] w-[14px] shrink-0" />
-            <p className="leading-[1.6]">
-              Smart categorization can auto-tag low-confidence transactions.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button variant="light" size="sm" className="rounded-2xl text-[12px]">
-            <Sparkles className="h-3.5 w-3.5" />
-            Generate insight
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="rounded-2xl border-white/14 bg-white/8 text-[12px] text-background hover:bg-white/14"
-          >
-            <FileDown className="h-3.5 w-3.5" />
-            Export CSV
-          </Button>
-        </div>
       </div>
     </div>
   );
