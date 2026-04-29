@@ -181,11 +181,17 @@ function badgeCn(tone: NavTone = "soon") {
 function isActive(pathname: string, href?: string) {
   if (!href) return false;
 
-  // ✅ exact match
-  if (pathname === href) return true;
+  const clean = (str: string) =>
+    str.replace(/\/+$/, "") || "/";
 
-  // ✅ nested routes (but avoid root "/")
-  if (href !== "/" && pathname.startsWith(href + "/")) return true;
+  const current = clean(pathname);
+  const target = clean(href);
+
+  // exact match ONLY
+  if (current === target) return true;
+
+  // allow nested ONLY for non-root
+  if (target !== "/" && current.startsWith(target + "/")) return true;
 
   return false;
 }
