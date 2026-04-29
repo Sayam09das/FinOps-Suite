@@ -57,12 +57,14 @@ type NavSection = {
 };
 
 export type DashSidebarProps = {
-  /** When true renders the mobile drawer variant */
+  /** Renders as a mobile overlay drawer */
   mobile?: boolean;
-  /** Controls drawer visibility (mobile only) */
+  /** Controls drawer open state (mobile only) */
   open?: boolean;
-  /** Called when the drawer requests to be closed */
+  /** Called when drawer requests close (mobile only) */
   onClose?: () => void;
+  /** When true, desktop sidebar shows icon-only rail */
+  collapsed?: boolean;
 };
 
 // ─── Navigation data ──────────────────────────────────────────────────────────
@@ -75,7 +77,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { title: "Dashboard", description: "Main analytics and activity pulse", icon: LayoutDashboard, href: "/dashboard", badge: "Live", tone: "live" },
       { title: "Financial Summary", description: "Revenue, expenses, and balances", icon: Wallet, href: "/dashboard/finance-summary", badge: "Live", tone: "live" },
-      { title: "Net Worth Snapshot", description: "Assets versus liabilities", icon: Landmark, href: "/dashboard/networth", badge: "Live", tone: "live" },
+      { title: "Net Worth", description: "Assets versus liabilities", icon: Landmark, href: "/dashboard/networth", badge: "Live", tone: "live" },
     ],
   },
   {
@@ -180,15 +182,17 @@ function badgeCn(tone: NavTone = "soon") {
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── NavItemRow ───────────────────────────────────────────────────────────────
 
 function NavItemRow({
   item,
   pathname,
+  collapsed = false,
   onNavigate,
 }: {
   item: NavItem;
   pathname: string;
+  collapsed?: boolean;
   onNavigate?: () => void;
 }) {
   const Icon = item.icon;
@@ -196,9 +200,11 @@ function NavItemRow({
 
   const inner = (
     <>
+      {/* Icon */}
       <div
         className={cn(
-          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors",
+          "flex shrink-0 items-center justify-center rounded-xl border transition-colors duration-200",
+          collapsed ? "h-9 w-9" : "h-9 w-9",
           active
             ? "border-primary/68 bg-primary text-primary-foreground"
             : "border-border/68 bg-white/55 text-foreground/68",
@@ -207,29 +213,51 @@ function NavItemRow({
         <Icon className="h-[15px] w-[15px]" />
       </div>
 
-      <div className="min-w-0 flex-1">
+      {/* Text — hidden when collapsed */}
+      <div
+        className={cn(
+          "min-w-0 flex-1 transition-all duration-200",
+          collapsed ? "w-0 overflow-hidden opacity-0" : "opacity-100",
+        )}
+      >
         <div className="flex items-start justify-between gap-2">
-          <p className="truncate text-[13px] font-semibold text-foreground">{item.title}</p>
+          <p className="truncate text-[13px] font-semibold text-foreground">
+            {item.title}
+          </p>
           {item.badge && (
             <span className={badgeCn(item.tone)}>{item.badge}</span>
           )}
         </div>
-        <p className="mt-0.5 text-[11px] leading-[1.55] text-foreground/55">{item.description}</p>
+        <p className="mt-0.5 text-[11px] leading-[1.55] text-foreground/55">
+          {item.description}
+        </p>
       </div>
     </>
   );
 
   const cls = cn(
-    "group flex w-full items-start gap-3 rounded-[1.25rem] border px-3 py-2.5 text-left transition-all duration-150",
-    active
-      ? "border-primary/72 bg-primary/44 shadow-[0_12px_32px_rgba(33,49,43,0.09)]"
-      : "border-border/65 bg-background/65 hover:-translate-y-0.5 hover:border-primary/38 hover:bg-white/85",
+    "group relative flex w-full items-center text-left transition-all duration-200",
+    collapsed ? "justify-center rounded-2xl px-0 py-2" : "gap-3 rounded-[1.25rem] border px-3 py-2.5",
+    !collapsed && (
+      active
+        ? "border-primary/72 bg-primary/44 shadow-[0_12px_32px_rgba(33,49,43,0.09)]"
+        : "border-border/65 bg-background/65 hover:-translate-y-0.5 hover:border-primary/38 hover:bg-white/85"
+    ),
+    collapsed && active && "text-primary",
   );
+
+  // Tooltip shown only when collapsed
+  const tooltip = collapsed ? (
+    <span className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-xl border border-border/80 bg-background/95 px-3 py-1.5 text-[12px] font-medium text-foreground opacity-0 shadow-lg backdrop-blur-sm transition-opacity duration-150 group-hover:opacity-100">
+      {item.title}
+    </span>
+  ) : null;
 
   if (item.href) {
     return (
-      <Link href={item.href} className={cls} onClick={onNavigate}>
+      <Link href={item.href} className={cls} onClick={onNavigate} title={collapsed ? item.title : undefined}>
         {inner}
+        {tooltip}
       </Link>
     );
   }
@@ -237,18 +265,32 @@ function NavItemRow({
   return (
     <button type="button" className={cls} disabled>
       {inner}
+      {tooltip}
     </button>
   );
 }
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+// ─── SidebarContent ───────────────────────────────────────────────────────────
+
+function SidebarContent({
+  collapsed = false,
+  onNavigate,
+}: {
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-hidden">
+    <div className="flex h-full flex-col gap-3 overflow-hidden">
 
-      {/* Header card */}
-      <div className="shrink-0 rounded-[1.7rem] border border-border/70 bg-[linear-gradient(160deg,rgba(255,255,255,0.65),rgba(255,255,255,0.30))] p-4 shadow-[0_14px_48px_rgba(33,49,43,0.08)]">
+      {/* Header card — hidden when collapsed */}
+      <div
+        className={cn(
+          "shrink-0 overflow-hidden rounded-[1.7rem] border border-border/70 bg-[linear-gradient(160deg,rgba(255,255,255,0.65),rgba(255,255,255,0.30))] shadow-[0_14px_48px_rgba(33,49,43,0.08)] transition-all duration-300",
+          collapsed ? "max-h-0 border-transparent p-0 opacity-0 shadow-none" : "max-h-40 p-4 opacity-100",
+        )}
+      >
         <div className="flex items-start gap-3">
           <div className="primary-wash flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
             <Sparkles className="h-5 w-5 text-foreground" />
@@ -267,35 +309,57 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </p>
       </div>
 
-      {/* Scrollable nav sections */}
-      <div className="flex-1 space-y-3 overflow-y-auto pr-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border/40">
+      {/* Collapsed brand icon */}
+      {collapsed && (
+        <div className="flex shrink-0 justify-center py-1">
+          <div className="primary-wash flex h-10 w-10 items-center justify-center rounded-2xl">
+            <Sparkles className="h-5 w-5 text-foreground" />
+          </div>
+        </div>
+      )}
+
+      {/* Scrollable sections */}
+      <div className="flex-1 space-y-2.5 overflow-y-auto pr-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border/40">
         {NAV_SECTIONS.map((section) => {
           const SectionIcon = section.icon;
+
           return (
             <section
               key={section.title}
-              className="rounded-[1.6rem] border border-border/70 bg-white/38 p-3 shadow-[0_10px_36px_rgba(33,49,43,0.05)] backdrop-blur-xl"
+              className={cn(
+                "rounded-[1.6rem] border border-border/70 bg-white/38 shadow-[0_10px_36px_rgba(33,49,43,0.05)] backdrop-blur-xl transition-all duration-200",
+                collapsed ? "p-2" : "p-3",
+              )}
             >
-              <div className="mb-2.5 flex items-center gap-2.5 px-1">
-                <div className="accent-wash flex h-8 w-8 items-center justify-center rounded-xl">
-                  <SectionIcon className="h-[14px] w-[14px] text-foreground/75" />
-                </div>
-                <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/38">
-                    {section.eyebrow}
-                  </p>
-                  <h3 className="text-[13px] font-semibold leading-tight text-foreground">
-                    {section.title}
-                  </h3>
+              {/* Section header — hidden when collapsed */}
+              <div
+                className={cn(
+                  "overflow-hidden transition-all duration-200",
+                  collapsed ? "mb-0 max-h-0 opacity-0" : "mb-2.5 max-h-16 px-1 opacity-100",
+                )}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="accent-wash flex h-8 w-8 items-center justify-center rounded-xl">
+                    <SectionIcon className="h-[14px] w-[14px] text-foreground/75" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/38">
+                      {section.eyebrow}
+                    </p>
+                    <h3 className="text-[13px] font-semibold leading-tight text-foreground">
+                      {section.title}
+                    </h3>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className={cn("space-y-1", collapsed && "space-y-1.5")}>
                 {section.items.map((item) => (
                   <NavItemRow
                     key={item.title}
                     item={item}
                     pathname={pathname}
+                    collapsed={collapsed}
                     onNavigate={onNavigate}
                   />
                 ))}
@@ -304,32 +368,80 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
       </div>
+
+      {/* AI insight card — hidden when collapsed */}
+      <div
+        className={cn(
+          "shrink-0 overflow-hidden rounded-[1.7rem] border border-foreground/10 bg-foreground text-background shadow-[0_24px_72px_rgba(33,49,43,0.22)] transition-all duration-300",
+          collapsed ? "max-h-0 border-transparent p-0 opacity-0 shadow-none" : "max-h-[280px] p-4 opacity-100",
+        )}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-widest text-background/42">
+              Pro add-ons
+            </p>
+            <h3 className="mt-0.5 text-base font-semibold">AI insight deck</h3>
+          </div>
+          <Badge
+            variant="contrast"
+            className="shrink-0 border-white/14 bg-white/10 text-[10px] text-background"
+          >
+            Live
+          </Badge>
+        </div>
+
+        <div className="mt-3 space-y-2 text-[12px] text-background/68">
+          <div className="flex items-start gap-3 rounded-[1.1rem] border border-white/10 bg-white/5 p-3">
+            <Bot className="mt-0.5 h-[14px] w-[14px] shrink-0" />
+            <p className="leading-[1.6]">
+              You overspent on dining this week vs. your four-week average.
+            </p>
+          </div>
+          <div className="flex items-start gap-3 rounded-[1.1rem] border border-white/10 bg-white/5 p-3">
+            <Sparkles className="mt-0.5 h-[14px] w-[14px] shrink-0" />
+            <p className="leading-[1.6]">
+              Smart categorization can auto-tag low-confidence transactions.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button variant="light" size="sm" className="rounded-2xl text-[12px]">
+            <Sparkles className="h-3.5 w-3.5" />
+            Generate insight
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="rounded-2xl border-white/14 bg-white/8 text-[12px] text-background hover:bg-white/14"
+          >
+            <FileDown className="h-3.5 w-3.5" />
+            Export CSV
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-/**
- * DashSidebar
- *
- * Usage:
- *   Desktop (always mounted, sticky):
- *     <DashSidebar />
- *
- *   Mobile drawer (controlled by parent state):
- *     <DashSidebar mobile open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
- */
-export default function DashSidebar({ mobile = false, open = false, onClose }: DashSidebarProps) {
+export default function DashSidebar({
+  mobile = false,
+  open = false,
+  onClose,
+  collapsed = false,
+}: DashSidebarProps) {
 
   /* ── Desktop variant ── */
   if (!mobile) {
     return (
       <aside
-        className="panel-frost hidden max-h-[calc(100vh-7rem)] overflow-hidden rounded-[2rem] p-4 lg:sticky lg:top-[6.5rem] lg:flex lg:flex-col"
+        className="panel-frost flex h-full flex-col overflow-hidden rounded-[2rem] p-3 transition-all duration-300"
         aria-label="Dashboard navigation"
       >
-        <SidebarContent />
+        <SidebarContent collapsed={collapsed} />
       </aside>
     );
   }
@@ -363,7 +475,6 @@ export default function DashSidebar({ mobile = false, open = false, onClose }: D
         aria-label="Dashboard navigation"
       >
         <div className="panel-frost flex h-full flex-col overflow-hidden rounded-[2rem] p-4 shadow-[0_28px_90px_rgba(33,49,43,0.18)]">
-
           {/* Drawer header */}
           <div className="mb-4 flex shrink-0 items-center justify-between gap-3">
             <div>
@@ -384,7 +495,8 @@ export default function DashSidebar({ mobile = false, open = false, onClose }: D
             </button>
           </div>
 
-          <SidebarContent onNavigate={onClose} />
+          {/* Mobile always shows full content (not collapsed) */}
+          <SidebarContent collapsed={false} onNavigate={onClose} />
         </div>
       </aside>
     </div>

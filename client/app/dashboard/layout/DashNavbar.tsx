@@ -10,6 +10,8 @@ import {
   CreditCard,
   LogOut,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   Search,
   Settings2,
   Sparkles,
@@ -25,8 +27,10 @@ import { cn } from "@/app/lib/utils/cn";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type DashNavbarProps = {
-  /** Toggles the sidebar — wired from the parent layout */
+  /** Called when hamburger is clicked — parent decides which state to toggle */
   onMenuClick?: () => void;
+  /** Reflects desktop sidebar collapsed state — used to show correct icon */
+  sidebarCollapsed?: boolean;
 };
 
 type PanelName = "notifications" | "profile" | null;
@@ -74,7 +78,10 @@ function dropdownCn(open: boolean) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
+export default function DashNavbar({
+  onMenuClick,
+  sidebarCollapsed = false,
+}: DashNavbarProps) {
   const { user, logout, isLoading } = useAuth();
 
   const [openPanel, setOpenPanel] = useState<PanelName>(null);
@@ -84,7 +91,7 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
   const navRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  /* ── Side-effects ── */
+  /* ── Effects ── */
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -114,7 +121,7 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  /* ── Derived values ── */
+  /* ── Derived ── */
 
   const userInitials = useMemo(() => {
     const src = user?.name?.trim() || "Finance Operator";
@@ -138,17 +145,26 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
         ref={navRef}
         className="nav-frame relative mx-auto flex w-full max-w-[1600px] flex-col rounded-[2rem] px-3 py-3 md:px-4"
       >
-        {/* ── Top bar ─────────────────────────────────────────────────── */}
+        {/* ── Top bar ── */}
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
 
-          {/* Hamburger — always visible, controls sidebar open/close */}
+          {/* Hamburger / collapse toggle */}
           <button
             type="button"
             onClick={onMenuClick}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-background/75 text-foreground shadow-[0_8px_22px_rgba(33,49,43,0.07)] transition hover:-translate-y-0.5 hover:bg-white/88"
-            aria-label="Toggle sidebar"
+            className="group flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-background/75 text-foreground shadow-[0_8px_22px_rgba(33,49,43,0.07)] transition hover:-translate-y-0.5 hover:bg-white/88"
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <Menu className="h-5 w-5" />
+            {/* Desktop: shows collapse/expand icon */}
+            <span className="hidden lg:block transition-all duration-200">
+              {sidebarCollapsed ? (
+                <PanelLeftOpen className="h-5 w-5" />
+              ) : (
+                <PanelLeftClose className="h-5 w-5" />
+              )}
+            </span>
+            {/* Mobile: always hamburger */}
+            <Menu className="h-5 w-5 lg:hidden" />
           </button>
 
           {/* Brand */}
@@ -186,7 +202,11 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
               className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/80 bg-background/75 text-foreground shadow-[0_8px_22px_rgba(33,49,43,0.07)] transition hover:-translate-y-0.5 hover:bg-white/88"
               aria-label={searchOpen ? "Close search" : "Open search"}
             >
-              {searchOpen ? <X className="h-[18px] w-[18px]" /> : <Search className="h-[18px] w-[18px]" />}
+              {searchOpen ? (
+                <X className="h-[18px] w-[18px]" />
+              ) : (
+                <Search className="h-[18px] w-[18px]" />
+              )}
             </button>
 
             {/* Notifications */}
@@ -205,7 +225,11 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
                 </span>
               </button>
 
-              <div className={dropdownCn(openPanel === "notifications")} role="dialog" aria-label="Notifications panel">
+              <div
+                className={dropdownCn(openPanel === "notifications")}
+                role="dialog"
+                aria-label="Notifications panel"
+              >
                 <div className="rounded-[1.3rem] border border-border/62 bg-white/38 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -229,12 +253,21 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
                           key={item.title}
                           className="flex items-start gap-3 rounded-[1.1rem] border border-border/58 bg-background/65 p-3"
                         >
-                          <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", item.accent)}>
+                          <div
+                            className={cn(
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                              item.accent,
+                            )}
+                          >
                             <Icon className="h-[14px] w-[14px]" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[13px] font-semibold text-foreground">{item.title}</p>
-                            <p className="mt-0.5 text-[11px] leading-[1.6] text-foreground/56">{item.detail}</p>
+                            <p className="text-[13px] font-semibold text-foreground">
+                              {item.title}
+                            </p>
+                            <p className="mt-0.5 text-[11px] leading-[1.6] text-foreground/56">
+                              {item.detail}
+                            </p>
                           </div>
                         </div>
                       );
@@ -251,12 +284,16 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
               </span>
               <select
                 value={currency}
-                onChange={(e) => setCurrency(e.target.value as typeof currency)}
+                onChange={(e) =>
+                  setCurrency(e.target.value as (typeof CURRENCIES)[number])
+                }
                 className="bg-transparent text-sm font-medium text-foreground outline-none"
                 aria-label="Display currency"
               >
                 {CURRENCIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </label>
@@ -284,14 +321,22 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
                 </div>
                 <ChevronDown
                   className="hidden h-4 w-4 shrink-0 text-foreground/48 transition-transform duration-200 md:block"
-                  style={{ transform: openPanel === "profile" ? "rotate(180deg)" : "rotate(0deg)" }}
+                  style={{
+                    transform:
+                      openPanel === "profile"
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
+                  }}
                 />
               </button>
 
-              <div className={dropdownCn(openPanel === "profile")} role="dialog" aria-label="Profile panel">
+              <div
+                className={dropdownCn(openPanel === "profile")}
+                role="dialog"
+                aria-label="Profile panel"
+              >
                 <div className="rounded-[1.3rem] border border-border/62 bg-white/38 p-4">
-
-                  {/* Identity card */}
+                  {/* Identity */}
                   <div className="flex items-center gap-3 rounded-[1.1rem] border border-border/58 bg-background/65 p-3">
                     <div className="primary-wash flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-foreground">
                       {userInitials}
@@ -306,7 +351,7 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
                     </div>
                   </div>
 
-                  {/* FX — visible only below lg */}
+                  {/* FX (mobile/tablet only) */}
                   <div className="mt-2.5 rounded-[1.1rem] border border-border/55 bg-background/62 px-4 py-3 lg:hidden">
                     <label className="flex items-center gap-3">
                       <span className="text-[10px] font-semibold uppercase tracking-widest text-foreground/40">
@@ -314,18 +359,24 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
                       </span>
                       <select
                         value={currency}
-                        onChange={(e) => setCurrency(e.target.value as typeof currency)}
+                        onChange={(e) =>
+                          setCurrency(
+                            e.target.value as (typeof CURRENCIES)[number],
+                          )
+                        }
                         className="ml-auto bg-transparent text-sm font-medium text-foreground outline-none"
                         aria-label="Display currency"
                       >
                         {CURRENCIES.map((c) => (
-                          <option key={c} value={c}>{c}</option>
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
                         ))}
                       </select>
                     </label>
                   </div>
 
-                  {/* Actions */}
+                  {/* Menu actions */}
                   <div className="mt-2.5 space-y-1.5">
                     <button
                       type="button"
@@ -335,7 +386,10 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
                         <UserRound className="h-4 w-4 shrink-0 text-foreground/65" />
                         Profile
                       </span>
-                      <Badge variant="outline" className="text-[9px] uppercase tracking-wider">
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] uppercase tracking-wider"
+                      >
                         Soon
                       </Badge>
                     </button>
@@ -348,7 +402,10 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
                         <Settings2 className="h-4 w-4 shrink-0 text-foreground/65" />
                         Settings
                       </span>
-                      <Badge variant="outline" className="text-[9px] uppercase tracking-wider">
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] uppercase tracking-wider"
+                      >
                         Soon
                       </Badge>
                     </button>
@@ -369,7 +426,7 @@ export default function DashNavbar({ onMenuClick }: DashNavbarProps) {
           </div>
         </div>
 
-        {/* ── Collapsible search ───────────────────────────────────────── */}
+        {/* ── Collapsible search ── */}
         <div
           className={cn(
             "overflow-hidden transition-all duration-200 ease-in-out",
