@@ -1,17 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Plus, Tag } from "lucide-react"
+import { motion } from "framer-motion"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
-import { Button } from "@/app/components/ui/button"
 import CategoryList from "./CategoryList"
-import AddCategoryModal from "./AddCategoryModal"
 
 export default function CategoriesPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-
   return (
     <div className="min-h-screen bg-background">
       <div className="space-y-6 p-4 md:p-6 xl:p-8">
@@ -36,15 +31,9 @@ export default function CategoriesPage() {
             </div>
           </div>
 
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              className="rounded-2xl shadow-lg shadow-primary/10"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Category
-            </Button>
-          </motion.div>
+          <p className="rounded-2xl border border-border/70 bg-background/60 px-4 py-2.5 text-sm text-foreground/60">
+            Categories are derived from saved backend transactions.
+          </p>
         </motion.div>
 
         {/* Category List */}
@@ -57,13 +46,6 @@ export default function CategoriesPage() {
         </motion.div>
       </div>
 
-      {/* Add Category Modal */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <AddCategoryModal onClose={() => setIsModalOpen(false)} />
-        )}
-      </AnimatePresence>
     </div>
   )
 }
-

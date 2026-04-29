@@ -2,17 +2,18 @@
 
 import React from "react"
 import { motion } from "framer-motion"
-import { Search, Calendar, Tag, CreditCard, Repeat, X, Filter, Sparkles } from "lucide-react"
+import { Search, Calendar, Tag, X, Sparkles } from "lucide-react"
 
 import { Card } from "@/app/components/ui/card"
 import { cn } from "@/app/lib/utils/cn"
 
 import type { TransactionFilterState, TransactionType } from "./types"
-import { ACCOUNT_CONFIG, CATEGORY_CONFIG } from "./view-model"
+import { CATEGORY_CONFIG } from "./view-model"
 
 interface TransactionsFiltersProps {
   filters: TransactionFilterState
   onChange: (filters: TransactionFilterState) => void
+  categories: string[]
 }
 
 const dateRangeOptions = [
@@ -26,21 +27,18 @@ const dateRangeOptions = [
 const typeOptions: { value: TransactionType; label: string; color: string }[] = [
   { value: "income", label: "Income", color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
   { value: "expense", label: "Expense", color: "bg-rose-100 text-rose-700 border-rose-200" },
-  { value: "transfer", label: "Transfer", color: "bg-blue-100 text-blue-700 border-blue-200" },
 ]
 
 const smartFilters = [
   { value: "all", label: "All Transactions" },
   { value: "high_spending", label: "High Spending" },
-  { value: "recurring", label: "Recurring" },
   { value: "uncategorized", label: "Uncategorized" },
 ] as const
 
-export default function TransactionsFilters({ filters, onChange }: TransactionsFiltersProps) {
+export default function TransactionsFilters({ filters, onChange, categories }: TransactionsFiltersProps) {
   const hasActiveFilters =
     filters.search ||
     filters.categories.length > 0 ||
-    filters.accounts.length > 0 ||
     filters.types.length > 0 ||
     filters.smartFilter !== "all" ||
     filters.dateRange !== "this_month"
@@ -53,7 +51,6 @@ export default function TransactionsFilters({ filters, onChange }: TransactionsF
       search: "",
       dateRange: "this_month",
       categories: [],
-      accounts: [],
       types: [],
       smartFilter: "all",
     })
@@ -152,12 +149,14 @@ export default function TransactionsFilters({ filters, onChange }: TransactionsF
           )}
         </div>
 
-        {/* Category + Account Chips */}
+        {/* Category Chips */}
         <div className="mt-4 flex flex-wrap gap-2">
-          {/* Category chips */}
           <div className="flex flex-wrap items-center gap-1.5">
             <Tag className="h-3.5 w-3.5 text-foreground/40" />
-            {Object.entries(CATEGORY_CONFIG).map(([key, config]) => {
+            {categories.length === 0 ? (
+              <span className="text-xs text-foreground/45">No categories from backend yet</span>
+            ) : categories.map((key) => {
+              const config = CATEGORY_CONFIG[key] || CATEGORY_CONFIG.Uncategorized
               const active = filters.categories.includes(key)
               return (
                 <button
@@ -174,32 +173,7 @@ export default function TransactionsFilters({ filters, onChange }: TransactionsF
                   style={active ? { borderColor: config.color, color: config.color, backgroundColor: `${config.color}15` } : {}}
                 >
                   <config.icon className="h-3 w-3" />
-                  {config.name}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Account chips */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            <CreditCard className="h-3.5 w-3.5 text-foreground/40" />
-            {Object.entries(ACCOUNT_CONFIG).map(([key, config]) => {
-              const active = filters.accounts.includes(key)
-              return (
-                <button
-                  key={key}
-                  onClick={() =>
-                    onChange({ ...filters, accounts: toggleArray(filters.accounts, key) })
-                  }
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition",
-                    active
-                      ? "border-current bg-current/10"
-                      : "border-border/60 bg-background/50 text-foreground/55 hover:bg-white/70"
-                  )}
-                  style={active ? { borderColor: config.color, color: config.color, backgroundColor: `${config.color}15` } : {}}
-                >
-                  {config.name}
+                  {key}
                 </button>
               )
             })}
@@ -209,4 +183,3 @@ export default function TransactionsFilters({ filters, onChange }: TransactionsF
     </motion.div>
   )
 }
-

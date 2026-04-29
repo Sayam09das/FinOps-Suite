@@ -2,13 +2,13 @@
 
 import React from "react"
 import { motion } from "framer-motion"
-import { Pencil, Trash2, Eye, Repeat } from "lucide-react"
+import { Pencil, Trash2, Eye } from "lucide-react"
 
 import { cn } from "@/app/lib/utils/cn"
 import { formatCurrency } from "@/app/lib/utils/number"
 
 import type { Transaction } from "./types"
-import { ACCOUNT_CONFIG, CATEGORY_CONFIG } from "./view-model"
+import { CATEGORY_CONFIG } from "./view-model"
 
 interface TransactionRowProps {
   transaction: Transaction
@@ -30,9 +30,7 @@ export default function TransactionRow({
   onView,
 }: TransactionRowProps) {
   const categoryConfig = CATEGORY_CONFIG[transaction.category] || CATEGORY_CONFIG["Uncategorized"]
-  const accountConfig = ACCOUNT_CONFIG[transaction.account] || { name: transaction.account, icon: Repeat, color: "#9ca3af" }
   const CategoryIcon = categoryConfig.icon
-  const AccountIcon = accountConfig.icon
 
   const isIncome = transaction.type === "income"
   const isExpense = transaction.type === "expense"
@@ -80,13 +78,6 @@ export default function TransactionRow({
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-foreground">{transaction.description}</p>
-            {transaction.isRecurring && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-violet-200/70 bg-violet-50/60 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
-                <Repeat className="h-2.5 w-2.5" />
-                Recurring
-                {transaction.nextDueDate && ` · ${transaction.nextDueDate}`}
-              </span>
-            )}
           </div>
         </div>
       </td>
@@ -104,14 +95,6 @@ export default function TransactionRow({
           <CategoryIcon className="h-3 w-3" />
           {categoryConfig.name}
         </span>
-      </td>
-
-      {/* Account */}
-      <td className="px-3 py-3">
-        <div className="flex items-center gap-1.5 text-sm text-foreground/70">
-          <AccountIcon className="h-3.5 w-3.5" style={{ color: accountConfig.color }} />
-          {accountConfig.name}
-        </div>
       </td>
 
       {/* Type */}
@@ -157,4 +140,3 @@ export default function TransactionRow({
     </motion.tr>
   )
 }
-

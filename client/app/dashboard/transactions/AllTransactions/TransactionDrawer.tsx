@@ -6,13 +6,8 @@ import {
   X,
   Pencil,
   Trash2,
-  Repeat,
   Calendar,
-  Tag,
-  CreditCard,
-  Landmark,
   Hash,
-  StickyNote,
   Save,
 } from "lucide-react"
 
@@ -20,7 +15,7 @@ import { cn } from "@/app/lib/utils/cn"
 import { formatCurrency } from "@/app/lib/utils/number"
 
 import type { Transaction } from "./types"
-import { ACCOUNT_CONFIG, CATEGORY_CONFIG } from "./view-model"
+import { CATEGORY_CONFIG } from "./view-model"
 
 interface TransactionDrawerProps {
   transaction: Transaction | null
@@ -43,9 +38,7 @@ export default function TransactionDrawer({
   if (!transaction) return null
 
   const categoryConfig = CATEGORY_CONFIG[transaction.category] || CATEGORY_CONFIG["Uncategorized"]
-  const accountConfig = ACCOUNT_CONFIG[transaction.account] || { name: transaction.account, icon: Landmark, color: "#9ca3af" }
   const CategoryIcon = categoryConfig.icon
-  const AccountIcon = accountConfig.icon
 
   const isIncome = transaction.type === "income"
   const isExpense = transaction.type === "expense"
@@ -160,15 +153,6 @@ export default function TransactionDrawer({
                   </div>
                 </div>
 
-                {/* Account */}
-                <div className="rounded-2xl border border-border/60 bg-background/50 p-4">
-                  <label className="text-xs font-medium text-foreground/50">Account</label>
-                  <div className="mt-1 flex items-center gap-2">
-                    <AccountIcon className="h-4 w-4" style={{ color: accountConfig.color }} />
-                    <span className="text-sm font-medium text-foreground">{accountConfig.name}</span>
-                  </div>
-                </div>
-
                 {/* Date */}
                 <div className="rounded-2xl border border-border/60 bg-background/50 p-4">
                   <label className="text-xs font-medium text-foreground/50">Date</label>
@@ -204,38 +188,6 @@ export default function TransactionDrawer({
                   </div>
                 )}
 
-                {/* Tags */}
-                {transaction.tags && transaction.tags.length > 0 && (
-                  <div className="rounded-2xl border border-border/60 bg-background/50 p-4">
-                    <label className="text-xs font-medium text-foreground/50">Tags</label>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {transaction.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/70 px-2.5 py-1 text-xs font-medium text-foreground/70"
-                        >
-                          <Tag className="h-3 w-3" />
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Recurring */}
-                {transaction.isRecurring && (
-                  <div className="rounded-2xl border border-violet-200/50 bg-violet-50/40 p-4">
-                    <div className="flex items-center gap-2">
-                      <Repeat className="h-4 w-4 text-violet-600" />
-                      <span className="text-sm font-semibold text-violet-700">Recurring Payment</span>
-                    </div>
-                    {transaction.nextDueDate && (
-                      <p className="mt-1 text-xs text-violet-600/80">
-                        Next due: {transaction.nextDueDate}
-                      </p>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -257,4 +209,3 @@ export default function TransactionDrawer({
     </AnimatePresence>
   )
 }
-

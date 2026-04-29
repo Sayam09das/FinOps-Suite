@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react"
 
-export type TransactionType = "income" | "expense" | "transfer"
+export type TransactionType = "income" | "expense"
 export type TransactionTone = "positive" | "warning" | "danger" | "neutral"
 
 export interface Transaction {
@@ -8,13 +8,9 @@ export interface Transaction {
   date: string
   description: string
   category: string
-  account: string
   type: TransactionType
   amount: number
   note?: string
-  tags?: string[]
-  isRecurring?: boolean
-  nextDueDate?: string
   createdAt: string
 }
 
@@ -24,9 +20,8 @@ export interface TransactionFilterState {
   customDateFrom?: string
   customDateTo?: string
   categories: string[]
-  accounts: string[]
   types: TransactionType[]
-  smartFilter: "all" | "high_spending" | "recurring" | "uncategorized"
+  smartFilter: "all" | "high_spending" | "uncategorized"
 }
 
 export interface TransactionSummary {
@@ -48,4 +43,3 @@ export interface AccountConfig {
   icon: LucideIcon
   color: string
 }
-

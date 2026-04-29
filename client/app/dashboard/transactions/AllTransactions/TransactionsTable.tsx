@@ -108,11 +108,6 @@ export default function TransactionsTable({
                       }`}>
                         {txn.type}
                       </span>
-                      {txn.isRecurring && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-violet-200/70 bg-violet-50/60 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
-                          Recurring
-                        </span>
-                      )}
                     </div>
                   </motion.div>
                 )
@@ -140,7 +135,6 @@ export default function TransactionsTable({
                 <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/50">Date</th>
                 <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/50">Description</th>
                 <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/50">Category</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/50">Account</th>
                 <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/50">Type</th>
                 <th className="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-foreground/50">Amount</th>
                 <th className="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-foreground/50">Actions</th>
@@ -168,4 +162,3 @@ export default function TransactionsTable({
     </motion.div>
   )
 }
-

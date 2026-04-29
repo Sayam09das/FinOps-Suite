@@ -1,11 +1,11 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { ArrowDownLeft, ArrowUpRight, Repeat2 } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
 
 import { cn } from "@/app/lib/utils/cn"
 
-export type TransactionType = "income" | "expense" | "transfer"
+export type TransactionType = "income" | "expense"
 
 interface TransactionTypeToggleProps {
   value: TransactionType
@@ -28,14 +28,6 @@ const types: { value: TransactionType; label: string; icon: typeof ArrowUpRight;
     color: "text-rose-700",
     bg: "bg-rose-50",
     activeBg: "bg-rose-500",
-  },
-  {
-    value: "transfer",
-    label: "Transfer",
-    icon: Repeat2,
-    color: "text-blue-700",
-    bg: "bg-blue-50",
-    activeBg: "bg-blue-500",
   },
 ]
 
@@ -75,4 +67,3 @@ export default function TransactionTypeToggle({ value, onChange }: TransactionTy
     </div>
   )
 }
-

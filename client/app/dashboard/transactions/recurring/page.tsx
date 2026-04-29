@@ -1,18 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Plus, Repeat } from "lucide-react"
+import { motion } from "framer-motion"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
-import { Button } from "@/app/components/ui/button"
 import RecurringList from "./RecurringList"
 import UpcomingTimeline from "./UpcomingTimeline"
-import AddRecurringForm from "./AddRecurringForm"
 
 export default function RecurringPage() {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-
   return (
     <div className="min-h-screen bg-background">
       <div className="space-y-6 p-4 md:p-6 xl:p-8">
@@ -37,15 +32,9 @@ export default function RecurringPage() {
             </div>
           </div>
 
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button
-              onClick={() => setIsDrawerOpen(true)}
-              className="rounded-2xl shadow-lg shadow-primary/10"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Recurring
-            </Button>
-          </motion.div>
+          <p className="rounded-2xl border border-border/70 bg-background/60 px-4 py-2.5 text-sm text-foreground/60">
+            Recurring transactions are not stored by the backend yet.
+          </p>
         </motion.div>
 
         {/* Timeline + List Grid */}
@@ -68,14 +57,7 @@ export default function RecurringPage() {
         </div>
       </div>
 
-      {/* Add Recurring Drawer */}
-      <AnimatePresence>
-        {isDrawerOpen && (
-          <AddRecurringForm onClose={() => setIsDrawerOpen(false)} />
-        )}
-      </AnimatePresence>
     </div>
   )
 }
-
 

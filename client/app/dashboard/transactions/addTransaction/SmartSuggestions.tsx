@@ -4,7 +4,8 @@ import { motion } from "framer-motion"
 import { Copy, Lightbulb, Receipt } from "lucide-react"
 
 import { cn } from "@/app/lib/utils/cn"
-import { allTransactions } from "../AllTransactions/view-model"
+import { useTransactionsQuery } from "@/app/lib/api/queries"
+import { mapApiTransaction } from "../AllTransactions/view-model"
 import type { Transaction } from "../AllTransactions/types"
 
 interface SmartSuggestionsProps {
@@ -12,7 +13,11 @@ interface SmartSuggestionsProps {
 }
 
 export default function SmartSuggestions({ onDuplicate }: SmartSuggestionsProps) {
-  const recentTransactions = allTransactions.slice(0, 5)
+  const { data: transactionsResponse } = useTransactionsQuery(1, true, 5)
+  const source = Array.isArray(transactionsResponse)
+    ? transactionsResponse
+    : transactionsResponse?.data || []
+  const recentTransactions = source.map(mapApiTransaction).slice(0, 5)
 
   return (
     <div className="space-y-4">
@@ -30,7 +35,11 @@ export default function SmartSuggestions({ onDuplicate }: SmartSuggestionsProps)
       {/* Recent Transactions */}
       <div className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-wider text-foreground/40">Last 5 transactions</p>
-        {recentTransactions.map((txn, i) => (
+        {recentTransactions.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border/60 bg-background/50 px-3 py-6 text-center">
+            <p className="text-sm font-medium text-foreground/55">No backend transactions yet</p>
+          </div>
+        ) : recentTransactions.map((txn, i) => (
           <motion.div
             key={txn.id}
             initial={{ opacity: 0, x: 20 }}
@@ -40,21 +49,21 @@ export default function SmartSuggestions({ onDuplicate }: SmartSuggestionsProps)
           >
             <div className={cn(
               "flex h-8 w-8 items-center justify-center rounded-lg",
-              txn.type === "income" ? "bg-emerald-100" : txn.type === "transfer" ? "bg-blue-100" : "bg-rose-100"
+              txn.type === "income" ? "bg-emerald-100" : "bg-rose-100"
             )}>
               <Receipt className={cn(
                 "h-3.5 w-3.5",
-                txn.type === "income" ? "text-emerald-600" : txn.type === "transfer" ? "text-blue-600" : "text-rose-600"
+                txn.type === "income" ? "text-emerald-600" : "text-rose-600"
               )} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-foreground">{txn.description}</p>
-              <p className="text-xs text-foreground/50">{txn.category} · {txn.account}</p>
+              <p className="text-xs text-foreground/50">{txn.category}</p>
             </div>
             <div className="text-right">
               <p className={cn(
                 "text-sm font-semibold",
-                txn.type === "income" ? "text-emerald-600" : txn.type === "transfer" ? "text-blue-600" : "text-rose-600"
+                txn.type === "income" ? "text-emerald-600" : "text-rose-600"
               )}>
                 {txn.type === "income" ? "+" : "-"}₹{txn.amount.toLocaleString("en-IN")}
               </p>
@@ -75,4 +84,3 @@ export default function SmartSuggestions({ onDuplicate }: SmartSuggestionsProps)
     </div>
   )
 }
-

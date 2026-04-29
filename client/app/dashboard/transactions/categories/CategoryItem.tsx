@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Edit2, Trash2, TrendingUp, TrendingDown, Lock } from "lucide-react"
+import { TrendingUp, TrendingDown } from "lucide-react"
 
 import { cn } from "@/app/lib/utils/cn"
 import { CATEGORY_CONFIG } from "../AllTransactions/view-model"
@@ -18,11 +18,9 @@ export interface CategoryData {
 
 interface CategoryItemProps {
   category: CategoryData
-  onEdit: (cat: CategoryData) => void
-  onDelete: (id: string) => void
 }
 
-export default function CategoryItem({ category, onEdit, onDelete }: CategoryItemProps) {
+export default function CategoryItem({ category }: CategoryItemProps) {
   const config = CATEGORY_CONFIG[category.name]
   const IconComponent = config?.icon
 
@@ -51,9 +49,6 @@ export default function CategoryItem({ category, onEdit, onDelete }: CategoryIte
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="truncate text-sm font-semibold text-foreground">{category.name}</p>
-          {category.isDefault && (
-            <Lock className="h-3 w-3 text-foreground/30" />
-          )}
         </div>
         <div className="mt-0.5 flex items-center gap-2">
           <span
@@ -75,30 +70,6 @@ export default function CategoryItem({ category, onEdit, onDelete }: CategoryIte
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => onEdit(category)}
-          className="flex h-8 w-8 items-center justify-center rounded-xl text-foreground/50 transition hover:bg-primary/10 hover:text-primary"
-        >
-          <Edit2 className="h-3.5 w-3.5" />
-        </motion.button>
-        {!category.isDefault && (
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => onDelete(category.id)}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-foreground/50 transition hover:bg-rose-100 hover:text-rose-600"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </motion.button>
-        )}
-      </div>
     </motion.div>
   )
 }
-

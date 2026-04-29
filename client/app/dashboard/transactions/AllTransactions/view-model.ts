@@ -13,16 +13,12 @@ import {
   Smartphone,
   Briefcase,
   Gift,
-  Landmark,
-  Wallet,
-  CreditCard,
   TrendingUp,
-  Banknote,
   AlertCircle,
-  type LucideIcon,
 } from "lucide-react"
 
 import type { CategoryConfig, Transaction, TransactionFilterState, TransactionSummary } from "./types"
+import type { Transaction as ApiTransaction } from "@/app/features/dashboard/types/dashboard"
 
 export const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
   "Food & Dining": { name: "Food & Dining", icon: Utensils, color: "#d27768", bgColor: "bg-orange-100" },
@@ -42,86 +38,21 @@ export const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
   Uncategorized: { name: "Uncategorized", icon: AlertCircle, color: "#9ca3af", bgColor: "bg-gray-100" },
 }
 
-export const ACCOUNT_CONFIG: Record<string, { name: string; icon: LucideIcon; color: string }> = {
-  "Primary Bank": { name: "Primary Bank", icon: Landmark, color: "#2f7d67" },
-  "Cash Wallet": { name: "Cash Wallet", icon: Wallet, color: "#d0a24d" },
-  "Credit Card": { name: "Credit Card", icon: CreditCard, color: "#d27768" },
-  "Investment Account": { name: "Investment Account", icon: TrendingUp, color: "#5687cc" },
-  "Savings": { name: "Savings", icon: Banknote, color: "#4f9e96" },
-}
+export function mapApiTransaction(transaction: ApiTransaction): Transaction {
+  const date = transaction.date || transaction.createdAt || new Date().toISOString()
+  const type = transaction.type === "income" ? "income" : "expense"
 
-const CATEGORIES = Object.keys(CATEGORY_CONFIG)
-const ACCOUNTS = Object.keys(ACCOUNT_CONFIG)
-
-const DESCRIPTIONS: Record<string, string[]> = {
-  "Food & Dining": ["Swiggy Order", "Zomato Delivery", "Restaurant Dinner", "Starbucks Coffee", "Grocery Store", "Domino's Pizza", "Local Dhaba"],
-  Transport: ["Uber Ride", "Ola Cab", "Petrol Refill", "Metro Recharge", "Auto Rickshaw", "Train Ticket", "Flight Booking"],
-  Shopping: ["Amazon Purchase", "Flipkart Order", "Myntra Shopping", "Local Market", "Electronics Store", "Clothing Store"],
-  Utilities: ["Electricity Bill", "Water Bill", "Internet Bill", "Gas Bill", "Mobile Recharge", "DTH Recharge"],
-  Entertainment: ["Netflix Subscription", "Spotify Premium", "Movie Tickets", "Concert Tickets", "Game Purchase", "YouTube Premium"],
-  Healthcare: ["Pharmacy", "Doctor Consultation", "Health Checkup", "Gym Membership", "Dental Visit"],
-  Education: ["Course Fee", "Book Purchase", "Online Course", "Coaching Fee", "Exam Fee"],
-  Travel: ["Hotel Booking", "Flight Ticket", "Train Reservation", "Cab Booking", "Tour Package"],
-  Rent: ["Monthly Rent", "Maintenance Fee", "Society Charges", "Parking Fee"],
-  Subscriptions: ["AWS Bill", "GitHub Pro", "Notion Premium", "Figma Pro", "Adobe CC"],
-  Salary: ["Monthly Salary", "Bonus Payment", "Incentive", "Commission"],
-  Freelance: ["Client Payment", "Project Fee", "Consulting Fee", "Retainer"],
-  Investment: ["Stock Purchase", "Mutual Fund SIP", "FD Deposit", "Crypto Buy", "Gold Purchase"],
-  Gifts: ["Birthday Gift", "Wedding Gift", "Festival Gift", "Charity Donation"],
-  Uncategorized: ["Miscellaneous", "Unknown", "Adjustment", "Refund"],
-}
-
-function generateTransactions(count: number): Transaction[] {
-  const transactions: Transaction[] = []
-  const now = new Date()
-
-  for (let i = 0; i < count; i++) {
-    const daysAgo = Math.floor(Math.random() * 90)
-    const date = new Date(now)
-    date.setDate(date.getDate() - daysAgo)
-
-    const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)]
-    const type: "income" | "expense" | "transfer" =
-      category === "Salary" || category === "Freelance" || category === "Investment"
-        ? "income"
-        : category === "Uncategorized"
-        ? Math.random() > 0.5 ? "income" : "expense"
-        : "expense"
-
-    const baseAmount = type === "income"
-      ? 15000 + Math.random() * 70000
-      : 50 + Math.random() * 8000
-
-    const amount = Math.round(baseAmount)
-    const descriptions = DESCRIPTIONS[category] || ["Transaction"]
-    const description = descriptions[Math.floor(Math.random() * descriptions.length)]
-    const account = ACCOUNTS[Math.floor(Math.random() * ACCOUNTS.length)]
-
-    const isRecurring = Math.random() > 0.85
-    const nextDueDate = isRecurring
-      ? new Date(date.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
-      : undefined
-
-    transactions.push({
-      id: `txn_${i + 1}`,
-      date: date.toISOString().split("T")[0],
-      description,
-      category,
-      account,
-      type,
-      amount,
-      note: Math.random() > 0.7 ? `Note for ${description}` : undefined,
-      tags: Math.random() > 0.6 ? ["#personal", "#monthly"] : undefined,
-      isRecurring,
-      nextDueDate,
-      createdAt: date.toISOString(),
-    })
+  return {
+    id: transaction.id,
+    date: date.slice(0, 10),
+    description: transaction.description || transaction.note || transaction.category,
+    category: transaction.category || "Uncategorized",
+    type,
+    amount: Number(transaction.amount) || 0,
+    note: transaction.note || undefined,
+    createdAt: transaction.createdAt || date,
   }
-
-  return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
-
-export const allTransactions = generateTransactions(152)
 
 export function filterTransactions(
   transactions: Transaction[],
@@ -134,10 +65,8 @@ export function filterTransactions(
       const match =
         txn.description.toLowerCase().includes(search) ||
         txn.category.toLowerCase().includes(search) ||
-        txn.account.toLowerCase().includes(search) ||
         txn.amount.toString().includes(search) ||
-        (txn.note?.toLowerCase().includes(search) ?? false) ||
-        (txn.tags?.some((t) => t.toLowerCase().includes(search)) ?? false)
+        (txn.note?.toLowerCase().includes(search) ?? false)
       if (!match) return false
     }
 
@@ -174,15 +103,11 @@ export function filterTransactions(
     // Category filter
     if (filters.categories.length > 0 && !filters.categories.includes(txn.category)) return false
 
-    // Account filter
-    if (filters.accounts.length > 0 && !filters.accounts.includes(txn.account)) return false
-
     // Type filter
     if (filters.types.length > 0 && !filters.types.includes(txn.type)) return false
 
     // Smart filter
     if (filters.smartFilter === "high_spending" && txn.amount < 5000) return false
-    if (filters.smartFilter === "recurring" && !txn.isRecurring) return false
     if (filters.smartFilter === "uncategorized" && txn.category !== "Uncategorized") return false
 
     return true
@@ -209,8 +134,6 @@ export const defaultFilters: TransactionFilterState = {
   search: "",
   dateRange: "this_month",
   categories: [],
-  accounts: [],
   types: [],
   smartFilter: "all",
 }
-

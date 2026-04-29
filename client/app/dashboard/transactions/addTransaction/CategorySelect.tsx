@@ -5,24 +5,36 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Check, ChevronDown, Search, Tag } from "lucide-react"
 
 import { cn } from "@/app/lib/utils/cn"
+import { useTransactionsQuery } from "@/app/lib/api/queries"
 import { CATEGORY_CONFIG } from "../AllTransactions/view-model"
+import { mapApiTransaction } from "../AllTransactions/view-model"
 
 interface CategorySelectProps {
   value: string
   onChange: (category: string) => void
-  type?: "income" | "expense" | "transfer"
+  type?: "income" | "expense"
 }
 
 export default function CategorySelect({ value, onChange, type = "expense" }: CategorySelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState("")
+  const { data: transactionsResponse } = useTransactionsQuery(1, true, 50)
 
-  const incomeCategories = ["Salary", "Freelance", "Investment", "Gifts"]
-  const expenseCategories = Object.keys(CATEGORY_CONFIG).filter(
-    (c) => !["Salary", "Freelance", "Investment", "Gifts"].includes(c)
-  )
+  const relevantCategories = useMemo(() => {
+    const source = Array.isArray(transactionsResponse)
+      ? transactionsResponse
+      : transactionsResponse?.data || []
 
-  const relevantCategories = type === "income" ? incomeCategories : expenseCategories
+    return Array.from(
+      new Set(
+        source
+          .map(mapApiTransaction)
+          .filter((transaction) => transaction.type === type)
+          .map((transaction) => transaction.category)
+          .filter(Boolean),
+      ),
+    ).sort()
+  }, [transactionsResponse, type])
 
   const filtered = useMemo(() => {
     if (!search) return relevantCategories
@@ -88,6 +100,24 @@ export default function CategorySelect({ value, onChange, type = "expense" }: Ca
 
               {/* Categories */}
               <div className="max-h-64 overflow-y-auto p-2">
+                {search.trim() && !filtered.includes(search.trim()) && (
+                  <motion.button
+                    type="button"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    onClick={() => {
+                      onChange(search.trim())
+                      setIsOpen(false)
+                      setSearch("")
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-muted/60"
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                      <Tag className="h-4 w-4 text-foreground/55" />
+                    </div>
+                    <span className="flex-1 text-sm font-medium">Use "{search.trim()}"</span>
+                  </motion.button>
+                )}
                 {filtered.map((catName, i) => {
                   const config = CATEGORY_CONFIG[catName]
                   const isSelected = value === catName
@@ -119,7 +149,9 @@ export default function CategorySelect({ value, onChange, type = "expense" }: Ca
                   )
                 })}
                 {filtered.length === 0 && (
-                  <p className="py-6 text-center text-sm text-foreground/50">No categories found</p>
+                  <p className="py-6 text-center text-sm text-foreground/50">
+                    Type a category name to create it with this transaction.
+                  </p>
                 )}
               </div>
             </motion.div>
@@ -129,4 +161,3 @@ export default function CategorySelect({ value, onChange, type = "expense" }: Ca
     </div>
   )
 }
-

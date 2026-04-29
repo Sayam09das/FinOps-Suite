@@ -1,33 +1,37 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { TrendingDown, TrendingUp, AlertCircle, Gift } from "lucide-react"
+import { TrendingDown, TrendingUp } from "lucide-react"
 
-import { toast } from "@/app/components/ui/use-toast"
+import { useTransactionsQuery } from "@/app/lib/api/queries"
 import CategoryItem, { type CategoryData } from "./CategoryItem"
-
-// Default categories derived from existing CATEGORY_CONFIG
-const DEFAULT_CATEGORIES: CategoryData[] = [
-  { id: "cat_1", name: "Food & Dining", icon: "Utensils", type: "expense", color: "#d27768", usageCount: 42, isDefault: true },
-  { id: "cat_2", name: "Transport", icon: "Car", type: "expense", color: "#5687cc", usageCount: 28, isDefault: true },
-  { id: "cat_3", name: "Shopping", icon: "ShoppingBag", type: "expense", color: "#8d6ad8", usageCount: 19, isDefault: true },
-  { id: "cat_4", name: "Utilities", icon: "Zap", type: "expense", color: "#d0a24d", usageCount: 15, isDefault: true },
-  { id: "cat_5", name: "Entertainment", icon: "Film", type: "expense", color: "#e85d9a", usageCount: 12, isDefault: true },
-  { id: "cat_6", name: "Healthcare", icon: "Heart", type: "expense", color: "#c66a6a", usageCount: 8, isDefault: true },
-  { id: "cat_7", name: "Education", icon: "GraduationCap", type: "expense", color: "#4f9e96", usageCount: 5, isDefault: true },
-  { id: "cat_8", name: "Travel", icon: "Plane", type: "expense", color: "#2f7d67", usageCount: 7, isDefault: true },
-  { id: "cat_9", name: "Rent", icon: "Home", type: "expense", color: "#d27768", usageCount: 3, isDefault: true },
-  { id: "cat_10", name: "Subscriptions", icon: "Smartphone", type: "expense", color: "#5687cc", usageCount: 10, isDefault: true },
-  { id: "cat_11", name: "Salary", icon: "Briefcase", type: "income", color: "#2f7d67", usageCount: 6, isDefault: true },
-  { id: "cat_12", name: "Freelance", icon: "TrendingUp", type: "income", color: "#4f9e96", usageCount: 4, isDefault: true },
-  { id: "cat_13", name: "Investment", icon: "TrendingUp", type: "income", color: "#d0a24d", usageCount: 3, isDefault: true },
-  { id: "cat_14", name: "Gifts", icon: "Gift", type: "income", color: "#e85d9a", usageCount: 2, isDefault: true },
-  { id: "cat_15", name: "Uncategorized", icon: "AlertCircle", type: "expense", color: "#9ca3af", usageCount: 1, isDefault: true },
-]
+import { CATEGORY_CONFIG, mapApiTransaction } from "../AllTransactions/view-model"
 
 export default function CategoryList() {
-  const [categories, setCategories] = useState<CategoryData[]>(DEFAULT_CATEGORIES)
+  const { data: transactionsResponse } = useTransactionsQuery(1, true, 50)
+  const categories = useMemo<CategoryData[]>(() => {
+    const source = Array.isArray(transactionsResponse)
+      ? transactionsResponse
+      : transactionsResponse?.data || []
+    const counts = new Map<string, CategoryData>()
+
+    source.map(mapApiTransaction).forEach((transaction) => {
+      const config = CATEGORY_CONFIG[transaction.category] || CATEGORY_CONFIG.Uncategorized
+      const existing = counts.get(transaction.category)
+
+      counts.set(transaction.category, {
+        id: transaction.category,
+        name: transaction.category,
+        icon: config.name,
+        type: transaction.type,
+        color: config.color,
+        usageCount: (existing?.usageCount || 0) + 1,
+      })
+    })
+
+    return Array.from(counts.values())
+  }, [transactionsResponse])
 
   const expenseCategories = useMemo(
     () => categories.filter((c) => c.type === "expense").sort((a, b) => b.usageCount - a.usageCount),
@@ -37,15 +41,6 @@ export default function CategoryList() {
     () => categories.filter((c) => c.type === "income").sort((a, b) => b.usageCount - a.usageCount),
     [categories]
   )
-
-  const handleEdit = (cat: CategoryData) => {
-    toast({ title: "Edit mode", description: `Editing ${cat.name} — coming soon` })
-  }
-
-  const handleDelete = (id: string) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id))
-    toast({ title: "Deleted", description: "Category removed" })
-  }
 
   return (
     <div className="space-y-8">
@@ -64,9 +59,14 @@ export default function CategoryList() {
         <motion.div layout className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           <AnimatePresence mode="popLayout">
             {expenseCategories.map((cat) => (
-              <CategoryItem key={cat.id} category={cat} onEdit={handleEdit} onDelete={handleDelete} />
+              <CategoryItem key={cat.id} category={cat} />
             ))}
           </AnimatePresence>
+          {expenseCategories.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-border/60 bg-background/40 py-10 text-center text-sm font-medium text-foreground/50 sm:col-span-2 lg:col-span-3">
+              No expense categories found in backend transactions.
+            </div>
+          )}
         </motion.div>
       </section>
 
@@ -85,12 +85,16 @@ export default function CategoryList() {
         <motion.div layout className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           <AnimatePresence mode="popLayout">
             {incomeCategories.map((cat) => (
-              <CategoryItem key={cat.id} category={cat} onEdit={handleEdit} onDelete={handleDelete} />
+              <CategoryItem key={cat.id} category={cat} />
             ))}
           </AnimatePresence>
+          {incomeCategories.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-border/60 bg-background/40 py-10 text-center text-sm font-medium text-foreground/50 sm:col-span-2 lg:col-span-3">
+              No income categories found in backend transactions.
+            </div>
+          )}
         </motion.div>
       </section>
     </div>
   )
 }
-
