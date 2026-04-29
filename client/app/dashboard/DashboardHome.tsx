@@ -19,7 +19,7 @@ import OverviewSkeleton from './Overview/Dashboard/OverviewSkeleton'
 import RecentTransactions from './Overview/Dashboard/RecentTransactions'
 import SummaryCards from './Overview/Dashboard/SummaryCards'
 import { buildOverviewViewModel } from './Overview/view-model'
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs'
 
 export default function DashboardHome() {
   const { user, isAuthenticated, isInitializing: authLoading } = useAuth()
@@ -69,16 +69,15 @@ export default function DashboardHome() {
                 Dashboard
               </Badge>
               <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-foreground md:text-4xl">
-                Welcome back, {firstName}. Your finance system is live.
+                Welcome back, {firstName}. Track your expenses, budgets, and savings in one place.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-foreground/64 md:text-base">
-                This overview is built as a decision surface: quick KPIs up top, cash-flow trends in the hero area,
-                then recent activity, category pressure, goal pacing, account health, budget control, and live alerts.
+                Get a complete overview of your personal finances. Monitor your income, track expenses, manage budgets, and analyze spending patterns to make smarter financial decisions.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Badge variant="subtle">React charts active</Badge>
-                <Badge variant="outline">Smart insight feedback loop</Badge>
-                <Badge variant="subtle">Responsive overview grid</Badge>
+                <Badge variant="subtle">Expense tracking</Badge>
+                <Badge variant="outline">Budget management</Badge>
+                <Badge variant="subtle">Financial insights</Badge>
               </div>
             </div>
 
@@ -93,7 +92,7 @@ export default function DashboardHome() {
                 })}
               </div>
               <p className="mt-2 text-sm text-foreground/58">
-                Focus areas today: cash flow confidence, budget runway, and unusual transaction review.
+                Focus today: track your daily expenses, stay within budget, and review unusual transactions.
               </p>
             </div>
           </div>
