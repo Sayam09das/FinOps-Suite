@@ -100,7 +100,7 @@ export default function DashboardHome() {
       </div>
 
       <div className="space-y-6 p-4 md:p-6 xl:p-8">
-        <SummaryCards items={viewModel.summaryMetrics} />
+        <SummaryCards />
 
         <div className="grid gap-6 xl:grid-cols-[1.65fr_0.95fr]">
           <CashFlowChart seriesByRange={viewModel.cashFlowSeries} />
