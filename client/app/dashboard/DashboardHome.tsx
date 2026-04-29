@@ -19,7 +19,6 @@ import OverviewSkeleton from './Overview/Dashboard/OverviewSkeleton'
 import RecentTransactions from './Overview/Dashboard/RecentTransactions'
 import SummaryCards from './Overview/Dashboard/SummaryCards'
 import { buildOverviewViewModel } from './Overview/view-model'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs'
 
 export default function DashboardHome() {
   const { user, isAuthenticated, isInitializing: authLoading } = useAuth()
@@ -50,9 +49,9 @@ export default function DashboardHome() {
     [budgetStatus, overview, transactions],
   )
 
-  // if (authLoading || dashboardLoading) {
-  //   return <OverviewSkeleton />
-  // }
+  if (authLoading || dashboardLoading) {
+    return <OverviewSkeleton />
+  }
 
   if (!isAuthenticated) {
     return null
@@ -103,7 +102,7 @@ export default function DashboardHome() {
         <SummaryCards />
 
         <div className="grid gap-6 xl:grid-cols-[1.65fr_0.95fr]">
-          <CashFlowChart />
+          <CashFlowChart seriesByRange={viewModel.cashFlowSeries} />
           <InsightsPanel items={viewModel.insights} />
         </div>
 

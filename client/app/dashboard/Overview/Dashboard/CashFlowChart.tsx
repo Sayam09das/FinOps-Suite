@@ -1,154 +1,19 @@
 "use client";
 
 import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts';
-import { useAuth } from '@/app/features/auth/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { useMounted } from '@/app/hooks/use-mounted';
 import { cn } from '@/app/lib/utils/cn';
 import { formatAmount } from '@/app/lib/utils/currency';
-import { api } from '@/app/lib/api/client';
 import type { CashFlowPoint, ChartRange } from '../types';
-import type { DashboardOverview } from '@/app/features/dashboard/types/dashboard';
-import { getMonthName } from '@/app/lib/utils/date';
-
-const POLL_INTERVAL = 30000; // 30s
 
 const ranges: ChartRange[] = ["Weekly", "Monthly", "Yearly"];
 
-const weekdayLabels: string[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-const EMPTY_SERIES: Record<ChartRange, CashFlowPoint[]> = {
-  Weekly: [],
-  Monthly: [],
-  Yearly: [],
-};
-
-function buildCashFlowSeries(income: number, expense: number): Record<ChartRange, CashFlowPoint[]> {
-  const safeIncome = Math.max(income, 4200);
-  const safeExpense = Math.max(expense, 2800);
-
-  const weeklyIncomePattern = [0.14, 0.11, 0.1, 0.15, 0.17, 0.16, 0.17];
-  const weeklyExpensePattern = [0.12, 0.11, 0.14, 0.13, 0.16, 0.18, 0.16];
-  const monthlyIncomePattern = [0.84, 0.9, 0.94, 1, 1.06, 1.12];
-  const monthlyExpensePattern = [0.76, 0.82, 0.88, 0.96, 1.02, 1.08];
-  const yearlyIncomePattern = [0.78, 0.86, 0.93, 1.02, 1.11];
-  const yearlyExpensePattern = [0.7, 0.76, 0.85, 0.94, 1.05];
-
-  const buildSeries = (
-    labels: string[],
-    incomeBase: number,
-    expenseBase: number,
-    incomePattern: number[],
-    expensePattern: number[],
-  ): CashFlowPoint[] =>
-    labels.map((label, index) => {
-      const income = Math.round(incomeBase * incomePattern[index]);
-      const expense = Math.round(expenseBase * expensePattern[index]);
-      return {
-        label,
-        income,
-        expense,
-        cashFlow: income - expense,
-      };
-    });
-
-  const monthLabels = Array.from({ length: 6 }, (_, index) => {
-    const now = new Date();
-    now.setMonth(now.getMonth() - (5 - index));
-    return getMonthName(now.getMonth(), "short");
-  });
-
-  const yearLabels = Array.from({ length: 5 }, (_, index) => `${new Date().getFullYear() - (4 - index)}`);
-
-  return {
-    Weekly: buildSeries(weekdayLabels, safeIncome / 4, safeExpense / 4, weeklyIncomePattern, weeklyExpensePattern),
-    Monthly: buildSeries(monthLabels, safeIncome, safeExpense, monthlyIncomePattern, monthlyExpensePattern),
-    Yearly: buildSeries(yearLabels, safeIncome * 12, safeExpense * 12, yearlyIncomePattern, yearlyExpensePattern),
-  };
-}
-
-export default function CashFlowChart() {
-  const mounted = useMounted();
-  const [seriesByRange, setSeriesByRange] = useState<Record<ChartRange, CashFlowPoint[]>>(EMPTY_SERIES);
+export default function CashFlowChart({ seriesByRange }: { seriesByRange: Record<ChartRange, CashFlowPoint[]> }) {
   const [activeRange, setActiveRange] = useState<ChartRange>("Monthly");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated } = useAuth();
-
   const data = seriesByRange[activeRange] || [];
-
-  const fetchCashFlowData = useCallback(async () => {
-    if (!isAuthenticated) {
-      setLoading(false);
-      setSeriesByRange(EMPTY_SERIES);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-      const overview: DashboardOverview = await api.get('/api/dashboard/');
-      const newSeries = buildCashFlowSeries(overview.income, overview.expense);
-      setSeriesByRange(newSeries);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch cash flow data';
-      setError(message);
-      console.error('[CashFlowChart] Fetch error:', err);
-      setSeriesByRange(EMPTY_SERIES);
-    } finally {
-      setLoading(false);
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    fetchCashFlowData();
-  }, [fetchCashFlowData]);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const interval = setInterval(fetchCashFlowData, POLL_INTERVAL);
-    return () => clearInterval(interval);
-  }, [fetchCashFlowData]);
-
-  if (loading) {
-    return (
-      <Card className="surface-card rounded-[1.95rem] border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.3))] p-0 backdrop-blur-xl h-[500px]">
-        <CardHeader className="flex flex-col gap-4 border-b border-border/70 px-5 py-5">
-          <div className="animate-pulse">
-            <div className="h-6 w-48 bg-muted rounded" />
-            <div className="h-4 w-64 bg-muted/50 rounded mt-2" />
-          </div>
-        </CardHeader>
-        <CardContent className="h-[360px] px-5 flex items-center justify-center">
-          <div className="animate-pulse bg-muted h-64 w-full rounded-lg" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="surface-card rounded-[1.95rem] border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.3))] p-0 backdrop-blur-xl">
-        <CardHeader className="px-5 py-5">
-          <CardTitle className="text-xl">Cash Flow Over Time</CardTitle>
-          <CardDescription>Track whether your income curve is outpacing your spend curve.</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[360px] px-5 flex items-center justify-center text-destructive">
-          <div className="text-center">
-            <p>{error}</p>
-            <button
-              onClick={fetchCashFlowData}
-              className="mt-2 text-sm underline underline-offset-2 hover:no-underline"
-            >
-              Retry
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const hasData = data.some((point) => point.income !== 0 || point.expense !== 0 || point.cashFlow !== 0);
 
   return (
     <Card className="surface-card rounded-[1.95rem] border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.3))] p-0 backdrop-blur-xl">
@@ -180,7 +45,7 @@ export default function CashFlowChart() {
       </CardHeader>
 
       <CardContent className="h-[360px] min-h-[360px] min-w-0 px-3 pb-4 pt-4 sm:px-5">
-        {mounted ? (
+        {hasData ? (
           <ResponsiveContainer width="100%" height={360}>
             <LineChart data={data} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid stroke="rgba(91,107,100,0.12)" strokeDasharray="4 4" vertical={false} />
@@ -222,7 +87,16 @@ export default function CashFlowChart() {
               />
             </LineChart>
           </ResponsiveContainer>
-        ) : null}
+        ) : (
+          <div className="flex h-full items-center justify-center rounded-[1.5rem] border border-dashed border-border/80 bg-background/55 px-6 text-center">
+            <div>
+              <p className="text-base font-semibold text-foreground">No cash flow data yet</p>
+              <p className="mt-2 text-sm text-foreground/58">
+                Add income or expense transactions to populate this chart.
+              </p>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

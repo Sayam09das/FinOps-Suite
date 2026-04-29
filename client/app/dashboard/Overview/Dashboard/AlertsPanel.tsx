@@ -21,7 +21,14 @@ export default function AlertsPanel({ items }: { items: AlertItem[] }) {
       </CardHeader>
 
       <CardContent className="space-y-3 px-5 py-5">
-        {items.map((item) => {
+        {items.length === 0 ? (
+          <div className="rounded-[1.5rem] border border-dashed border-border/80 bg-background/55 px-6 py-10 text-center">
+            <p className="text-base font-semibold text-foreground">No live alerts</p>
+            <p className="mt-2 text-sm text-foreground/58">
+              Budget overages and backend notifications will appear here.
+            </p>
+          </div>
+        ) : items.map((item) => {
           const Icon = item.icon;
 
           return (

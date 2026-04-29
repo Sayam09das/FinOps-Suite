@@ -15,7 +15,14 @@ export default function GoalsProgress({ items }: { items: GoalItem[] }) {
       </CardHeader>
 
       <CardContent className="space-y-4 px-5 py-5">
-        {items.map((item) => {
+        {items.length === 0 ? (
+          <div className="rounded-[1.5rem] border border-dashed border-border/80 bg-background/55 px-6 py-10 text-center">
+            <p className="text-base font-semibold text-foreground">No goals yet</p>
+            <p className="mt-2 text-sm text-foreground/58">
+              Savings and investment goals will appear here after a goals backend is connected.
+            </p>
+          </div>
+        ) : items.map((item) => {
           const progress = item.target > 0 ? (item.current / item.target) * 100 : 0;
 
           return (

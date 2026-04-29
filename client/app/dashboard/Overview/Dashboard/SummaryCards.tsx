@@ -49,14 +49,12 @@ function transformToMetrics(data: DashboardOverview): SummaryMetric[] {
   const totalBudgetLeft = Object.values(budgets).reduce((sum, b: any) => sum + (b.remaining || 0), 0);
   const cashFlow = income - expense;
 
-  const getDelta = (current: number, base: number) => base > 0 ? ((current - base) / base) * 100 : 0;
-
   return [
     {
       title: 'Total Balance',
       value: balance,
       helper: 'Net worth snapshot',
-      delta: getDelta(balance, balance * 0.93),
+      delta: 0,
       tone: balance >= 0 ? 'positive' : 'danger' as const,
       format: 'currency' as const,
       icon: Landmark,
@@ -65,7 +63,7 @@ function transformToMetrics(data: DashboardOverview): SummaryMetric[] {
       title: 'Income',
       value: income,
       helper: 'This month',
-      delta: getDelta(income, income * 0.88),
+      delta: 0,
       tone: 'positive' as const,
       format: 'currency' as const,
       icon: ArrowUpCircle,
@@ -74,7 +72,7 @@ function transformToMetrics(data: DashboardOverview): SummaryMetric[] {
       title: 'Expenses',
       value: expense,
       helper: 'This month',
-      delta: getDelta(expense, expense * 1.08),
+      delta: 0,
       tone: 'warning' as const,
       format: 'currency' as const,
       icon: ArrowDownCircle,
@@ -83,7 +81,7 @@ function transformToMetrics(data: DashboardOverview): SummaryMetric[] {
       title: 'Savings',
       value: monthlySavings,
       helper: 'Available this month',
-      delta: getDelta(monthlySavings, monthlySavings * 0.82),
+      delta: 0,
       tone: monthlySavings >= 0 ? 'positive' : 'danger' as const,
       format: 'currency' as const,
       icon: PiggyBank,
@@ -92,7 +90,7 @@ function transformToMetrics(data: DashboardOverview): SummaryMetric[] {
       title: 'Budget Left',
       value: totalBudgetLeft,
       helper: 'Remaining spending room',
-      delta: getDelta(totalBudgetLeft, totalBudgetLeft * 0.91),
+      delta: 0,
       tone: totalBudgetLeft >= 0 ? 'positive' : 'danger' as const,
       format: 'currency' as const,
       icon: Wallet,
@@ -101,7 +99,7 @@ function transformToMetrics(data: DashboardOverview): SummaryMetric[] {
       title: 'Cash Flow',
       value: cashFlow,
       helper: 'Income minus expense',
-      delta: getDelta(cashFlow, cashFlow * 0.86),
+      delta: 0,
       tone: cashFlow >= 0 ? 'positive' : 'danger' as const,
       format: 'currency' as const,
       icon: Sparkles,

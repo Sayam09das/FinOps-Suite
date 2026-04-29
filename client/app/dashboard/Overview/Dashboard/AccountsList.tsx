@@ -17,7 +17,14 @@ export default function AccountsList({ items }: { items: AccountItem[] }) {
       </CardHeader>
 
       <CardContent className="space-y-3 px-5 py-5">
-        {items.map((item) => (
+        {items.length === 0 ? (
+          <div className="rounded-[1.5rem] border border-dashed border-border/80 bg-background/55 px-6 py-10 text-center">
+            <p className="text-base font-semibold text-foreground">No linked accounts yet</p>
+            <p className="mt-2 text-sm text-foreground/58">
+              Account balances will appear here after an accounts backend is connected.
+            </p>
+          </div>
+        ) : items.map((item) => (
           <button
             key={item.name}
             type="button"

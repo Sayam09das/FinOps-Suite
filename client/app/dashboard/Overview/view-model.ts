@@ -2,12 +2,10 @@ import {
   AlertTriangle,
   ArrowDownCircle,
   ArrowUpCircle,
-  BellRing,
   Landmark,
   PiggyBank,
   ShieldAlert,
   Sparkles,
-  Target,
   Wallet,
 } from "lucide-react";
 
@@ -36,14 +34,6 @@ type BuildOverviewViewModelInput = {
 
 const donutColors = ["#2f7d67", "#d27768", "#5687cc", "#d0a24d", "#8d6ad8", "#4f9e96"];
 
-const fallbackExpenses = {
-  "Food & Dining": 820,
-  Transport: 460,
-  Shopping: 390,
-  Utilities: 320,
-  Entertainment: 240,
-};
-
 const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const toDate = (value?: string) => new Date(value || new Date().toISOString());
@@ -61,48 +51,87 @@ const calculateDelta = (current: number, previous: number) => {
   return ((current - previous) / previous) * 100;
 };
 
-const buildCashFlowSeries = (monthlyIncome: number, monthlyExpense: number): Record<ChartRange, CashFlowPoint[]> => {
-  const safeIncome = Math.max(monthlyIncome, 4200);
-  const safeExpense = Math.max(monthlyExpense, 2800);
+const emptyCashFlowSeries = (): Record<ChartRange, CashFlowPoint[]> => ({
+  Weekly: [],
+  Monthly: [],
+  Yearly: [],
+});
 
-  const weeklyIncomePattern = [0.14, 0.11, 0.1, 0.15, 0.17, 0.16, 0.17];
-  const weeklyExpensePattern = [0.12, 0.11, 0.14, 0.13, 0.16, 0.18, 0.16];
-  const monthlyIncomePattern = [0.84, 0.9, 0.94, 1, 1.06, 1.12];
-  const monthlyExpensePattern = [0.76, 0.82, 0.88, 0.96, 1.02, 1.08];
-  const yearlyIncomePattern = [0.78, 0.86, 0.93, 1.02, 1.11];
-  const yearlyExpensePattern = [0.7, 0.76, 0.85, 0.94, 1.05];
+const addTransactionToPoint = (point: CashFlowPoint, transaction: Transaction) => {
+  const amount = Number(transaction.amount) || 0;
 
-  const buildSeries = (
-    labels: string[],
-    incomeBase: number,
-    expenseBase: number,
-    incomePattern: number[],
-    expensePattern: number[],
-  ): CashFlowPoint[] =>
-    labels.map((label, index) => {
-      const income = Math.round(incomeBase * incomePattern[index]);
-      const expense = Math.round(expenseBase * expensePattern[index]);
+  if (transaction.type === "income") {
+    point.income += amount;
+  } else {
+    point.expense += amount;
+  }
 
-      return {
-        label,
-        income,
-        expense,
-        cashFlow: income - expense,
-      };
-    });
+  point.cashFlow = point.income - point.expense;
+};
 
-  const monthLabels = Array.from({ length: 6 }, (_, index) => {
-    const now = new Date();
-    now.setMonth(now.getMonth() - (5 - index));
-    return getMonthName(now.getMonth(), "short");
+const buildCashFlowSeries = (transactions: Transaction[]): Record<ChartRange, CashFlowPoint[]> => {
+  if (transactions.length === 0) return emptyCashFlowSeries();
+
+  const now = new Date();
+  const weekStart = new Date(now);
+  const mondayOffset = (weekStart.getDay() + 6) % 7;
+  weekStart.setDate(weekStart.getDate() - mondayOffset);
+  weekStart.setHours(0, 0, 0, 0);
+
+  const weekly = weekdayLabels.map((label) => ({ label, income: 0, expense: 0, cashFlow: 0 }));
+
+  const monthKeys = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+    return {
+      key: `${date.getFullYear()}-${date.getMonth()}`,
+      point: {
+        label: getMonthName(date.getMonth(), "short"),
+        income: 0,
+        expense: 0,
+        cashFlow: 0,
+      },
+    };
   });
 
-  const yearLabels = Array.from({ length: 5 }, (_, index) => `${new Date().getFullYear() - (4 - index)}`);
+  const yearKeys = Array.from({ length: 5 }, (_, index) => {
+    const year = now.getFullYear() - (4 - index);
+    return {
+      key: `${year}`,
+      point: {
+        label: `${year}`,
+        income: 0,
+        expense: 0,
+        cashFlow: 0,
+      },
+    };
+  });
+
+  const monthlyMap = new Map(monthKeys.map(({ key, point }) => [key, point]));
+  const yearlyMap = new Map(yearKeys.map(({ key, point }) => [key, point]));
+
+  transactions.forEach((transaction) => {
+    const date = toDate(transaction.date || transaction.createdAt);
+
+    if (date >= weekStart) {
+      const dayIndex = (date.getDay() + 6) % 7;
+      addTransactionToPoint(weekly[dayIndex], transaction);
+    }
+
+    addTransactionToPoint(
+      monthlyMap.get(`${date.getFullYear()}-${date.getMonth()}`) || { label: "", income: 0, expense: 0, cashFlow: 0 },
+      transaction,
+    );
+
+    addTransactionToPoint(
+      yearlyMap.get(`${date.getFullYear()}`) || { label: "", income: 0, expense: 0, cashFlow: 0 },
+      transaction,
+    );
+  });
 
   return {
-    Weekly: buildSeries(weekdayLabels, safeIncome / 4, safeExpense / 4, weeklyIncomePattern, weeklyExpensePattern),
-    Monthly: buildSeries(monthLabels, safeIncome, safeExpense, monthlyIncomePattern, monthlyExpensePattern),
-    Yearly: buildSeries(yearLabels, safeIncome * 12, safeExpense * 12, yearlyIncomePattern, yearlyExpensePattern),
+    Weekly: weekly,
+    Monthly: monthKeys.map(({ point }) => point),
+    Yearly: yearKeys.map(({ point }) => point),
   };
 };
 
@@ -130,24 +159,27 @@ export function buildOverviewViewModel({
   const incomeTransactions = currentMonthTransactions.filter((transaction) => transaction.type === "income");
   const expenseTransactions = currentMonthTransactions.filter((transaction) => transaction.type === "expense");
 
-  const monthlyIncome = sum(incomeTransactions.map((transaction) => transaction.amount)) || Math.max((overview?.income || 0) * 0.18, 4800);
-  const monthlyExpense = sum(expenseTransactions.map((transaction) => transaction.amount)) || Math.max((overview?.expense || 0) * 0.14, 2650);
+  const previousMonthTransactions = normalizedTransactions.filter((transaction) => {
+    const date = toDate(transaction.date);
+    const previousMonth = new Date();
+    previousMonth.setMonth(previousMonth.getMonth() - 1);
+    return date.getMonth() === previousMonth.getMonth() && date.getFullYear() === previousMonth.getFullYear();
+  });
+  const previousMonthIncome = sum(previousMonthTransactions.filter((transaction) => transaction.type === "income").map((transaction) => transaction.amount));
+  const previousMonthExpense = sum(previousMonthTransactions.filter((transaction) => transaction.type === "expense").map((transaction) => transaction.amount));
+
+  const monthlyIncome = sum(incomeTransactions.map((transaction) => transaction.amount));
+  const monthlyExpense = sum(expenseTransactions.map((transaction) => transaction.amount));
   const totalBalance = overview?.balance ?? monthlyIncome - monthlyExpense;
   const monthlySavings = monthlyIncome - monthlyExpense;
+  const previousSavings = previousMonthIncome - previousMonthExpense;
 
   const budgetEntries = Object.entries(budgetStatus).map(([name, entry]) => ({
     name,
     ...entry,
   }));
 
-  const fallbackBudgetEntries = Object.entries(fallbackExpenses).map(([name, value]) => ({
-    name,
-    budget: Math.round(value * 1.15),
-    spent: value,
-    remaining: Math.round(value * 0.15),
-  }));
-
-  const activeBudgets = (budgetEntries.length > 0 ? budgetEntries : fallbackBudgetEntries)
+  const activeBudgets = budgetEntries
     .map<BudgetHealthItem>((entry) => {
       const utilization = entry.budget > 0 ? entry.spent / entry.budget : 0;
 
@@ -171,7 +203,7 @@ export function buildOverviewViewModel({
       title: "Total Balance",
       value: totalBalance,
       helper: "Net worth snapshot",
-      delta: calculateDelta(totalBalance, totalBalance * 0.93 || 1),
+      delta: 0,
       tone: totalBalance >= 0 ? "positive" : "danger",
       format: "currency",
       icon: Landmark,
@@ -180,7 +212,7 @@ export function buildOverviewViewModel({
       title: "Income",
       value: monthlyIncome,
       helper: "This month",
-      delta: calculateDelta(monthlyIncome, monthlyIncome * 0.88 || 1),
+      delta: calculateDelta(monthlyIncome, previousMonthIncome),
       tone: "positive",
       format: "currency",
       icon: ArrowUpCircle,
@@ -189,7 +221,7 @@ export function buildOverviewViewModel({
       title: "Expenses",
       value: monthlyExpense,
       helper: "This month",
-      delta: calculateDelta(monthlyExpense, monthlyExpense * 1.08 || 1),
+      delta: calculateDelta(monthlyExpense, previousMonthExpense),
       tone: "warning",
       format: "currency",
       icon: ArrowDownCircle,
@@ -198,7 +230,7 @@ export function buildOverviewViewModel({
       title: "Savings",
       value: monthlySavings,
       helper: "Available this month",
-      delta: calculateDelta(monthlySavings, (monthlySavings || 1) * 0.82),
+      delta: calculateDelta(monthlySavings, previousSavings),
       tone: monthlySavings >= 0 ? "positive" : "danger",
       format: "currency",
       icon: PiggyBank,
@@ -207,7 +239,7 @@ export function buildOverviewViewModel({
       title: "Budget Left",
       value: totalBudgetLeft,
       helper: "Remaining spending room",
-      delta: calculateDelta(totalBudgetLeft, (totalBudgetLeft || 1) * 0.91),
+      delta: 0,
       tone: totalBudgetLeft >= 0 ? "positive" : "danger",
       format: "currency",
       icon: Wallet,
@@ -216,7 +248,7 @@ export function buildOverviewViewModel({
       title: "Cash Flow",
       value: cashFlow,
       helper: "Income minus expense",
-      delta: calculateDelta(cashFlow, (cashFlow || 1) * 0.86),
+      delta: calculateDelta(cashFlow, previousSavings),
       tone: cashFlow >= 0 ? "positive" : "danger",
       format: "currency",
       icon: Sparkles,
@@ -234,7 +266,7 @@ export function buildOverviewViewModel({
       ? Object.fromEntries(
           Object.entries(overview.categoryAnalytics).filter(([key]) => !key.toLowerCase().includes("income")),
         )
-      : fallbackExpenses;
+      : {};
 
   const categoryTotal = sum(Object.values(categorySource));
   const categoryBreakdown: CategorySlice[] = Object.entries(categorySource)
@@ -247,89 +279,34 @@ export function buildOverviewViewModel({
       color: donutColors[index % donutColors.length],
     }));
 
-  const primarySavingsTarget = Math.max(Math.round(Math.max(monthlySavings, 2500) * 4), 12000);
-  const goals: GoalItem[] = [
-    {
-      name: "Emergency Fund",
-      current: Math.min(Math.max(monthlySavings * 2.2, 5400), primarySavingsTarget),
-      target: primarySavingsTarget,
-      deadline: "4 months left",
-      helper: "Cash reserve for core spending",
-      tone: "positive",
-    },
-    {
-      name: "Vacation Fund",
-      current: 3600,
-      target: 8000,
-      deadline: "6 months left",
-      helper: "Travel plan for Q4",
-      tone: "warning",
-    },
-    {
-      name: "Investment Goal",
-      current: 9000,
-      target: 30000,
-      deadline: "9 months left",
-      helper: "Long-term growth allocation",
-      tone: "neutral",
-    },
-  ];
-
-  const accounts: AccountItem[] = [
-    {
-      name: "Primary Bank",
-      type: "Checking",
-      balance: Math.max(totalBalance * 0.58 + monthlyIncome * 0.14, 2800),
-      change: 4.8,
-      accent: "bg-emerald-100 text-emerald-800",
-    },
-    {
-      name: "Operations Wallet",
-      type: "Wallet",
-      balance: Math.max(totalBalance * 0.14, 460),
-      change: 2.1,
-      accent: "bg-blue-100 text-blue-800",
-    },
-    {
-      name: "Rewards Credit Card",
-      type: "Credit Card",
-      balance: -Math.max(monthlyExpense * 0.22, 620),
-      change: 7.9,
-      accent: "bg-rose-100 text-rose-800",
-    },
-  ];
+  const goals: GoalItem[] = [];
+  const accounts: AccountItem[] = [];
 
   const topCategory = categoryBreakdown[0];
   const mostAtRiskBudget = activeBudgets[0];
-  const leadGoal = goals[0];
-  const leadGoalProgress = leadGoal.target > 0 ? Math.round((leadGoal.current / leadGoal.target) * 100) : 0;
 
   const insights: InsightItem[] = [
-    {
+    ...(topCategory ? [{
       title: topCategory ? `${topCategory.name} is running hot` : "Spending insights are warming up",
-      detail: topCategory
-        ? `You spent ${Math.round(topCategory.percentage)}% of tracked outflow in ${topCategory.name}.`
-        : "Add more transactions to unlock category-level insights.",
-      helper: "AI spending signal",
-      tone: topCategory ? "warning" : "neutral",
+      detail: `You spent ${Math.round(topCategory.percentage)}% of tracked outflow in ${topCategory.name}.`,
+      helper: "Spending signal",
+      tone: "warning" as const,
       icon: Sparkles,
-    },
-    {
-      title: `You're ${leadGoalProgress}% toward ${leadGoal.name}`,
-      detail: `${leadGoal.helper}. ${leadGoal.deadline}.`,
-      helper: "Goal pacing",
-      tone: leadGoalProgress >= 65 ? "positive" : "warning",
-      icon: Target,
-    },
-    {
-      title: mostAtRiskBudget?.utilization >= 1 ? `${mostAtRiskBudget.name} exceeded budget` : `${mostAtRiskBudget?.name || "Transport"} needs attention`,
-      detail: mostAtRiskBudget
-        ? `${Math.round(mostAtRiskBudget.utilization * 100)}% of budget consumed in ${mostAtRiskBudget.name}.`
-        : "Watch categories approaching their monthly cap.",
+    }] : []),
+    ...(monthlySavings !== 0 || monthlyIncome !== 0 || monthlyExpense !== 0 ? [{
+      title: monthlySavings >= 0 ? "Positive cash flow this month" : "Expenses are above income",
+      detail: `Income is ${monthlyIncome.toLocaleString()} and expenses are ${monthlyExpense.toLocaleString()} for the current month.`,
+      helper: "Cash flow",
+      tone: monthlySavings >= 0 ? "positive" as const : "danger" as const,
+      icon: monthlySavings >= 0 ? Sparkles : ShieldAlert,
+    }] : []),
+    ...(mostAtRiskBudget ? [{
+      title: mostAtRiskBudget.utilization >= 1 ? `${mostAtRiskBudget.name} exceeded budget` : `${mostAtRiskBudget.name} needs attention`,
+      detail: `${Math.round(mostAtRiskBudget.utilization * 100)}% of budget consumed in ${mostAtRiskBudget.name}.`,
       helper: "Control alert",
-      tone: mostAtRiskBudget?.utilization >= 1 ? "danger" : "warning",
-      icon: mostAtRiskBudget?.utilization >= 1 ? ShieldAlert : AlertTriangle,
-    },
+      tone: mostAtRiskBudget.utilization >= 1 ? "danger" as const : "warning" as const,
+      icon: mostAtRiskBudget.utilization >= 1 ? ShieldAlert : AlertTriangle,
+    }] : []),
   ];
 
   const alerts: AlertItem[] = [
@@ -340,25 +317,11 @@ export function buildOverviewViewModel({
       tone: "danger" as const,
       icon: AlertTriangle,
     }))),
-    {
-      title: "Credit card bill due in 3 days",
-      detail: "Rewards Credit Card closes on Friday. Review large charges before posting.",
-      time: "Today",
-      tone: "warning",
-      icon: BellRing,
-    },
-    {
-      title: "Unusual transaction detected",
-      detail: "A larger-than-usual dining charge landed compared with your recent baseline.",
-      time: "2h ago",
-      tone: "neutral",
-      icon: ShieldAlert,
-    },
   ];
 
   return {
     summaryMetrics,
-    cashFlowSeries: buildCashFlowSeries(monthlyIncome, monthlyExpense),
+    cashFlowSeries: buildCashFlowSeries(normalizedTransactions),
     insights,
     transactions: normalizedTransactions.slice(0, 8).map((transaction) => ({
       id: transaction.id,

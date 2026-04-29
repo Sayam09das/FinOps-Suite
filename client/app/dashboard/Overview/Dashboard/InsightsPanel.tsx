@@ -15,7 +15,14 @@ const insightToneStyles = {
 export default function InsightsPanel({ items }: { items: InsightItem[] }) {
   return (
     <div className="space-y-4">
-      {items.map((item) => {
+      {items.length === 0 ? (
+        <Card className="surface-card rounded-[1.8rem] border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.34))] p-5 text-center backdrop-blur-xl">
+          <p className="text-base font-semibold text-foreground">No insights yet</p>
+          <p className="mt-2 text-sm leading-6 text-foreground/62">
+            Add real transactions and budgets to generate live finance signals.
+          </p>
+        </Card>
+      ) : items.map((item) => {
         const Icon = item.icon;
 
         return (
