@@ -54,12 +54,12 @@ export default function CashFlowCards({ cashFlow }: CashFlowCardsProps) {
             value={cashFlow.closing}
             icon={TrendingUp}
             color="text-primary font-bold text-xl"
-            className="text-center py-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-2xl border-2 border-primary/20 shadow-lg"
+            className="text-center py-6 bg-linear-to-r from-primary/5 to-secondary/5 rounded-2xl border-2 border-primary/20 shadow-lg"
           />
         </div>
 
         {/* Net Flow Insight */}
-        <div className="p-4 bg-gradient-to-r from-green-500/10 to-green-500/5 rounded-2xl border border-green-500/20 shadow-md">
+        <div className="p-4 bg-linear-to-r from-green-500/10 to-green-500/5 rounded-2xl border border-green-500/20 shadow-md">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-500/20 rounded-xl">
               <ArrowUp className="h-5 w-5 text-green-500" />

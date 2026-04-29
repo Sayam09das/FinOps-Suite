@@ -43,7 +43,7 @@ export default function RecurringExpenses({ recurring }: RecurringExpensesProps)
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0 h-full flex flex-col">
-        <div className="p-6 border-b border-border/50 bg-gradient-to-r from-muted/50 to-muted/30">
+        <div className="p-6 border-b border-border/50 bg-linear-to-r from-muted/50 to-muted/30">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-bold">₹{formatCurrency(monthlyTotal)}</p>

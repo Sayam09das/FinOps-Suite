@@ -43,7 +43,7 @@ export default function AlertsPanel({ alerts }: AlertsPanelProps) {
 
   return (
     <Card className="h-[420px] rounded-3xl border-2 shadow-xl overflow-hidden">
-      <CardHeader className="p-6 pb-4 bg-gradient-to-r from-warning/10 via-destructive/5 to-warning/10 border-b border-border/50">
+      <CardHeader className="p-6 pb-4 bg-linear-to-r from-warning/10 via-destructive/5 to-warning/10 border-b border-border/50">
         <div className="flex items-center gap-3">
           <AlertCircle className="h-6 w-6 text-warning" />
           <h3 className="text-xl font-bold text-foreground">Risk & Alerts</h3>

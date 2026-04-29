@@ -108,7 +108,7 @@ export default function LoginPage() {
           </p>
           <h1 className="max-w-2xl text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
             Welcome back to
-            <span className="block bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="block bg-linear-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
               FinOps Suite
             </span>
           </h1>

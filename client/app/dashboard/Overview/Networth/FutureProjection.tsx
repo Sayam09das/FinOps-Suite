@@ -93,7 +93,7 @@ export default function FutureProjection({
                 initial={{ width: 0 }}
                 animate={{ width: "100%" }}
                 transition={{ delay: 0.6, duration: 1.2, ease: "easeOut" }}
-                className="relative h-full rounded-full bg-gradient-to-r from-emerald-500 to-violet-500"
+                className="relative h-full rounded-full bg-linear-to-r from-emerald-500 to-violet-500"
               >
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}

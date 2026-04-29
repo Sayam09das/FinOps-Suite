@@ -146,7 +146,7 @@ export default function RegisterPage() {
           </p>
           <h1 className="max-w-2xl text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
             Start managing your
-            <span className="block bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
+            <span className="block bg-linear-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
               finances today
             </span>
           </h1>

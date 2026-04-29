@@ -43,7 +43,7 @@ export default function HeaderControls({ dateRange, onDateRangeChange, compare, 
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-background/80 backdrop-blur-sm rounded-2xl border p-6 shadow-xl">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary/80 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold bg-linear-to-r from-foreground to-primary/80 bg-clip-text text-transparent">
           Finance Summary
         </h1>
         <p className="text-sm text-muted-foreground flex items-center gap-1">

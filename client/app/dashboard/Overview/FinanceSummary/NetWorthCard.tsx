@@ -1,7 +1,7 @@
 "use client"
 
 import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
-import React from 'react'
+import React, { useMemo } from 'react'
 import { TrendingUp, DollarSign, ArrowUp, ArrowDown } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
 import { cn } from '@/app/lib/utils/cn'
@@ -15,22 +15,23 @@ interface NetWorthCardProps {
   trend: number
 }
 
-const trendData = [
-  { month: 'Jan', value: 110000 },
-  { month: 'Feb', value: 115000 },
-  { month: 'Mar', value: 118000 },
-  { month: 'Apr', value: 122000 },
-  { month: 'May', value: 125000 },
-  { month: 'Jun', value: 130000 }
-]
-
 export default function NetWorthCard({ netWorth, assets, liabilities, trend }: NetWorthCardProps) {
   const netWorthTrend = trend > 0 ? 'text-green-500' : 'text-destructive'
+
+  const baseValue = netWorth || 100000;
+  const trendData = useMemo(() => [
+    { month: 'Jan', value: baseValue * 0.9 },
+    { month: 'Feb', value: baseValue * 0.92 },
+    { month: 'Mar', value: baseValue * 0.95 },
+    { month: 'Apr', value: baseValue * 0.97 },
+    { month: 'May', value: baseValue * 0.99 },
+    { month: 'Jun', value: baseValue }
+  ], [baseValue]);
 
   return (
     <Card className="group relative overflow-hidden rounded-3xl border-2 border-border/50 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-background to-muted/30 backdrop-blur-xl">
       <CardHeader className="pb-4">
-        <CardTitle className="text-3xl font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-lg">
+        <CardTitle className="text-3xl font-black bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-lg">
           ₹{formatCurrency(netWorth)}
         </CardTitle>
         <CardDescription className="text-lg font-semibold text-muted-foreground flex items-center gap-2">
@@ -40,7 +41,7 @@ export default function NetWorthCard({ netWorth, assets, liabilities, trend }: N
 
       <CardContent className="p-0">
         {/* Mini Trend Chart */}
-        <div className="h-40 p-6 bg-gradient-to-r from-muted/20 to-accent/10">
+        <div className="h-40 p-6 bg-linear-to-r from-muted/20 to-accent/10">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={trendData}>
               <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.1} vertical={false} />

@@ -59,7 +59,7 @@ export default function SavingsGoals({ savingsRate, goals }: SavingsGoalsProps) 
                 </div>
               </div>
               <div className="space-y-2">
-                <Progress value={goal.progress} className="h-3 [&>div]:!bg-gradient-to-r [&>div]:from-primary [&>div]:to-secondary" />
+                <Progress value={goal.progress} className="h-3 [&>div]:!bg-linear-to-r [&>div]:from-primary [&>div]:to-secondary" />
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4 opacity-70" />
                   ETA: {calculateETA(goal.progress, goal.target)}
@@ -70,13 +70,13 @@ export default function SavingsGoals({ savingsRate, goals }: SavingsGoalsProps) 
         </div>
 
         {/* Savings Rate Insight */}
-        <div className="p-5 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-green-500/10 rounded-2xl border border-green-500/20 shadow-lg">
+        <div className="p-5 bg-linear-to-r from-green-500/10 via-emerald-500/5 to-green-500/10 rounded-2xl border border-green-500/20 shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 Monthly Savings Rate
               </p>
-              <p className="text-3xl font-black bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
+              <p className="text-3xl font-black bg-linear-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
                 {savingsRate}%
               </p>
             </div>

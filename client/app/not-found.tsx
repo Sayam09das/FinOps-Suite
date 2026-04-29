@@ -18,7 +18,7 @@ export default function NotFound() {
           </div>
 
           {/* Title */}
-          <h1 className="bg-gradient-to-r from-slate-900 via-blue-900 to-emerald-900 bg-clip-text text-6xl font-black tracking-tight text-transparent sm:text-7xl md:text-8xl lg:text-9xl">
+          <h1 className="bg-linear-to-r from-slate-900 via-blue-900 to-emerald-900 bg-clip-text text-6xl font-black tracking-tight text-transparent sm:text-7xl md:text-8xl lg:text-9xl">
             404
           </h1>
 

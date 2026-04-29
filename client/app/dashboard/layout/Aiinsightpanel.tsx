@@ -261,7 +261,7 @@ export default function AIInsightPanel({ open, onClose }: AIInsightPanelProps) {
                         disabled={loading}
                         className={cn(
                             "flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5",
-                            "bg-gradient-to-r from-emerald-500 to-emerald-400 text-[13px] font-semibold text-white",
+                            "bg-linear-to-r from-emerald-500 to-emerald-400 text-[13px] font-semibold text-white",
                             "shadow-[0_0_20px_rgba(52,211,153,0.28)] transition-all duration-200",
                             "hover:shadow-[0_0_28px_rgba(52,211,153,0.42)] hover:brightness-110",
                             "active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-55",

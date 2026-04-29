@@ -123,7 +123,7 @@ export default function SummaryTable() {
         <div className="mt-6 pt-6 border-t border-border/50 bg-muted/30 rounded-2xl p-4">
           <div className="flex items-center justify-between">
             <span className="text-lg font-semibold">Total Variance</span>
-            <Badge className="text-lg px-4 py-2 font-bold bg-gradient-to-r from-destructive to-orange-500 text-destructive-foreground shadow-lg">
+            <Badge className="text-lg px-4 py-2 font-bold bg-linear-to-r from-destructive to-orange-500 text-destructive-foreground shadow-lg">
               -₹{formatCurrency(4500)}
             </Badge>
           </div>
