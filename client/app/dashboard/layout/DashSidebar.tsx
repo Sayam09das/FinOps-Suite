@@ -166,12 +166,7 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function isActive(pathname: string, href?: string): boolean {
-  if (!href) return false;
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
 
 function badgeCn(tone: NavTone = "soon") {
   return cn(
@@ -183,6 +178,17 @@ function badgeCn(tone: NavTone = "soon") {
 }
 
 // ─── NavItemRow ───────────────────────────────────────────────────────────────
+function isActive(pathname: string, href?: string) {
+  if (!href) return false;
+
+  // ✅ exact match
+  if (pathname === href) return true;
+
+  // ✅ nested routes (but avoid root "/")
+  if (href !== "/" && pathname.startsWith(href + "/")) return true;
+
+  return false;
+}
 
 function NavItemRow({
   item,
@@ -235,16 +241,18 @@ function NavItemRow({
   const cls = cn(
     "group relative flex w-full text-left transition-all duration-200",
 
-    // 🔥 KEY FIX HERE
+    // ✅ collapsed spacing fix
     collapsed
-      ? "justify-center py-1.5"   // ⬅️ reduced vertical spacing
+      ? "justify-center py-1.5"
       : "items-center gap-3 rounded-[1.25rem] border px-3 py-2.5",
 
+    // ✅ active state styling (ONLY when correct)
     !collapsed &&
     (active
       ? "border-primary/72 bg-primary/44 shadow-[0_12px_32px_rgba(33,49,43,0.09)]"
       : "border-border/65 bg-background/65 hover:-translate-y-0.5 hover:border-primary/38 hover:bg-white/85"),
 
+    // ✅ collapsed active icon highlight
     collapsed && active && "text-primary"
   );
 
