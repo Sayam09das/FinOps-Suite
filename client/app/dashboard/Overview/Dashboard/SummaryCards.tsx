@@ -10,7 +10,7 @@ import { formatAmount } from '@/app/lib/utils/currency';
 import { formatNumber } from '@/app/lib/utils/number';
 import { api } from '@/app/lib/api/client';
 import type { SummaryMetric } from '../types';
-import type { DashboardOverview } from '@/app/features/dashboard/types/dashboard';
+import type { DashboardOverview, Transaction } from '@/app/features/dashboard/types/dashboard';
 
 const POLL_INTERVAL = 5000;
 
@@ -109,6 +109,34 @@ function transformToMetrics(data: DashboardOverview): SummaryMetric[] {
   ];
 }
 
+function extractTransactions(response: { data?: Transaction[] } | Transaction[] | undefined): Transaction[] {
+  if (Array.isArray(response)) return response;
+  return response?.data || [];
+}
+
+function buildOverviewFromTransactions(transactions: Transaction[]): Pick<DashboardOverview, 'income' | 'expense' | 'balance'> {
+  const totals = transactions.reduce(
+    (acc, transaction) => {
+      const amount = Number(transaction.amount) || 0;
+      const type = String(transaction.type || '').toLowerCase();
+
+      if (type === 'income') {
+        acc.income += amount;
+      } else {
+        acc.expense += amount;
+      }
+
+      return acc;
+    },
+    { income: 0, expense: 0 },
+  );
+
+  return {
+    ...totals,
+    balance: totals.income - totals.expense,
+  };
+}
+
 function SummaryCard({ metric }: { metric: SummaryMetric }) {
   const Icon = metric.icon;
   const tone = toneStyles[metric.tone];
@@ -150,11 +178,26 @@ export default function SummaryCards() {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.get<DashboardOverview>('/api/dashboard/', {
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      });
+      const [overview, transactionsResponse] = await Promise.all([
+        api.get<DashboardOverview>('/api/dashboard/', {
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        }),
+        api.get<{ data?: Transaction[] } | Transaction[]>('/api/transactions?page=1&limit=50', {
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        }),
+      ]);
+      const transactionTotals = buildOverviewFromTransactions(extractTransactions(transactionsResponse));
+      const shouldUseTransactionTotals =
+        transactionTotals.income !== 0 ||
+        transactionTotals.expense !== 0 ||
+        transactionTotals.balance !== 0;
+      const data = shouldUseTransactionTotals
+        ? { ...overview, ...transactionTotals }
+        : overview;
       const newMetrics = transformToMetrics(data);
       setMetrics(newMetrics);
     } catch (err) {

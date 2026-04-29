@@ -1,10 +1,11 @@
 "use client"
 
+import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
 import { cn } from '@/app/lib/utils/cn'
 import { formatCurrency } from '@/app/lib/utils/number'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts';
 
 interface IncomeExpenseChartProps {
   income: number

@@ -1,7 +1,8 @@
 "use client"
 
+import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
 import { motion } from "framer-motion"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Area, AreaChart } from 'recharts';
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"

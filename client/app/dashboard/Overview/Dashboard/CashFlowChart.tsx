@@ -1,9 +1,11 @@
 "use client";
 
+import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
 import { useState, useEffect, useCallback } from 'react';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts';
 import { useAuth } from '@/app/features/auth/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { useMounted } from '@/app/hooks/use-mounted';
 import { cn } from '@/app/lib/utils/cn';
 import { formatAmount } from '@/app/lib/utils/currency';
 import { api } from '@/app/lib/api/client';
@@ -68,6 +70,7 @@ function buildCashFlowSeries(income: number, expense: number): Record<ChartRange
 }
 
 export default function CashFlowChart() {
+  const mounted = useMounted();
   const [seriesByRange, setSeriesByRange] = useState<Record<ChartRange, CashFlowPoint[]>>(EMPTY_SERIES);
   const [activeRange, setActiveRange] = useState<ChartRange>("Monthly");
   const [loading, setLoading] = useState(true);
@@ -176,50 +179,51 @@ export default function CashFlowChart() {
         </div>
       </CardHeader>
 
-      <CardContent className="h-[360px] px-3 pb-4 pt-4 sm:px-5">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
-            <CartesianGrid stroke="rgba(91,107,100,0.12)" strokeDasharray="4 4" vertical={false} />
-            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "rgba(33,49,43,0.55)", fontSize: 12 }} />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: "rgba(33,49,43,0.55)", fontSize: 12 }}
-              tickFormatter={(value) => `$${Math.round(value / 1000)}k`}
-            />
-            <Tooltip
-              contentStyle={{
-                borderRadius: "1rem",
-                border: "1px solid rgba(211,221,210,0.9)",
-                background: "rgba(255,255,255,0.92)",
-                boxShadow: "0 20px 60px rgba(33,49,43,0.12)",
-              }}
-              formatter={(value, name) => [
-                formatAmount(Number(value ?? 0)),
-                name === "income" ? "Income" : "Expense",
-              ]}
-              labelStyle={{ color: "rgba(33,49,43,0.62)", fontWeight: 600 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="income"
-              stroke="#2f7d67"
-              strokeWidth={3}
-              dot={{ r: 0 }}
-              activeDot={{ r: 5, strokeWidth: 0, fill: "#2f7d67" }}
-            />
-            <Line
-              type="monotone"
-              dataKey="expense"
-              stroke="#d27768"
-              strokeWidth={3}
-              dot={{ r: 0 }}
-              activeDot={{ r: 5, strokeWidth: 0, fill: "#d27768" }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      <CardContent className="h-[360px] min-h-[360px] min-w-0 px-3 pb-4 pt-4 sm:px-5">
+        {mounted ? (
+          <ResponsiveContainer width="100%" height={360}>
+            <LineChart data={data} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
+              <CartesianGrid stroke="rgba(91,107,100,0.12)" strokeDasharray="4 4" vertical={false} />
+              <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "rgba(33,49,43,0.55)", fontSize: 12 }} />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "rgba(33,49,43,0.55)", fontSize: 12 }}
+                tickFormatter={(value) => `$${Math.round(value / 1000)}k`}
+              />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: "1rem",
+                  border: "1px solid rgba(211,221,210,0.9)",
+                  background: "rgba(255,255,255,0.92)",
+                  boxShadow: "0 20px 60px rgba(33,49,43,0.12)",
+                }}
+                formatter={(value, name) => [
+                  formatAmount(Number(value ?? 0)),
+                  name === "income" ? "Income" : "Expense",
+                ]}
+                labelStyle={{ color: "rgba(33,49,43,0.62)", fontWeight: 600 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="income"
+                stroke="#2f7d67"
+                strokeWidth={3}
+                dot={{ r: 0 }}
+                activeDot={{ r: 5, strokeWidth: 0, fill: "#2f7d67" }}
+              />
+              <Line
+                type="monotone"
+                dataKey="expense"
+                stroke="#d27768"
+                strokeWidth={3}
+                dot={{ r: 0 }}
+                activeDot={{ r: 5, strokeWidth: 0, fill: "#d27768" }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : null}
       </CardContent>
     </Card>
   );
 }
-

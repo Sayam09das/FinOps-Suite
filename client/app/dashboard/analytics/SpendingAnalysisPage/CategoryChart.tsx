@@ -1,7 +1,8 @@
 "use client"
 
+import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
 import { motion } from "framer-motion"
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
+import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"

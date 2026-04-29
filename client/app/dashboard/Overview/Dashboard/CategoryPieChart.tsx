@@ -1,13 +1,17 @@
 "use client";
 
-import { Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
+import { Cell, Pie, PieChart as RechartsPieChart, Tooltip } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { useMounted } from "@/app/hooks/use-mounted";
 import { formatAmount } from "@/app/lib/utils/currency";
 
 import type { CategorySlice } from "../types";
 
 export default function CategoryPieChart({ items }: { items: CategorySlice[] }) {
+  const mounted = useMounted();
+
   return (
     <Card className="surface-card rounded-[1.95rem] border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.3))] p-0 backdrop-blur-xl">
       <CardHeader className="border-b border-border/70 px-5 py-5">
@@ -25,25 +29,27 @@ export default function CategoryPieChart({ items }: { items: CategorySlice[] }) 
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-[1fr_0.95fr]">
-            <div className="h-[260px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsPieChart>
-                  <Pie
-                    data={items}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={68}
-                    outerRadius={94}
-                    paddingAngle={3}
-                    strokeWidth={0}
-                  >
-                    {items.map((item) => (
-                      <Cell key={item.name} fill={item.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatAmount(Number(value ?? 0))} />
-                </RechartsPieChart>
-              </ResponsiveContainer>
+            <div className="h-[260px] min-h-[260px] min-w-0">
+              {mounted ? (
+                <ResponsiveContainer width="100%" height={260}>
+                  <RechartsPieChart>
+                    <Pie
+                      data={items}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={68}
+                      outerRadius={94}
+                      paddingAngle={3}
+                      strokeWidth={0}
+                    >
+                      {items.map((item) => (
+                        <Cell key={item.name} fill={item.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => formatAmount(Number(value ?? 0))} />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              ) : null}
             </div>
 
             <div className="space-y-3">

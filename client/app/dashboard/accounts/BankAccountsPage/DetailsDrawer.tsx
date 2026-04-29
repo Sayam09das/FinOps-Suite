@@ -1,15 +1,10 @@
 "use client"
 
+import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  X,
-  Calendar,
-  Hash,
-  StickyNote,
-  ArrowDownLeft,
-  ArrowUpRight,
-} from "lucide-react"
-import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+  X, Calendar, Hash, StickyNote, ArrowDownLeft, ArrowUpRight, } from "lucide-react"
+import { AreaChart, Area, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { cn } from "@/app/lib/utils/cn"
 import { formatCurrency } from "@/app/lib/utils/number"

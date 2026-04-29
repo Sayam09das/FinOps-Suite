@@ -1,26 +1,12 @@
 "use client"
 
+import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  Table,
-  BarChart3,
-  FileSpreadsheet,
-  FileText,
-  Download,
-  TrendingUp,
-  TrendingDown,
-} from "lucide-react"
+  Table, BarChart3, FileSpreadsheet, FileText, Download, TrendingUp, TrendingDown, } from "lucide-react"
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts"
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"

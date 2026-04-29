@@ -1,9 +1,10 @@
 "use client"
 
+import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
 import { formatCurrency } from '@/app/lib/utils/number'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Banknote, CreditCard, TrendingUp, Package } from 'lucide-react'
 import { cn } from '@/app/lib/utils/cn'
 

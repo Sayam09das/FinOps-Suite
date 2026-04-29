@@ -1,8 +1,9 @@
 "use client"
 
+import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
 import React, { useState, useCallback } from "react"
 import { motion } from "framer-motion"
-import { PieChart, Pie, Cell, Sector, ResponsiveContainer } from "recharts"
+import { PieChart, Pie, Cell, Sector } from 'recharts';
 
 import { Card } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"

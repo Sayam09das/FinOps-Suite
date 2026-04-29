@@ -1,8 +1,9 @@
 "use client"
 
+import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
 import { motion } from "framer-motion"
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react"
-import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts"
+import { AreaChart, Area, Tooltip } from 'recharts';
 
 import { formatCurrency } from "@/app/lib/utils/number"
 

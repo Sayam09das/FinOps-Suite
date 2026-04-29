@@ -272,6 +272,7 @@ function NavItemRow({
     return (
       <Link
         href={item.href}
+        prefetch={false}
         className={cls}
         onClick={onNavigate}
         title={collapsed ? item.title : undefined}
