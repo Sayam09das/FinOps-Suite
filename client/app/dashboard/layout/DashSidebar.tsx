@@ -304,47 +304,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
       </div>
-
-      {/* AI insight card */}
-      <div className="shrink-0 rounded-[1.7rem] border border-foreground/10 bg-foreground p-4 text-background shadow-[0_24px_72px_rgba(33,49,43,0.22)]">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[9px] font-semibold uppercase tracking-widest text-background/42">
-              Pro add-ons
-            </p>
-            <h3 className="mt-0.5 text-base font-semibold">AI insight deck</h3>
-          </div>
-          <Badge variant="contrast" className="shrink-0 border-white/14 bg-white/10 text-[10px] text-background">
-            Live
-          </Badge>
-        </div>
-
-        <div className="mt-3 space-y-2 text-[12px] text-background/68">
-          <div className="flex items-start gap-3 rounded-[1.1rem] border border-white/10 bg-white/5 p-3">
-            <Bot className="mt-0.5 h-[14px] w-[14px] shrink-0" />
-            <p className="leading-[1.6]">You overspent on dining this week vs. your four-week average.</p>
-          </div>
-          <div className="flex items-start gap-3 rounded-[1.1rem] border border-white/10 bg-white/5 p-3">
-            <Sparkles className="mt-0.5 h-[14px] w-[14px] shrink-0" />
-            <p className="leading-[1.6]">Smart categorization can auto-tag low-confidence transactions.</p>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button variant="light" size="sm" className="rounded-2xl text-[12px]">
-            <Sparkles className="h-3.5 w-3.5" />
-            Generate insight
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="rounded-2xl border-white/14 bg-white/8 text-[12px] text-background hover:bg-white/14"
-          >
-            <FileDown className="h-3.5 w-3.5" />
-            Export CSV
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
