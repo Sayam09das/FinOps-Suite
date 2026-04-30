@@ -4,6 +4,10 @@ export function getAuthToken() {
   return typeof window !== 'undefined' ? localStorage.getItem(AUTH.LOCAL_STORAGE_TOKEN) : null
 }
 
+export function getRefreshToken() {
+  return typeof window !== 'undefined' ? localStorage.getItem(AUTH.REFRESH_TOKEN) : null
+}
+
 export function getStoredUser<T = unknown>(): T | null {
   if (typeof window === 'undefined') return null
 
@@ -36,11 +40,18 @@ export function setAuthData(token: string, user: unknown) {
   }
 }
 
+export function setRefreshToken(token: string) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(AUTH.REFRESH_TOKEN, token)
+  }
+}
+
 export function clearAuthData() {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(AUTH.LOCAL_STORAGE_TOKEN)
     localStorage.removeItem(AUTH.LOCAL_STORAGE_USER)
     localStorage.removeItem(AUTH.GRACE_UNTIL_KEY)
+    localStorage.removeItem(AUTH.REFRESH_TOKEN)
   }
 }
 

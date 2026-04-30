@@ -36,11 +36,12 @@ export const sendAuthResponse = (
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7d
   });
   
-// Return user + accessToken for frontend localStorage fallback
+// Return user + accessToken + refreshToken for frontend localStorage fallback
   ApiResponse.success(
     { 
       ...session.user, 
-      accessToken: session.accessToken 
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken 
     },
     res,
 

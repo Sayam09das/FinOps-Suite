@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
-import { clearAuthData, getGraceUser, setAuthData } from '../utils/auth-utils';
+import { clearAuthData, getGraceUser, setAuthData, setRefreshToken } from '../utils/auth-utils';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLoginMutation, useRegisterMutation, useLogoutMutation, useAuthMeQuery } from '@/app/lib/api/queries';
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const { toastPromise } = useToast();
 
-  const login = useCallback(async (email: string, password: string) => {
+const login = useCallback(async (email: string, password: string) => {
     const promiseFn = async () => {
       console.log('[AUTH] Step 1: Calling login endpoint...');
       const response = await loginMutation.mutateAsync({ email, password });
@@ -55,7 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('[AUTH] Step 2: Extracted user data:', userData);
       
       const accessToken = (userData as any).accessToken;
+      const refreshToken = (userData as any).refreshToken;
       setAuthData(accessToken || '', userData);
+      
+      // Store refresh token for token refresh flow
+      if (refreshToken) {
+        setRefreshToken(refreshToken);
+        console.log('[AUTH] Refresh token stored successfully');
+      }
       
       queryClient.setQueryData(['auth', 'me'], userData);
       

@@ -1,6 +1,6 @@
 import { API } from "../constants"
 import { ENDPOINTS } from './endpoints'
-import { getAuthToken } from '@/app/features/auth/utils/auth-utils'
+import { getAuthToken, getRefreshToken } from '@/app/features/auth/utils/auth-utils'
 
 type ApiEnvelope<T> = {
   success?: boolean
@@ -21,27 +21,23 @@ const failedRequests: Array<() => void> = [];
 
 async function refreshAuth() {
   try {
-    // Extract refresh token from localStorage (matches backend cookie name)
-    const refreshToken = typeof window !== 'undefined' 
-      ? localStorage.getItem('finops-refresh-token') 
-      : null;
+    // Get the refresh token from localStorage
+    const refreshToken = getRefreshToken();
     
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
-
-    const response = await api.post(ENDPOINTS.AUTH.REFRESH, { 
-      refreshToken 
-    }, { timeoutMs: 5000 });
+    
+    // Send refresh token in the request body
+    const response = await api.post(ENDPOINTS.AUTH.REFRESH, { refreshToken }, { 
+      timeoutMs: 5000,
+      credentials: 'include', // Include cookies for cookie-based auth fallback
+    });
     
     const newAccessToken = (response as any).accessToken;
     if (newAccessToken && typeof window !== 'undefined') {
+      // Update the access token in localStorage (for immediate UI access)
       localStorage.setItem('finops-auth-token', newAccessToken);
-      // Also store new refresh token if provided
-      const newRefreshToken = (response as any).refreshToken;
-      if (newRefreshToken) {
-        localStorage.setItem('finops-refresh-token', newRefreshToken);
-      }
     }
     return newAccessToken;
   } catch (error) {
