@@ -9,14 +9,14 @@ import {
 } from "./transaction.controller";
 import { protect } from "../../common/middleware/auth.middleware";
 import { validateRequest } from "../../common/middleware/validation.middleware";
-import { createTransactionSchema } from "./transaction.validation";
+import { createTransactionSchema, updateTransactionSchema } from "./transaction.validation";
 
 const router = Router();
 
 router.post("/", protect, validateRequest(createTransactionSchema), addTransaction);
 router.get("/", protect, getAllTransactions);
 router.delete("/:id", protect, removeTransaction);
-router.put("/:id", protect, editTransaction);
+router.put("/:id", protect, validateRequest(updateTransactionSchema), editTransaction);
 router.get("/summary", protect, monthlySummary);
 router.get("/analytics/category", protect, categoryAnalytics);
 

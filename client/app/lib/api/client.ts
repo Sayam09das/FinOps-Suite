@@ -1,6 +1,10 @@
 import { API } from "../constants"
 import { ENDPOINTS } from './endpoints'
-import { getAuthToken, getRefreshToken } from '@/app/features/auth/utils/auth-utils'
+import { 
+  getRefreshToken, 
+  setRefreshToken, 
+  setAuthData 
+} from '@/app/features/auth/utils/auth-utils'
 
 type ApiEnvelope<T> = {
   success?: boolean
@@ -15,31 +19,109 @@ type ApiRequestConfig = RequestInit & {
 
 /**
  * Base fetch request creator with auth, timeout, and error handling
+ * 
+ * AUTHENTICATION STRATEGY:
+ * 1. Cookies via httpOnly (PRIMARY) - set automatically by browser
+ * 2. localStorage tokens (FALLBACK) - used when cookies fail
+ * 3. Token refresh flow when access token expires
  */
 let isRefreshing = false;
 const failedRequests: Array<() => void> = [];
 
+/**
+ * Get access token from localStorage (fallback)
+ */
+function getAccessToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('finops-auth-token');
+}
+
+/**
+ * Get refresh token from localStorage (fallback)
+ */
+function getStoredRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('finops-refresh-token');
+}
+
+/**
+ * Store tokens in localStorage after login/refresh
+ */
+function storeTokens(accessToken: string, refreshToken?: string) {
+  if (typeof window === 'undefined') return;
+  
+  // Always store access token
+  localStorage.setItem('finops-auth-token', accessToken);
+  
+  // Store refresh token if provided (for token refresh flow)
+  if (refreshToken) {
+    localStorage.setItem('finops-refresh-token', refreshToken);
+  }
+}
+
 async function refreshAuth() {
   try {
-    // Get the refresh token from localStorage
-    const refreshToken = getRefreshToken();
+    // Get the refresh token from localStorage (fallback) or use cookie-based refresh
+    const storedRefreshToken = getStoredRefreshToken();
+    const refreshTokenToUse = storedRefreshToken || getRefreshToken();
     
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
+    if (!refreshTokenToUse) {
+      console.error('[AUTH] No refresh token available - trying cookie-based refresh');
+      // Try cookie-based refresh by sending empty body - cookies are sent automatically
+      // This will fail if cookies aren't available, but provides good diagnostics
     }
     
-    // Send refresh token in the request body
-    const response = await api.post(ENDPOINTS.AUTH.REFRESH, { refreshToken }, { 
-      timeoutMs: 5000,
-      credentials: 'include', // Include cookies for cookie-based auth fallback
+    // Create refresh request with cookie support
+    const refreshOptions: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: refreshTokenToUse ? JSON.stringify({ refreshToken: refreshTokenToUse }) : '{}',
+      credentials: 'include', // CRITICAL: Include cookies for cookie-based auth
+    };
+    
+    const response = await fetch(API.BASE_URL + ENDPOINTS.AUTH.REFRESH, {
+      ...refreshOptions,
+      // No timeout wrapper for refresh - give it time to complete
     });
     
-    const newAccessToken = (response as any).accessToken;
-    if (newAccessToken && typeof window !== 'undefined') {
-      // Update the access token in localStorage (for immediate UI access)
-      localStorage.setItem('finops-auth-token', newAccessToken);
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      console.error('[AUTH] Refresh response not OK:', response.status, errorText);
+      throw new Error('Token refresh failed');
     }
-    return newAccessToken;
+    
+    const text = await response.text();
+    let data: any;
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      data = {};
+    }
+    
+    // Get tokens from response - check for tokens in various formats
+    const newAccessToken = data?.accessToken || data?.data?.accessToken;
+    const newRefreshToken = data?.refreshToken || data?.data?.refreshToken;
+    
+    if (newAccessToken) {
+      // Store tokens in localStorage for future use
+      storeTokens(newAccessToken, newRefreshToken);
+      console.log('[AUTH] Tokens refreshed and stored successfully');
+      return newAccessToken;
+    }
+    
+    // If no new access token but response was OK, maybe using cookie-based auth
+    // In this case, the cookie should already be set
+    if (response.ok) {
+      const accessFromLocalStorage = getAccessToken();
+      if (accessFromLocalStorage) {
+        console.log('[AUTH] Using cookie-based refresh (no new tokens in response)');
+        return accessFromLocalStorage;
+      }
+    }
+    
+    throw new Error('No access token in refresh response');
   } catch (error) {
     console.error('[AUTH] Refresh failed:', error);
     // Refresh failed, clear ALL auth data
@@ -81,8 +163,9 @@ const createRequest = async (url: string, options: ApiRequestConfig = {}): Promi
     }
 
 // Auth token from localStorage (Bearer fallback for cookies)
-    const token = getAuthToken();
-    if (token && !headers.has('Authorization')) {
+    // Only use token if it's valid (length > 10 to filter out garbage/invalid tokens)
+    const token = getAccessToken();
+    if (token && token.length > 10 && !headers.has('Authorization')) {
       headers.set('Authorization', `Bearer ${token}`);
     }
 

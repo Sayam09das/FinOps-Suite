@@ -1,10 +1,17 @@
 import type { Request, Response } from 'express';
 import { ApiResponse } from '../../common/utils/apiResponse';
 
-const COOKIE_OPTIONS = {
+// Environment-aware cookie options for clearCookie to match setCookie
+const isProduction = process.env.NODE_ENV === 'production';
+const COOKIE_OPTIONS: {
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: 'none' | 'lax';
+  path: '/';
+} = {
   httpOnly: true,
-  secure: true,
-  sameSite: 'none' as const,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
   path: '/',
 };
 

@@ -56,5 +56,10 @@ export function clearAuthData() {
 }
 
 export function isValidToken(token: string | null): boolean {
-  return !!token && token.length > 10
+  // Valid tokens must be:
+  // 1. Not null/undefined/empty
+  // 2. A string
+  // 3. Longer than 10 characters (JWT tokens are typically longer)
+  // 4. Not just whitespace
+  return !!token && typeof token === 'string' && token.length > 10 && token.trim() === token
 }

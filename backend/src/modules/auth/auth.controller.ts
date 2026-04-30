@@ -14,16 +14,21 @@ export const sendAuthResponse = (
   statusCode: number,
   message: string,
 ) => {
-  // Cookie configuration: environment-aware for dev/prod
+// Cookie configuration: environment-aware for dev/prod
   const isProduction = process.env.NODE_ENV === 'production';
   
-  // In production (HTTPS): secure + sameSite: none (no domain for cross-site)
-  // In development (HTTP): no secure flag, sameSite: lax
-  const cookieOptions = {
+  // In production (HTTPS): secure + sameSite: none for cross-site cookies
+  // In development (HTTP): no secure flag, sameSite: lax for local cookies
+  const cookieOptions: {
+    httpOnly: boolean;
+    secure: boolean;
+    sameSite: 'none' | 'lax';
+    path: '/';
+  } = {
     httpOnly: true,
     secure: isProduction, // Only true in production
-    sameSite: 'none' as const,
-    path: '/' as const,
+    sameSite: isProduction ? 'none' : 'lax',
+    path: '/',
     // Don't set domain for cross-site cookies - let browser handle it
   };
 

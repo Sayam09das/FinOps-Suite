@@ -54,11 +54,28 @@ const login = useCallback(async (email: string, password: string) => {
       const userData = response;
       console.log('[AUTH] Step 2: Extracted user data:', userData);
       
-      const accessToken = (userData as any).accessToken;
-      const refreshToken = (userData as any).refreshToken;
+      // Extract tokens with proper validation - handle both direct response and wrapped response
+      const rawAccessToken = (userData as any)?.accessToken;
+      const rawRefreshToken = (userData as any)?.refreshToken;
+      
+      // Only store tokens if they're valid (non-empty strings)
+      const accessToken = rawAccessToken && typeof rawAccessToken === 'string' && rawAccessToken.length > 10 
+        ? rawAccessToken 
+        : null;
+      const refreshToken = rawRefreshToken && typeof rawRefreshToken === 'string' && rawRefreshToken.length > 10 
+        ? rawRefreshToken 
+        : null;
+      
+      if (!accessToken || !refreshToken) {
+        console.error('[AUTH] Token extraction failed! accessToken:', !!accessToken, 'refreshToken:', !!refreshToken);
+        // Still try to auth - maybe cookies are set
+      } else {
+        console.log('[AUTH] Tokens extracted successfully');
+      }
+      
       setAuthData(accessToken || '', userData);
       
-      // Store refresh token for token refresh flow
+      // Store refresh token for token refresh flow (only if valid)
       if (refreshToken) {
         setRefreshToken(refreshToken);
         console.log('[AUTH] Refresh token stored successfully');
