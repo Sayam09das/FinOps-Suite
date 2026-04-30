@@ -16,6 +16,50 @@ interface HeaderControlsProps {
   onCompareToggle: () => void
 }
 
+// Safe Select wrapper to prevent InvalidNodeTypeError from Radix UI
+function SafeSelect({
+  children,
+  onValueChange,
+  value,
+  className,
+  placeholder,
+  icon: Icon
+}: {
+  children: React.ReactNode
+  onValueChange?: (value: string) => void
+  value?: string
+  className?: string
+  placeholder?: string
+  icon?: React.ComponentType<{ className?: string }>
+}) {
+  const [isMounted, setIsMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted) {
+    return (
+      <SelectTrigger className={className}>
+        {Icon && <Icon className="h-4 w-4 mr-2" />}
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+    )
+  }
+
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger className={className}>
+        {Icon && <Icon className="h-4 w-4 mr-2" />}
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {children}
+      </SelectContent>
+    </Select>
+  )
+}
+
 export default function HeaderControls({ dateRange, onDateRangeChange, compare, onCompareToggle }: HeaderControlsProps) {
   const queryClient = useQueryClient()
   
@@ -54,19 +98,18 @@ export default function HeaderControls({ dateRange, onDateRangeChange, compare, 
 
       <div className="flex flex-wrap gap-3 items-center">
         {/* Date Range - Controls real API data */}
-        <Select value={dateRange} onValueChange={onDateRangeChange}>
-          <SelectTrigger className="w-[180px]">
-            <Calendar className="h-4 w-4 mr-2" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {dateRanges.map((range) => (
-              <SelectItem key={range.value} value={range.value}>
-                {range.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SafeSelect
+          value={dateRange}
+          onValueChange={onDateRangeChange}
+          className="w-[180px]"
+          icon={Calendar}
+        >
+          {dateRanges.map((range) => (
+            <SelectItem key={range.value} value={range.value}>
+              {range.label}
+            </SelectItem>
+          ))}
+        </SafeSelect>
 
         {/* Compare Toggle */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl border bg-background/50">
