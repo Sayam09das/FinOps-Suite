@@ -18,15 +18,33 @@ interface NetWorthCardProps {
 export default function NetWorthCard({ netWorth, assets, liabilities, trend }: NetWorthCardProps) {
   const netWorthTrend = trend > 0 ? 'text-green-500' : 'text-destructive'
 
-  const baseValue = netWorth || 100000;
-  const trendData = useMemo(() => [
-    { month: 'Jan', value: baseValue * 0.9 },
-    { month: 'Feb', value: baseValue * 0.92 },
-    { month: 'Mar', value: baseValue * 0.95 },
-    { month: 'Apr', value: baseValue * 0.97 },
-    { month: 'May', value: baseValue * 0.99 },
-    { month: 'Jun', value: baseValue }
-  ], [baseValue]);
+  // Use actual netWorth value - no demo fallback
+  // If netWorth is 0 or undefined, show empty state
+  const hasData = netWorth && netWorth > 0;
+  const displayValue = hasData ? netWorth : 0;
+  
+  const trendData = useMemo(() => {
+    if (!hasData) {
+      // Return empty/default data when no real data exists
+      return [
+        { month: 'Jan', value: 0 },
+        { month: 'Feb', value: 0 },
+        { month: 'Mar', value: 0 },
+        { month: 'Apr', value: 0 },
+        { month: 'May', value: 0 },
+        { month: 'Jun', value: 0 }
+      ];
+    }
+    // Generate trend based on actual value
+    return [
+      { month: 'Jan', value: displayValue * 0.9 },
+      { month: 'Feb', value: displayValue * 0.92 },
+      { month: 'Mar', value: displayValue * 0.95 },
+      { month: 'Apr', value: displayValue * 0.97 },
+      { month: 'May', value: displayValue * 0.99 },
+      { month: 'Jun', value: displayValue }
+    ];
+  }, [displayValue, hasData]);
 
   return (
     <Card className="group relative overflow-hidden rounded-3xl border-2 border-border/50 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-background to-muted/30 backdrop-blur-xl">

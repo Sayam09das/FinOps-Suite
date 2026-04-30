@@ -7,22 +7,22 @@ import { cn } from '@/app/lib/utils/cn'
 import { formatCurrency } from '@/app/lib/utils/number'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts';
 
+interface ChartDataPoint {
+  month: string
+  income: number
+  expense: number
+}
+
 interface IncomeExpenseChartProps {
   income: number
   expense: number
   compare: boolean
+  chartData: ChartDataPoint[]
 }
 
-const chartData = [
-  { month: 'W1', income: 11000, expense: 8500 },
-  { month: 'W2', income: 12000, expense: 9000 },
-  { month: 'W3', income: 11500, expense: 9500 },
-  { month: 'W4', income: 13000, expense: 8000 }
-]
-
-export default function IncomeExpenseChart({ income, expense, compare }: IncomeExpenseChartProps) {
+export default function IncomeExpenseChart({ income, expense, compare, chartData }: IncomeExpenseChartProps) {
   const netSavings = income - expense
-  const savingsPercent = ((netSavings / income) * 100).toFixed(1)
+  const savingsPercent = income > 0 ? ((netSavings / income) * 100).toFixed(1) : '0.0'
 
   return (
     <Card className="h-[420px] rounded-3xl border-2 border-border/50 shadow-xl hover:shadow-2xl transition-all">
@@ -58,7 +58,7 @@ export default function IncomeExpenseChart({ income, expense, compare }: IncomeE
             </div>
           </div>
 
-          {/* Chart */}
+{/* Chart */}
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={chartData}>
               <defs>

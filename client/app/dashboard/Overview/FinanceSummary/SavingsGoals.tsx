@@ -40,9 +40,16 @@ export default function SavingsGoals({ savingsRate, goals }: SavingsGoalsProps) 
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Goals List */}
+{/* Goals List */}
         <div className="space-y-4">
-          {goals.map((goal, index) => (
+          {goals.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Target className="h-12 w-12 mx-auto mb-4 opacity-40" />
+              <p className="text-lg font-medium">No savings goals set</p>
+              <p className="text-sm">Create a goal to start tracking your savings!</p>
+            </div>
+          ) : (
+            goals.map((goal, index) => (
             <div key={goal.name} className="group p-4 rounded-2xl hover:bg-muted/50 transition-all border hover:border-primary/30">
               <div className="flex items-start gap-4 mb-3">
                 <div className="p-2 bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg -mt-1">

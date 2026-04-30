@@ -92,10 +92,10 @@ export const useTransactionsQuery = (page = 1, enabled = !!getAuthToken(), limit
 }
 
 // Dashboard
-export const useDashboardOverviewQuery = (enabled = !!getAuthToken()) => {
+export const useDashboardOverviewQuery = (enabled = !!getAuthToken(), dateRange = 'thisMonth') => {
   return useQuery<DashboardOverview>({
-    queryKey: ['dashboard', 'overview'],
-    queryFn: () => api.get<DashboardOverview>('/api/dashboard/'),
+    queryKey: ['dashboard', 'overview', dateRange],
+    queryFn: () => api.get<DashboardOverview>(`/api/dashboard/?dateRange=${dateRange}`),
     enabled,
     staleTime: 0,
     refetchInterval: enabled ? 5000 : false,

@@ -8,52 +8,28 @@ import { ArrowUp, ArrowDown, Minus } from 'lucide-react'
 import { cn } from '@/app/lib/utils/cn'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table'
 
-const demoData = [
-  {
-    category: 'Food & Dining',
-    budget: 10000,
-    actual: 12000,
-    difference: -2000,
-    status: 'over'
-  },
-  {
-    category: 'Rent & Utilities',
-    budget: 25000,
-    actual: 25000,
-    difference: 0,
-    status: 'ontrack'
-  },
-  {
-    category: 'Transportation',
-    budget: 5000,
-    actual: 3500,
-    difference: 1500,
-    status: 'under'
-  },
-  {
-    category: 'Subscriptions',
-    budget: 2000,
-    actual: 1800,
-    difference: 200,
-    status: 'under'
-  },
-  {
-    category: 'Shopping',
-    budget: 8000,
-    actual: 9500,
-    difference: -1500,
-    status: 'over'
-  },
-  {
-    category: 'Investments',
-    budget: 15000,
-    actual: 18000,
-    difference: -3000,
-    status: 'over'
-  }
-]
+interface BudgetSummaryRow {
+  category: string
+  budget: number
+  actual: number
+  difference: number
+  status: 'over' | 'under' | 'ontrack'
+}
 
-export default function SummaryTable() {
+interface SummaryTableProps {
+  budgetSummary: BudgetSummaryRow[]
+}
+
+export default function SummaryTable({ budgetSummary }: SummaryTableProps) {
+  const displayData = budgetSummary || []
+
+  // Calculate totals
+  const totalBudget = displayData.reduce((sum: number, row: BudgetSummaryRow) => sum + row.budget, 0)
+  const totalActual = displayData.reduce((sum: number, row: BudgetSummaryRow) => sum + row.actual, 0)
+  const totalVariance = totalBudget - totalActual
+  const overBudgetCount = displayData.filter((row: BudgetSummaryRow) => row.status === 'over').length
+  const underBudgetCount = displayData.filter((row: BudgetSummaryRow) => row.status === 'under').length
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'over': return 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
@@ -90,8 +66,8 @@ export default function SummaryTable() {
                 <TableHead className="w-24 text-right">Diff</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {demoData.map((row, index) => (
+<TableBody>
+              {displayData.map((row: BudgetSummaryRow, index: number) => (
                 <TableRow key={index} className="hover:bg-muted/30 border-b border-border/20 h-14 group">
                   <TableCell className="font-medium">{row.category}</TableCell>
                   <TableCell className="text-right font-mono text-muted-foreground">
@@ -119,16 +95,21 @@ export default function SummaryTable() {
           </Table>
         </div>
 
-        {/* Summary Row */}
+{/* Summary Row - use calculated totals */}
         <div className="mt-6 pt-6 border-t border-border/50 bg-muted/30 rounded-2xl p-4">
           <div className="flex items-center justify-between">
             <span className="text-lg font-semibold">Total Variance</span>
-            <Badge className="text-lg px-4 py-2 font-bold bg-linear-to-r from-destructive to-orange-500 text-destructive-foreground shadow-lg">
-              -₹{formatCurrency(4500)}
+            <Badge className={cn(
+              "text-lg px-4 py-2 font-bold shadow-lg",
+              totalVariance < 0 
+                ? "bg-destructive text-destructive-foreground" 
+                : "bg-green-500 text-green-foreground"
+            )}>
+              {totalVariance < 0 ? '-' : '+'}₹{formatCurrency(Math.abs(totalVariance))}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            2 categories over budget, 3 under budget
+            {overBudgetCount} categories over budget, {underBudgetCount} under budget
           </p>
         </div>
       </CardContent>
