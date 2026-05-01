@@ -11,5 +11,5 @@ export { default as FutureProjection } from "./FutureProjection"
 export { default as NetworthSkeleton } from "./NetworthSkeleton"
 
 export type * from "./types"
-export { buildNetWorthViewModel, useNetWorthData } from "./view-model"
+export { buildNetWorthViewModel, useNetWorthData, mapBackendToViewModel } from "./view-model"
 

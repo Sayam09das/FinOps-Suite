@@ -103,6 +103,23 @@ export const useDashboardOverviewQuery = (enabled = !!getAuthToken(), dateRange 
   })
 }
 
+// NetWorth
+export const useNetWorthQuery = (enabled = !!getAuthToken()) => {
+  return useQuery({
+    queryKey: ['dashboard', 'networth'],
+    queryFn: async () => {
+      const data = await api.get(ENDPOINTS.DASHBOARD.NETWORTH)
+      // Transform backend data to view model using the mapper
+      const { mapBackendToViewModel } = await import('@/app/dashboard/Overview/Networth/view-model')
+      return mapBackendToViewModel(data)
+    },
+    enabled,
+    staleTime: 0,
+    refetchInterval: enabled ? 30000 : false, // Refetch every 30 seconds for real-time updates
+    refetchOnWindowFocus: true,
+  })
+}
+
 // Generic create/update/delete mutations
 export const useCreateBudgetMutation = () => useMutation({
   mutationFn: (data: FormData) => api.post(ENDPOINTS.BUDGET.CREATE, data),

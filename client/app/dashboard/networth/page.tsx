@@ -17,12 +17,17 @@ import {
   NetworthSkeleton,
   QuickActions,
 } from "@/app/dashboard/Overview/Networth"
-import { useNetWorthData } from "@/app/dashboard/Overview/Networth/view-model"
+import { useNetWorthQuery } from "@/app/lib/api/queries"
+import { buildNetWorthViewModel } from "@/app/dashboard/Overview/Networth/view-model"
+import type { NetWorthViewModel } from "@/app/dashboard/Overview/Networth/types"
 
 export default function NetWorthPage() {
-  const { data, isLoading } = useNetWorthData()
+  const { data, isLoading } = useNetWorthQuery()
 
-  if (isLoading || !data) {
+// Use transformed data from query or fallback to empty view model
+  const viewData: NetWorthViewModel = data || buildNetWorthViewModel()
+
+  if (isLoading || !viewData) {
     return (
       <div className="min-h-screen">
         <div className="border-b border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.24))] backdrop-blur-xl">
@@ -63,43 +68,43 @@ export default function NetWorthPage() {
         </div>
       </div>
 
-      {/* Content */}
+{/* Content */}
       <div className="space-y-6 p-4 md:p-6 xl:p-8">
         {/* Row 1: Net Worth Hero + Trend */}
         <div className="grid gap-6 xl:grid-cols-[1fr_1.4fr]">
-          <NetWorthCard data={data.netWorth} />
-          <NetWorthTrend series={data.trendSeries} />
+          <NetWorthCard data={viewData.netWorth} />
+          <NetWorthTrend series={viewData.trendSeries} />
         </div>
 
         {/* Row 2: Assets + Liabilities */}
         <div className="grid gap-6 md:grid-cols-2">
-          <AssetCard assets={data.assets} totalAssets={data.netWorth.totalAssets} />
-          <LiabilityCard liabilities={data.liabilities} totalLiabilities={data.netWorth.totalLiabilities} />
+          <AssetCard assets={viewData.assets} totalAssets={viewData.netWorth.totalAssets} />
+          <LiabilityCard liabilities={viewData.liabilities} totalLiabilities={viewData.netWorth.totalLiabilities} />
         </div>
 
         {/* Row 3: Asset Chart + Liability Breakdown + Health Score + Projection */}
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           <div className="xl:col-span-1">
-            <AssetDistributionChart data={data.assetDistribution} />
+            <AssetDistributionChart data={viewData.assetDistribution} />
           </div>
           <div className="xl:col-span-1">
-            <LiabilityList liabilities={data.liabilities} />
+            <LiabilityList liabilities={viewData.liabilities} />
           </div>
           <div className="xl:col-span-1">
-            <FinancialHealthScore score={data.healthScore} />
+            <FinancialHealthScore score={viewData.healthScore} />
           </div>
           <div className="xl:col-span-1">
             <FutureProjection
-              currentNetWorth={data.netWorth.totalNetWorth}
-              futureValue={data.projection.futureValue}
-              months={data.projection.months}
-              confidence={data.projection.confidence}
+              currentNetWorth={viewData.netWorth.totalNetWorth}
+              futureValue={viewData.projection.futureValue}
+              months={viewData.projection.months}
+              confidence={viewData.projection.confidence}
             />
           </div>
         </div>
 
         {/* Row 4: Insights */}
-        <NetWorthInsights insights={data.insights} />
+        <NetWorthInsights insights={viewData.insights} />
 
         {/* Row 5: Quick Actions */}
         <QuickActions />

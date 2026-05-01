@@ -4,18 +4,15 @@ import {
   TrendingUp,
   CreditCard,
   Banknote,
-  Receipt,
-  PiggyBank,
-  Home,
-  Car,
-  Gem,
   AlertTriangle,
   TrendingDown,
   ArrowUpRight,
   Sparkles,
-  Target,
-  Lightbulb,
+  Home,
+  Car,
 } from "lucide-react";
+import { ENDPOINTS } from "@/app/lib/api/endpoints";
+import api from "@/app/lib/api/client";
 
 import type {
   AssetDistributionSlice,
@@ -38,199 +35,176 @@ const COLORS = {
   teal: "#4f9e96",
 };
 
-// --- Demo net worth data ---
-const netWorthData: NetWorthData = {
-  totalNetWorth: 425000,
-  totalAssets: 500000,
-  totalLiabilities: 75000,
-  changeAmount: 25000,
-  changePercent: 6.2,
-  changeDirection: "up",
-  currency: "INR",
+// Icon mapping for backend category data
+const getIconForCategory = (category: string) => {
+  const iconMap: Record<string, any> = {
+    bank: Landmark,
+    cash: Wallet,
+    investments: TrendingUp,
+    credit_card: CreditCard,
+    loan: Banknote,
+    salary: Landmark,
+    freelance: TrendingUp,
+    rent: Home,
+    utilities: Wallet,
+    food: Wallet,
+    transport: Car,
+    entertainment: Sparkles,
+    shopping: Wallet,
+    health: AlertTriangle,
+    other: Wallet,
+  };
+  return iconMap[category.toLowerCase()] || Wallet;
 };
 
-// --- Assets ---
-const assets: AssetItem[] = [
-  {
-    id: "a1",
-    name: "Bank Accounts",
-    category: "bank",
-    amount: 200000,
-    percentage: 40,
-    icon: Landmark,
-    color: COLORS.emerald,
-    change: 3.5,
-  },
-  {
-    id: "a2",
-    name: "Investments",
-    category: "investments",
-    amount: 225000,
-    percentage: 45,
-    icon: TrendingUp,
-    color: COLORS.blue,
-    change: 8.2,
-  },
-  {
-    id: "a3",
-    name: "Cash",
-    category: "cash",
-    amount: 75000,
-    percentage: 15,
-    icon: Wallet,
-    color: COLORS.amber,
-    change: 1.2,
-  },
-];
+// Map backend response to frontend types
+export function mapBackendToViewModel(data: any): NetWorthViewModel {
+  const backendNetWorth = data;
 
-// --- Liabilities ---
-const liabilities: LiabilityItem[] = [
-  {
-    id: "l1",
-    name: "Credit Card",
-    category: "credit_card",
-    amount: 30000,
-    percentage: 40,
-    icon: CreditCard,
+  // Map assets
+  const assets: AssetItem[] = (backendNetWorth.assets || []).map((asset: any, index: number) => ({
+    id: asset.id || `asset-${index}`,
+    name: asset.name,
+    category: asset.category,
+    amount: asset.amount || 0,
+    percentage: asset.percentage || 0,
+    icon: getIconForCategory(asset.category),
+    color: COLORS[Object.keys(COLORS)[index % Object.keys(COLORS).length] as keyof typeof COLORS] || COLORS.emerald,
+    change: asset.change,
+  }));
+
+  // Map liabilities
+  const liabilities: LiabilityItem[] = (backendNetWorth.liabilities || []).map((liability: any, index: number) => ({
+    id: liability.id || `liability-${index}`,
+    name: liability.name,
+    category: liability.category,
+    amount: liability.amount || 0,
+    percentage: liability.percentage || 0,
+    icon: getIconForCategory(liability.category),
     color: COLORS.rose,
-    interestRate: 18.5,
-    dueDate: "2025-07-15",
-    dueInDays: 12,
-    change: -2.4,
-  },
-  {
-    id: "l2",
-    name: "Personal Loan",
-    category: "loan",
-    amount: 45000,
-    percentage: 60,
-    icon: Banknote,
-    color: COLORS.violet,
-    interestRate: 11.2,
-    dueDate: "2025-07-05",
-    dueInDays: 2,
-    change: -5.1,
-  },
-];
+    interestRate: liability.interestRate,
+    dueDate: liability.dueDate,
+    dueInDays: liability.dueInDays,
+    change: liability.change,
+  }));
 
-// --- Asset Distribution (donut data) ---
-const assetDistribution: AssetDistributionSlice[] = [
-  { name: "Investments", value: 225000, percentage: 45, color: COLORS.blue },
-  { name: "Bank Accounts", value: 200000, percentage: 40, color: COLORS.emerald },
-  { name: "Cash", value: 75000, percentage: 15, color: COLORS.amber },
-];
+  // Map asset distribution
+  const assetDistribution: AssetDistributionSlice[] = (backendNetWorth.assetDistribution || []).map(
+    (item: any, index: number) => ({
+      name: item.name,
+      value: item.value || 0,
+      percentage: item.percentage || 0,
+      color: Object.values(COLORS)[index % Object.values(COLORS).length] as string,
+    })
+  );
 
-// --- Trend Series Generation ---
-function generateTrendSeries(): Record<NetWorthTimeRange, TrendPoint[]> {
-  const baseValue = 425000;
-  const baseAssets = 500000;
-  const baseLiabilities = 75000;
-
-  const ranges: Record<NetWorthTimeRange, number> = {
-    "1M": 4,
-    "3M": 12,
-    "6M": 24,
-    "1Y": 12,
+  // Map trend series - ensure proper structure
+  const trendSeries: Record<NetWorthTimeRange, TrendPoint[]> = {
+    "1M": (backendNetWorth.trendSeries || []).slice(0, 5).map((point: any) => ({
+      label: point.label || "W1",
+      value: point.value || 0,
+      assets: point.assets || 0,
+      liabilities: point.liabilities || 0,
+    })),
+    "3M": (backendNetWorth.trendSeries || []).slice(0, 13).map((point: any) => ({
+      label: point.label || "W1",
+      value: point.value || 0,
+      assets: point.assets || 0,
+      liabilities: point.liabilities || 0,
+    })),
+    "6M": (backendNetWorth.trendSeries || []).slice(0, 25).map((point: any) => ({
+      label: point.label || "W1",
+      value: point.value || 0,
+      assets: point.assets || 0,
+      liabilities: point.liabilities || 0,
+    })),
+    "1Y": (backendNetWorth.trendSeries || []).map((point: any) => ({
+      label: point.label || "Jan",
+      value: point.value || 0,
+      assets: point.assets || 0,
+      liabilities: point.liabilities || 0,
+    })),
   };
 
-  const generatePoints = (count: number, range: NetWorthTimeRange): TrendPoint[] => {
-    const points: TrendPoint[] = [];
-    for (let i = 0; i <= count; i++) {
-      const progress = i / count;
-      // Add some noise and upward drift
-      const drift = progress * 35000 + Math.sin(progress * Math.PI * 3) * 8000;
-      const assetsVal = baseAssets - (count - i) * 2000 + drift * 1.1;
-      const liabilitiesVal = baseLiabilities - (count - i) * 500 + Math.sin(progress * Math.PI * 2) * 3000;
+  // Map insights with icons
+  const insights: NetWorthInsight[] = (backendNetWorth.insights || []).map((insight: any) => {
+    const iconMap: Record<string, any> = {
+      ArrowUpRight,
+      TrendingDown,
+      Sparkles,
+      AlertTriangle,
+    };
+    return {
+      id: insight.id,
+      title: insight.title,
+      detail: insight.detail,
+      tone: insight.tone || "neutral",
+      icon: iconMap[insight.icon] || Sparkles,
+      metric: insight.metric,
+    };
+  });
 
-      let label: string;
-      if (range === "1M") {
-        label = `Week ${i + 1}`;
-      } else if (range === "3M" || range === "6M") {
-        label = `W${i + 1}`;
-      } else {
-        const months = [
-          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-        ];
-        label = months[i];
-      }
-
-      points.push({
-        label,
-        value: Math.round(assetsVal - liabilitiesVal),
-        assets: Math.round(assetsVal),
-        liabilities: Math.round(Math.max(liabilitiesVal, 10000)),
-      });
-    }
-    return points;
+  // Build NetWorthData
+  const netWorth: NetWorthData = {
+    totalNetWorth: backendNetWorth.totalNetWorth || 0,
+    totalAssets: backendNetWorth.totalAssets || 0,
+    totalLiabilities: backendNetWorth.totalLiabilities || 0,
+    changeAmount: backendNetWorth.changeAmount || 0,
+    changePercent: backendNetWorth.changePercent || 0,
+    changeDirection: backendNetWorth.changeDirection || "up",
+    currency: backendNetWorth.currency || "INR",
   };
 
   return {
-    "1M": generatePoints(4, "1M"),
-    "3M": generatePoints(12, "3M"),
-    "6M": generatePoints(24, "6M"),
-    "1Y": generatePoints(11, "1Y"),
+    netWorth,
+    assets,
+    liabilities,
+    assetDistribution,
+    trendSeries,
+    insights,
+    healthScore: backendNetWorth.healthScore || 0,
+    projection: {
+      futureValue: backendNetWorth.projection?.futureValue || 0,
+      months: backendNetWorth.projection?.months || 6,
+      confidence: backendNetWorth.projection?.confidence || 75,
+    },
   };
 }
 
-// --- Insights ---
-const insights: NetWorthInsight[] = [
-  {
-    id: "i1",
-    title: "Salary drove growth",
-    detail: "Net worth increased mainly due to salary income this month. Your income streams are stable.",
-    tone: "positive",
-    icon: ArrowUpRight,
-    metric: "+65%",
-  },
-  {
-    id: "i2",
-    title: "Debt reduced by 12%",
-    detail: "You paid off ₹5,400 in liabilities this month. Keep the momentum going.",
-    tone: "positive",
-    icon: TrendingDown,
-    metric: "-12%",
-  },
-  {
-    id: "i3",
-    title: "Investments leading growth",
-    detail: "Investments contributed 65% of your net worth growth. Diversification is paying off.",
-    tone: "neutral",
-    icon: Sparkles,
-    metric: "65%",
-  },
-  {
-    id: "i4",
-    title: "Credit card due soon",
-    detail: "Your credit card bill is due in 12 days. Consider paying early to avoid interest.",
-    tone: "warning",
-    icon: AlertTriangle,
-    metric: "12 days",
-  },
-];
-
-// --- Financial Health Score ---
-function calculateHealthScore(): number {
-  const assetLiabilityRatio = netWorthData.totalAssets / netWorthData.totalLiabilities;
-  const changeScore = Math.min(netWorthData.changePercent * 3, 30);
-  const ratioScore = Math.min(assetLiabilityRatio * 10, 40);
-  return Math.round(Math.min(60 + changeScore + ratioScore, 98));
-}
-
-// --- Future Projection ---
-function calculateProjection(): NetWorthViewModel["projection"] {
-  const monthlyGrowth = netWorthData.changeAmount;
-  const months = 6;
-  const futureValue = netWorthData.totalNetWorth + monthlyGrowth * months;
-  return {
-    futureValue: Math.round(futureValue),
-    months,
-    confidence: 78,
-  };
-}
-
-// --- Build View Model ---
+// --- Build View Model from demo data (fallback) ---
 export function buildNetWorthViewModel(): NetWorthViewModel {
+  // Demo net worth data - empty when no data
+  const netWorthData: NetWorthData = {
+    totalNetWorth: 0,
+    totalAssets: 0,
+    totalLiabilities: 0,
+    changeAmount: 0,
+    changePercent: 0,
+    changeDirection: "up",
+    currency: "INR",
+  };
+
+  const assets: AssetItem[] = [];
+  const liabilities: LiabilityItem[] = [];
+  const assetDistribution: AssetDistributionSlice[] = [];
+
+  const generateTrendSeries = (): Record<NetWorthTimeRange, TrendPoint[]> => ({
+    "1M": [],
+    "3M": [],
+    "6M": [],
+    "1Y": [],
+  });
+
+  const insights: NetWorthInsight[] = [
+    {
+      id: "i1",
+      title: "No data yet",
+      detail: "Add transactions to see your net worth insights.",
+      tone: "neutral",
+      icon: Sparkles,
+    },
+  ];
+
   return {
     netWorth: netWorthData,
     assets,
@@ -238,18 +212,33 @@ export function buildNetWorthViewModel(): NetWorthViewModel {
     assetDistribution,
     trendSeries: generateTrendSeries(),
     insights,
-    healthScore: calculateHealthScore(),
-    projection: calculateProjection(),
+    healthScore: 0,
+    projection: {
+      futureValue: 0,
+      months: 6,
+      confidence: 0,
+    },
   };
+}
+
+// --- Fetch Net Worth data from API ---
+export async function fetchNetWorthData(): Promise<NetWorthViewModel> {
+  try {
+    const data = await api.get(ENDPOINTS.DASHBOARD.NETWORTH);
+    return mapBackendToViewModel(data);
+  } catch (error) {
+    console.error("Failed to fetch net worth data:", error);
+    return buildNetWorthViewModel();
+  }
 }
 
 // --- Loading state helper ---
 export function useNetWorthData() {
-  // In a real app, this would use React Query
-  // For now, return demo data immediately
+  // This function now returns data from the API
+  // For React Query integration, use useNetWorthQuery from @/app/lib/api/queries
   return {
-    data: buildNetWorthViewModel(),
+    data: fetchNetWorthData(),
     isLoading: false,
+    refetch: fetchNetWorthData,
   };
 }
-

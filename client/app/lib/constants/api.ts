@@ -19,9 +19,10 @@ export const ENDPOINTS = {
     LIST: "/transactions" as const,
     CREATE: "/transactions" as const,
   },
-  DASHBOARD: {
+DASHBOARD: {
     OVERVIEW: "/dashboard/overview" as const,
     ANALYTICS: "/dashboard/analytics" as const,
+    NETWORTH: "/dashboard/networth" as const,
   },
 } as const
 

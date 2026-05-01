@@ -19,6 +19,72 @@ export interface DashboardData {
   budgetSummary: BudgetSummaryItem[];
 }
 
+export interface NetWorthData {
+  totalNetWorth: number;
+  totalAssets: number;
+  totalLiabilities: number;
+  changeAmount: number;
+  changePercent: number;
+  changeDirection: "up" | "down";
+  currency: string;
+  assets: NetWorthAsset[];
+  liabilities: NetWorthLiability[];
+  assetDistribution: AssetDistributionSlice[];
+  trendSeries: TrendPoint[];
+  insights: NetWorthInsight[];
+  healthScore: number;
+  projection: {
+    futureValue: number;
+    months: number;
+    confidence: number;
+  };
+}
+
+export interface NetWorthAsset {
+  id: string;
+  name: string;
+  category: string;
+  amount: number;
+  percentage: number;
+  color: string;
+  change?: number;
+}
+
+export interface NetWorthLiability {
+  id: string;
+  name: string;
+  category: string;
+  amount: number;
+  percentage: number;
+  color: string;
+  interestRate?: number;
+  dueDate?: string;
+  dueInDays?: number;
+  change?: number;
+}
+
+export interface AssetDistributionSlice {
+  name: string;
+  value: number;
+  percentage: number;
+  color: string;
+}
+
+export interface TrendPoint {
+  label: string;
+  value: number;
+  assets: number;
+  liabilities: number;
+}
+
+export interface NetWorthInsight {
+  id: string;
+  title: string;
+  detail: string;
+  tone: "positive" | "warning" | "danger" | "neutral";
+  metric?: string;
+}
+
 export interface WeeklyDataPoint {
   week: string;
   income: number;

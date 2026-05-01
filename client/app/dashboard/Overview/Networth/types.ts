@@ -6,8 +6,8 @@ export type NetWorthTone = "positive" | "warning" | "danger" | "neutral";
 export interface TrendPoint {
   label: string;
   value: number;
-  assets: number;
-  liabilities: number;
+  assets?: number;
+  liabilities?: number;
 }
 
 export interface AssetItem {
@@ -52,13 +52,27 @@ export interface NetWorthInsight {
 }
 
 export interface NetWorthData {
+  // Core net worth data
   totalNetWorth: number;
   totalAssets: number;
   totalLiabilities: number;
   changeAmount: number;
   changePercent: number;
   changeDirection: "up" | "down";
-  currency: string;
+  currency?: string;
+  
+  // Extended data from API
+  assets?: AssetItem[];
+  liabilities?: LiabilityItem[];
+  assetDistribution?: AssetDistributionSlice[];
+  trendSeries?: TrendPoint[];
+  insights?: NetWorthInsight[];
+  healthScore?: number;
+  projection?: {
+    futureValue: number;
+    months: number;
+    confidence: number;
+  };
 }
 
 export interface NetWorthViewModel {

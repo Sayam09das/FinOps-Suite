@@ -30,10 +30,11 @@ export const ENDPOINTS = {
     DELETE: (id: string) => `/api/transactions/${id}`,
     CATEGORIES: "/api/transactions/categories",
   },
-  DASHBOARD: {
+DASHBOARD: {
     OVERVIEW: "/api/dashboard/overview",
     ANALYTICS: "/api/dashboard/analytics",
     REPORTS: "/api/dashboard/reports",
+    NETWORTH: "/api/dashboard/networth",
   },
   UPLOAD: {
     SINGLE: "/api/uploads/single",
