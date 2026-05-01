@@ -121,15 +121,15 @@ export default function HeaderControls({ dateRange, onDateRangeChange, compare, 
           />
         </div>
 
-        {/* Export */}
-        <Select onValueChange={(value) => handleExport('csv' as const)}>
+{/* Export */}
+        <Select value="export" onValueChange={(value) => value === 'csv' && handleExport('csv')}>
           <SelectTrigger className="w-32">
             <Download className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Export" />
           </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="csv">CSV</SelectItem>
-        </SelectContent>
+          <SelectContent>
+            <SelectItem value="csv">CSV</SelectItem>
+          </SelectContent>
         </Select>
 
         {/* Refresh - Real data refetch */}
