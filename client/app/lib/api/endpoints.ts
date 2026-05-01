@@ -36,6 +36,15 @@ DASHBOARD: {
     REPORTS: "/api/dashboard/reports",
     NETWORTH: "/api/dashboard/networth",
   },
+  ACCOUNTS: {
+    LIST: "/api/accounts",
+    DETAIL: (id: string) => `/api/accounts/${id}`,
+    CREATE: "/api/accounts",
+    UPDATE: (id: string) => `/api/accounts/${id}`,
+    DELETE: (id: string) => `/api/accounts/${id}`,
+    BALANCE: "/api/accounts/balance",
+    ACTIVITY: "/api/accounts/activity",
+  },
   UPLOAD: {
     SINGLE: "/api/uploads/single",
     MULTIPLE: "/api/uploads/multiple",

@@ -15,6 +15,7 @@ import notificationsIndex from "../modules/notifications";
 import { startNotificationWorker } from "../infrastructure/queue/notification.queue";
 import uploadsIndex from "../modules/uploads/index";
 import healthIndex from "../modules/health";
+import accountsIndex from "../modules/accounts";
 
 // Create app
 const app = express();
@@ -33,6 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/api/auth", authIndex);
 app.use("/api/user", userIndex);
+app.use("/api/accounts", accountsIndex);
 app.use("/api/transactions", transactionIndex);
 app.use("/api/dashboard", dashboardIndex);
 app.use("/api", budgetIndex);

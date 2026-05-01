@@ -14,11 +14,12 @@ model User {
   password      String?
   role          Role           @default(USER)
   isOAuth       Boolean        @default(false)
-  provider      String?
-  createdAt     DateTime       @default(now())
+  provider     String?
+  createdAt    DateTime       @default(now())
   budgets       Budget[]
   notifications Notification[]
   transactions  Transaction[]
+  accounts     Account[]
 }
 
 model Transaction {
@@ -61,6 +62,26 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id])
   
   @@map("notifications")
+}
+
+model Account {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String    @db.ObjectId
+  name          String
+  type          String    // "bank" | "cash" | "investment" | "credit_card" | "wallet" | "other"
+  balance      Float     @default(0)
+  currency     String    @default("INR")
+  institution  String?
+  accountNumber String?
+  isActive     Boolean   @default(true)
+  asOfDate     DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now())
+  
+  user         User      @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([userId, type])
 }
 
 enum Role {
