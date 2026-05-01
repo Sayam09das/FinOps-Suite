@@ -5,11 +5,10 @@ import { ArrowLeft, Landmark, Plus, RefreshCw } from "lucide-react"
 import Link from "next/link"
 
 interface HeaderProps {
-  onAddAccount?: () => void
   onRefresh?: () => void
 }
 
-export default function Header({ onAddAccount, onRefresh }: HeaderProps) {
+export default function Header({ onRefresh }: HeaderProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -12 }}
@@ -37,7 +36,7 @@ export default function Header({ onAddAccount, onRefresh }: HeaderProps) {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+<div className="flex flex-wrap items-center gap-2">
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
@@ -46,15 +45,6 @@ export default function Header({ onAddAccount, onRefresh }: HeaderProps) {
         >
           <RefreshCw className="h-4 w-4" />
           <span className="hidden sm:inline">Refresh</span>
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={onAddAccount}
-          className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition hover:bg-emerald-700"
-        >
-          <Plus className="h-4 w-4" />
-          Add Account
         </motion.button>
       </div>
     </motion.div>

@@ -86,10 +86,9 @@ export default function BankAccountsPage() {
     refetch()
   }
 
-  return (
+return (
     <div className="space-y-6 p-4 md:p-6 xl:p-8">
       <Header
-        onAddAccount={() => alert("Add Account - Coming soon!")}
         onRefresh={handleRefresh}
       />
 
