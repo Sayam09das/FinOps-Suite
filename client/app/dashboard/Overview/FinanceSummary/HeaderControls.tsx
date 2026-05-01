@@ -38,12 +38,23 @@ function SafeSelect({
     setIsMounted(true)
   }, [])
 
+  // During SSR and initial render, return a safe placeholder (no Radix components)
   if (!isMounted) {
     return (
-      <SelectTrigger className={className}>
-        {Icon && <Icon className="h-4 w-4 mr-2" />}
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
+      <button type="button" className={className} disabled style={{ 
+        height: '2.5rem', 
+        padding: '0 0.75rem', 
+        borderRadius: '0.375rem',
+        border: '1px solid hsl(var(--border))',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        backgroundColor: 'hsl(var(--background))',
+        color: 'hsl(var(--foreground))'
+      }}>
+        {Icon && <Icon className="h-4 w-4" />}
+        <span style={{ opacity: 0.5 }}>{placeholder || 'Select...'}</span>
+      </button>
     )
   }
 
