@@ -1,15 +1,22 @@
 "use client"
 
+import { useState } from "react"
+
 import Header from "../WalletsPage/Header"
 import Summary from "../WalletsPage/Summary"
 import List from "../WalletsPage/List"
 import QuickUpdate from "../WalletsPage/QuickUpdate"
+import AddWalletModal from "../WalletsPage/AddWalletModal"
+import EditWalletModal from "../WalletsPage/EditWalletModal"
 
 import { useWalletAccounts, useUpdateBalance, useDeleteAccount } from "@/app/features/accounts"
 import { useToast } from "@/app/components/ui/use-toast"
 import type { Wallet } from "../types"
 
 export default function WalletsPage() {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [editingWalletId, setEditingWalletId] = useState<string | null>(null)
+
   const { data: walletsData, isLoading, refetch } = useWalletAccounts()
   const updateBalance = useUpdateBalance()
   const deleteAccount = useDeleteAccount()
@@ -60,6 +67,14 @@ export default function WalletsPage() {
     toast({ title: "Data refreshed", description: "Wallets data updated from server." })
   }
 
+  const handleEditWallet = (wallet: Wallet) => {
+    setEditingWalletId(wallet.id)
+  }
+
+  const handleCloseEditModal = () => {
+    setEditingWalletId(null)
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-6 p-4 md:p-6 xl:p-8">
@@ -81,22 +96,28 @@ export default function WalletsPage() {
 
   return (
     <div className="space-y-6 p-4 md:p-6 xl:p-8">
-      <Header onAddWallet={() => alert("Add wallet coming soon")} onRefresh={handleRefresh} />
+      <Header onAddWallet={() => setIsAddModalOpen(true)} onRefresh={handleRefresh} />
 
       <Summary total={totalBalance} count={wallets.length} currency="INR" />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <List
-            wallets={wallets}
-            onEdit={(w) => alert(`Edit ${w.name} - coming soon`)}
-            onDelete={handleDelete}
-          />
+          <List wallets={wallets} onEdit={handleEditWallet} onDelete={handleDelete} />
         </div>
         <div>
           <QuickUpdate wallets={wallets} onUpdate={handleQuickUpdate} />
         </div>
       </div>
+
+      {/* Add Wallet Modal */}
+      <AddWalletModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+
+      {/* Edit Wallet Modal */}
+      <EditWalletModal
+        isOpen={!!editingWalletId}
+        walletId={editingWalletId}
+        onClose={handleCloseEditModal}
+      />
     </div>
   )
 }

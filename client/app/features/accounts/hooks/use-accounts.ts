@@ -64,6 +64,16 @@ export function useAccount(id: string) {
   })
 }
 
+// Special hook for getting single wallet by ID
+export function useWallet(id: string) {
+  return useQuery({
+    queryKey: [...accountKeys.all, "wallet", id],
+    queryFn: () => accountsApi.get(id),
+    enabled: !!id,
+    staleTime: QUERY.STALE_TIME,
+  })
+}
+
 export function useCreateAccount() {
   const queryClient = useQueryClient()
 
