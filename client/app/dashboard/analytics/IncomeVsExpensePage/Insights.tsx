@@ -11,7 +11,7 @@ import {
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { cn } from "@/app/lib/utils/cn"
-import type { InsightItem } from "./demo-data"
+import type { InsightItem } from "./types"
 
 const iconMap: Record<string, React.ElementType> = {
   TrendingUp,

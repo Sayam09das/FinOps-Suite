@@ -6,7 +6,7 @@ import { useState } from "react"
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { cn } from "@/app/lib/utils/cn"
-import { dateRangeOptions } from "./demo-data"
+import { dateRangeOptions } from "./types"
 
 interface FiltersProps {
   dateRange: string
