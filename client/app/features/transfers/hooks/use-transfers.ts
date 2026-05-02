@@ -11,6 +11,8 @@ export interface Transfer {
   toAccountId: string
   fromAccountName?: string
   toAccountName?: string
+  fromAccountType?: string
+  toAccountType?: string
   amount: number
   currency: string
   fee: number

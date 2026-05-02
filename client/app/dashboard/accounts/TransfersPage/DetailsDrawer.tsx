@@ -15,8 +15,9 @@ import {
   Wallet,
   X,
   XCircle,
+  Loader2,
 } from "lucide-react"
-import { demoTransfers } from "../../accounts/demo-data"
+import { useTransfer } from "@/app/features/transfers"
 import { formatCurrency } from "@/app/lib/utils/number"
 
 interface DetailsDrawerProps {
@@ -33,9 +34,54 @@ const statusConfig = {
 }
 
 export default function DetailsDrawer({ transferId, onClose, onEdit, onDelete }: DetailsDrawerProps) {
-  const transfer = demoTransfers.find((t) => t.id === transferId)
+  const { data: transfer, isLoading } = useTransfer(transferId || "")
 
-  if (!transfer) return null
+  // Show loading state
+  if (isLoading || !transfer) {
+    return (
+      <AnimatePresence>
+        {transferId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm"
+            onClick={onClose}
+          >
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              onClick={(e) => e.stopPropagation()}
+              className="flex h-full w-full max-w-md flex-col border-l border-border/60 bg-background shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-border/60 px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                    <ArrowRightLeft className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">Transfer Details</h2>
+                    <p className="text-xs text-foreground/50">Loading...</p>
+                  </div>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-foreground/60 transition hover:bg-background/70 hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="flex flex-1 items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    )
+  }
 
   const status = statusConfig[transfer.status]
   const StatusIcon = status.icon
