@@ -16,6 +16,7 @@ import { startNotificationWorker } from "../infrastructure/queue/notification.qu
 import uploadsIndex from "../modules/uploads/index";
 import healthIndex from "../modules/health";
 import accountsIndex from "../modules/accounts";
+import transfersIndex from "../modules/transfers";
 
 // Create app
 const app = express();
@@ -35,6 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authIndex);
 app.use("/api/user", userIndex);
 app.use("/api/accounts", accountsIndex);
+app.use("/api/transfers", transfersIndex);
 app.use("/api/transactions", transactionIndex);
 app.use("/api/dashboard", dashboardIndex);
 app.use("/api", budgetIndex);

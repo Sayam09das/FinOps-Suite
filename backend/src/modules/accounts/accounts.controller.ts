@@ -109,11 +109,14 @@ export const getAccountBalanceByType = asyncHandler(async (req: Request, res: Re
   const userId = (req as any).user.id;
   const { type } = req.query;
   
-  if (!type || typeof type !== "string") {
+  // Handle string | string[] case - take first element if array
+  const typeStr = Array.isArray(type) ? type[0] : type;
+  
+  if (!typeStr || typeof typeStr !== "string") {
     throw new AppError("BAD_REQUEST", 400, "Account type is required");
   }
   
-  const accounts = await accountsRepository.findByType(userId, type);
+  const accounts = await accountsRepository.findByType(userId, typeStr);
   const balance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
-  ApiResponse.success({ type, balance }, res);
+  ApiResponse.success({ type: typeStr, balance }, res);
 });

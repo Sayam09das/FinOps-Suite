@@ -11,7 +11,7 @@ model User {
   id            String         @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
   email         String         @unique
-  password      String?
+  password     String?
   role          Role           @default(USER)
   isOAuth       Boolean        @default(false)
   provider     String?
@@ -20,6 +20,7 @@ model User {
   notifications Notification[]
   transactions  Transaction[]
   accounts     Account[]
+  transfers    Transfer[]
 }
 
 model Transaction {
@@ -79,9 +80,34 @@ model Account {
   updatedAt    DateTime  @default(now())
   
   user         User      @relation(fields: [userId], references: [id])
+  transfersFrom Transfer[] @relation("TransferFromAccount")
+  transfersTo   Transfer[] @relation("TransferToAccount")
   
   @@index([userId])
   @@index([userId, type])
+}
+
+model Transfer {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String    @db.ObjectId
+  fromAccountId    String    @db.ObjectId
+  toAccountId     String    @db.ObjectId
+  amount         Float
+  currency       String    @default("INR")
+  fee            Float     @default(0)
+  status         String    @default("pending") // "pending" | "completed" | "failed"
+  notes          String?
+  date           DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+  
+  fromAccount    Account  @relation("TransferFromAccount", fields: [fromAccountId], references: [id])
+  toAccount      Account  @relation("TransferToAccount", fields: [toAccountId], references: [id])
+  user           User     @relation(fields: [userId], references: [id])
+  
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([fromAccountId])
+  @@index([toAccountId])
 }
 
 enum Role {

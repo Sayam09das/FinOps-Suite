@@ -3,35 +3,26 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { AlertTriangle, ArrowRight, Landmark, TrendingDown, TrendingUp, Wallet } from "lucide-react"
 import { useMemo } from "react"
-import { demoBankAccounts, demoWallets } from "../../accounts/demo-data"
 import { formatCurrency } from "@/app/lib/utils/number"
+
+export interface TransferAccount {
+  id: string
+  name: string
+  type: "bank" | "wallet"
+  balance: number
+  currency: string
+}
 
 interface BalancePreviewProps {
   fromId?: string
   toId?: string
   amount?: string
+  accounts?: TransferAccount[]
 }
 
-const allAccounts = [
-  ...demoBankAccounts.map((a) => ({
-    id: a.id,
-    name: a.bankName,
-    type: "bank" as const,
-    balance: a.balance,
-    currency: a.currency,
-  })),
-  ...demoWallets.map((w) => ({
-    id: w.id,
-    name: w.name,
-    type: "wallet" as const,
-    balance: w.balance,
-    currency: w.currency,
-  })),
-]
-
-export default function BalancePreview({ fromId, toId, amount }: BalancePreviewProps) {
-  const fromAccount = allAccounts.find((a) => a.id === fromId)
-  const toAccount = allAccounts.find((a) => a.id === toId)
+export default function BalancePreview({ fromId, toId, amount, accounts = [] }: BalancePreviewProps) {
+  const fromAccount = accounts.find((a) => a.id === fromId)
+  const toAccount = accounts.find((a) => a.id === toId)
   const numericAmount = parseFloat(amount || "0")
   const fee = 0
 

@@ -3,59 +3,60 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, Banknote, Calendar, Landmark, MessageSquare, Wallet } from "lucide-react"
-import { demoBankAccounts, demoWallets } from "../../accounts/demo-data"
-import type { AccountTransfer } from "../../accounts/types"
 
-interface FormProps {
-  onSubmit?: (transfer: Partial<AccountTransfer>) => void
+interface AccountOption {
+  id: string
+  name: string
+  type: "bank" | "wallet"
+  balance: number
+  currency: string
 }
 
-const allAccounts = [
-  ...demoBankAccounts.map((a) => ({
-    id: a.id,
-    name: `${a.bankName} — ${a.accountType}`,
-    type: "bank" as const,
-    balance: a.balance,
-    currency: a.currency,
-  })),
-  ...demoWallets.map((w) => ({
-    id: w.id,
-    name: w.name,
-    type: "wallet" as const,
-    balance: w.balance,
-    currency: w.currency,
-  })),
-]
+interface FormProps {
+  accounts?: AccountOption[]
+  onSubmit?: (transfer: {
+    fromAccountId: string
+    toAccountId: string
+    amount: number
+    currency?: string
+    notes?: string
+  }) => void
+  isLoading?: boolean
+}
 
-export default function Form({ onSubmit }: FormProps) {
+export default function Form({ accounts = [], onSubmit, isLoading }: FormProps) {
   const [fromId, setFromId] = useState("")
   const [toId, setToId] = useState("")
   const [amount, setAmount] = useState("")
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0])
   const [notes, setNotes] = useState("")
 
-  const fromAccount = allAccounts.find((a) => a.id === fromId)
-  const toAccount = allAccounts.find((a) => a.id === toId)
+  const fromAccount = accounts.find((a) => a.id === fromId)
+  const toAccount = accounts.find((a) => a.id === toId)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!fromAccount || !toAccount || !amount) return
+    
     onSubmit?.({
       fromAccountId: fromId,
-      fromAccountName: fromAccount.name,
-      fromAccountType: fromAccount.type,
       toAccountId: toId,
-      toAccountName: toAccount.name,
-      toAccountType: toAccount.type,
       amount: parseFloat(amount),
-      currency: fromAccount.currency,
-      date,
+      currency: fromAccount.currency || "INR",
       notes: notes || undefined,
-      status: "completed",
     })
+    
+    // Reset form after successful submit
+    setFromId("")
+    setToId("")
+    setAmount("")
+    setNotes("")
   }
 
   const isValid = fromId && toId && fromId !== toId && amount && parseFloat(amount) > 0
+
+  // Group accounts by type for better UX
+  const bankAccounts = accounts.filter((a) => a.type === "bank")
+  const walletAccounts = accounts.filter((a) => a.type === "wallet")
 
   return (
     <motion.div
@@ -66,26 +67,42 @@ export default function Form({ onSubmit }: FormProps) {
     >
       <div className="mb-5 flex items-center gap-2">
         <Banknote className="h-5 w-5 text-foreground/70" />
-        <h2 className="text-lg font-semibold text-foreground">Transfer Form</h2>
+        <h2 className="text-lg font-semibold text-foreground">Transfer Funds</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* From Account */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground/70">From Account</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground/70">
+            From Account <span className="text-rose-500">*</span>
+          </label>
           <div className="relative">
             <Landmark className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
             <select
               value={fromId}
               onChange={(e) => setFromId(e.target.value)}
-              className="w-full appearance-none rounded-2xl border border-border/60 bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              disabled={isLoading}
+              className="w-full appearance-none rounded-2xl border border-border/60 bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
             >
               <option value="">Select source account</option>
-              {allAccounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name} — ₹{a.balance.toLocaleString("en-IN")}
-                </option>
-              ))}
+              {bankAccounts.length > 0 && (
+                <optgroup label="Bank Accounts" className="text-foreground">
+                  {bankAccounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} (₹{a.balance.toLocaleString("en-IN")})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {walletAccounts.length > 0 && (
+                <optgroup label="Wallets" className="text-foreground">
+                  {walletAccounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} (₹{a.balance.toLocaleString("en-IN")})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
         </div>
@@ -103,51 +120,61 @@ export default function Form({ onSubmit }: FormProps) {
 
         {/* To Account */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground/70">To Account</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground/70">
+            To Account <span className="text-rose-500">*</span>
+          </label>
           <div className="relative">
             <Wallet className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
             <select
               value={toId}
               onChange={(e) => setToId(e.target.value)}
-              className="w-full appearance-none rounded-2xl border border-border/60 bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              disabled={isLoading}
+              className="w-full appearance-none rounded-2xl border border-border/60 bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
             >
               <option value="">Select destination account</option>
-              {allAccounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name} — ₹{a.balance.toLocaleString("en-IN")}
-                </option>
-              ))}
+              {bankAccounts.length > 0 && (
+                <optgroup label="Bank Accounts" className="text-foreground">
+                  {bankAccounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} (₹{a.balance.toLocaleString("en-IN")})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {walletAccounts.length > 0 && (
+                <optgroup label="Wallets" className="text-foreground">
+                  {walletAccounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} (₹{a.balance.toLocaleString("en-IN")})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
         </div>
 
-        {/* Amount & Date Row */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground/70">Amount</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground/40">₹</span>
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                className="w-full rounded-2xl border border-border/60 bg-background py-2.5 pl-8 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
+        {/* Amount */}
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-foreground/70">
+            Amount <span className="text-rose-500">*</span>
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground/40">₹</span>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              disabled={isLoading}
+              className="w-full rounded-2xl border border-border/60 bg-background py-2.5 pl-8 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+            />
           </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground/70">Date</label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-2xl border border-border/60 bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
-          </div>
+          {fromAccount && amount && parseFloat(amount) > fromAccount.balance && (
+            <p className="mt-1 text-xs text-rose-500">
+              ⚠️ Insufficient balance
+            </p>
+          )}
         </div>
 
         {/* Notes */}
@@ -160,7 +187,8 @@ export default function Form({ onSubmit }: FormProps) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="What's this transfer for?"
-              className="w-full rounded-2xl border border-border/60 bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              disabled={isLoading}
+              className="w-full rounded-2xl border border-border/60 bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
             />
           </div>
         </div>
@@ -168,15 +196,25 @@ export default function Form({ onSubmit }: FormProps) {
         {/* Submit */}
         <motion.button
           type="submit"
-          disabled={!isValid}
-          whileHover={isValid ? { scale: 1.02 } : {}}
-          whileTap={isValid ? { scale: 0.98 } : {}}
+          disabled={!isValid || isLoading}
+          whileHover={isValid && !isLoading ? { scale: 1.02 } : {}}
+          whileTap={isValid && !isLoading ? { scale: 0.98 } : {}}
           className="w-full rounded-2xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
-          Transfer Money
+          {isLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full"
+              />
+              Processing...
+            </span>
+          ) : (
+            "Transfer Money"
+          )}
         </motion.button>
       </form>
     </motion.div>
   )
 }
-

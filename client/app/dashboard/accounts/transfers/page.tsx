@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
 import Header from "../TransfersPage/Header"
@@ -8,6 +8,10 @@ import Form from "../TransfersPage/Form"
 import BalancePreview from "../TransfersPage/BalancePreview"
 import RecentTransfers from "../TransfersPage/RecentTransfers"
 import DetailsDrawer from "../TransfersPage/DetailsDrawer"
+import { useBankAccounts, useWalletAccounts } from "@/app/features/accounts"
+import { useCreateTransfer, useRecentTransfers } from "@/app/features/transfers"
+import { useToast } from "@/app/components/ui/use-toast"
+import type { TransferAccount } from "../TransfersPage/BalancePreview"
 
 export default function TransfersPage() {
   const [selectedTransferId, setSelectedTransferId] = useState<string | null>(null)
@@ -16,9 +20,77 @@ export default function TransfersPage() {
     toId: "",
     amount: "",
   })
+  const { toast } = useToast()
+
+  // Fetch accounts from backend
+  const { data: bankAccounts, isLoading: banksLoading } = useBankAccounts()
+  const { data: walletAccounts, isLoading: walletsLoading } = useWalletAccounts()
+  
+  // Fetch recent transfers
+  const { refetch: refetchTransfers } = useRecentTransfers(5)
+
+  // Combine banks and wallets into single accounts list
+  const accounts: TransferAccount[] = useMemo(() => {
+    const combined: TransferAccount[] = [
+      ...(bankAccounts || []).map((acc) => ({
+        id: acc.id,
+        name: acc.name,
+        type: "bank" as const,
+        balance: acc.balance,
+        currency: acc.currency,
+      })),
+      ...(walletAccounts || []).map((acc) => ({
+        id: acc.id,
+        name: acc.name,
+        type: "wallet" as const,
+        balance: acc.balance,
+        currency: acc.currency,
+      })),
+    ]
+    return combined
+  }, [bankAccounts, walletAccounts])
+
+  // Create transfer mutation
+  const createTransfer = useCreateTransfer()
+  const isLoading = banksLoading || walletsLoading || createTransfer.isPending
 
   const handleFormChange = (fromId: string, toId: string, amount: string) => {
     setFormState({ fromId, toId, amount })
+  }
+
+  const handleSubmit = async (transfer: {
+    fromAccountId: string
+    toAccountId: string
+    amount: number
+    currency?: string
+    notes?: string
+  }) => {
+    try {
+      await createTransfer.mutateAsync({
+        fromAccountId: transfer.fromAccountId,
+        toAccountId: transfer.toAccountId,
+        amount: transfer.amount,
+        currency: transfer.currency || "INR",
+        notes: transfer.notes,
+      })
+      
+      toast({
+        title: "Transfer successful",
+        description: `Successfully transferred ₹${transfer.amount.toLocaleString("en-IN")}`,
+      })
+      
+      // Refresh transfers list
+      refetchTransfers()
+      
+      // Reset form state
+      setFormState({ fromId: "", toId: "", amount: "" })
+    } catch (error) {
+      toast({
+        title: "Transfer failed",
+        description: "Failed to process transfer. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -27,18 +99,18 @@ export default function TransfersPage() {
         onNewTransfer={() => {
           window.scrollTo({ top: 0, behavior: "smooth" })
         }}
-        onRefresh={() => window.location.reload()}
+        onRefresh={() => refetchTransfers()}
       />
 
       {/* Form + Balance Preview Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Form
-          onSubmit={(transfer) => {
-            console.log("Transfer submitted:", transfer)
-            alert("Transfer submitted! (Demo mode)")
-          }}
+          accounts={accounts}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
         />
         <BalancePreview
+          accounts={accounts}
           fromId={formState.fromId}
           toId={formState.toId}
           amount={formState.amount}
@@ -55,15 +127,17 @@ export default function TransfersPage() {
             transferId={selectedTransferId}
             onClose={() => setSelectedTransferId(null)}
             onEdit={(id) => {
-              console.log("Edit transfer:", id)
-              alert("Edit transfer (Demo mode)")
+              toast({
+                title: "Edit transfer",
+                description: "Edit functionality coming soon!",
+              })
             }}
             onDelete={(id) => {
-              console.log("Delete transfer:", id)
-              if (confirm("Are you sure you want to delete this transfer?")) {
-                setSelectedTransferId(null)
-                alert("Transfer deleted (Demo mode)")
-              }
+              toast({
+                title: "Transfer deleted",
+                description: "Delete functionality coming soon!",
+              })
+              setSelectedTransferId(null)
             }}
           />
         )}
