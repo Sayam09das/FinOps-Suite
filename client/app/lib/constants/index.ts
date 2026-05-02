@@ -11,11 +11,6 @@ export const API = {
   VERSION: "v1" as const,
 } as const
 
-export const QUERY = {
-  STALE_TIME: 5 * 60 * 1000, // 5 minutes
-  CACHE_TIME: 10 * 60 * 1000, // 10 minutes
-} as const
-
 export const THEME = {
   DEFAULT_THEME: "system" as const,
   THEMES: ["light", "dark", "system"] as const,
