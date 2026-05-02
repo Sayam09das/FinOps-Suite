@@ -45,3 +45,33 @@ export const COLORS = {
   PRIMARY: "hsl(var(--primary))",
   SECONDARY: "hsl(var(--secondary))",
 } as const
+
+export const BUDGET_CATEGORIES = [
+  "Food & Dining",
+  "Transport",
+  "Shopping",
+  "Entertainment",
+  "Utilities",
+  "Healthcare",
+  "Education",
+  "Rent",
+  "Insurance",
+  "Savings",
+  "Groceries",
+  "Subscriptions",
+  "Gifts",
+  "Travel",
+] as const
+
+export type BudgetCategory = (typeof BUDGET_CATEGORIES)[number]
+
+export const RECURRENCE = {
+  MONTHLY: "monthly" as const,
+  QUARTERLY: "quarterly" as const,
+  YEARLY: "yearly" as const,
+} as const
+
+export const QUERY = {
+  STALE_TIME: 1000 * 60 * 5, // 5 minutes
+  CACHE_TIME: 1000 * 60 * 10, // 10 minutes
+} as const

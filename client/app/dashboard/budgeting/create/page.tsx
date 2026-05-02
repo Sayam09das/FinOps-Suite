@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { CheckCircle2, Save } from "lucide-react"
+import { CheckCircle2, Save, Loader2 } from "lucide-react"
+import { useToast } from "@/app/components/ui/use-toast"
 
 import Header from "../CreateBudgetPage/Header"
 import Form from "../CreateBudgetPage/Form"
@@ -10,19 +11,58 @@ import Preview from "../CreateBudgetPage/Preview"
 import Suggestions from "../CreateBudgetPage/Suggestions"
 import Snapshot from "../CreateBudgetPage/Snapshot"
 
-import { demoBudgets } from "../demo-data"
+import { useBudgets, useCreateBudget, useBudgetStatus } from "@/app/features/budgets"
 
 export default function CreateBudgetPage() {
   const [category, setCategory] = useState("")
   const [amount, setAmount] = useState("")
-  const [startMonth, setStartMonth] = useState("2025-01")
+  const [startMonth, setStartMonth] = useState(() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+  })
   const [recurrence, setRecurrence] = useState("monthly")
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const handleSave = () => {
+  const { toast } = useToast()
+
+  // Fetch budgets and status from backend
+  const { data: budgets = [], isLoading: budgetsLoading } = useBudgets()
+  const { data: budgetStatus } = useBudgetStatus(startMonth)
+
+  // Create budget mutation
+  const createBudget = useCreateBudget()
+
+  const isPending = createBudget.isPending
+
+  const handleSave = async () => {
     if (!category || !amount) return
-    setShowSuccess(true)
-    setTimeout(() => setShowSuccess(false), 3000)
+
+    try {
+      await createBudget.mutateAsync({
+        category,
+        amount: parseFloat(amount),
+        month: startMonth,
+      })
+
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 3000)
+
+      // Reset form
+      setCategory("")
+      setAmount("")
+
+      toast({
+        title: "Budget created",
+        description: `Budget for ${category} has been created successfully`,
+        variant: "default",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create budget. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -42,21 +82,32 @@ export default function CreateBudgetPage() {
             onRecurrenceChange={setRecurrence}
           />
 
-          <Preview category={category} />
+          {/* Preview Component - Uses real-time data from budget status */}
+          <Preview category={category} budgetStatus={budgetStatus} />
 
-          <Suggestions category={category} amount={amount} />
+          {/* Suggestions Component - Uses real-time data */}
+          <Suggestions category={category} amount={amount} budgetStatus={budgetStatus} />
 
           {/* Save Button */}
           <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             onClick={handleSave}
-            disabled={!category || !amount}
+            disabled={!category || !amount || isPending}
             className="w-full rounded-2xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="inline-flex items-center gap-2">
-              <Save className="h-4 w-4" />
-              Create Budget
+              {isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Create Budget
+                </>
+              )}
             </span>
           </motion.button>
 
@@ -74,10 +125,10 @@ export default function CreateBudgetPage() {
         </div>
 
         <div>
-          <Snapshot budgets={demoBudgets} selectedCategory={category} />
+          {/* Snapshot - Uses real-time budgets from backend */}
+          <Snapshot budgets={budgets} selectedCategory={category} isLoading={budgetsLoading} />
         </div>
       </div>
     </div>
   )
 }
-

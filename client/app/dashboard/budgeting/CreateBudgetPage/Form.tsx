@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Banknote, CalendarDays, Recycle, Tag } from "lucide-react"
-import { budgetCategories } from "../demo-data"
+import { BUDGET_CATEGORIES, RECURRENCE } from "@/app/lib/constants"
 
 interface FormProps {
   category: string
@@ -48,7 +48,7 @@ export default function Form({
               className="w-full appearance-none rounded-2xl border border-border/60 bg-background py-2.5 pl-4 pr-10 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             >
               <option value="">Select category</option>
-              {budgetCategories.map((c) => (
+{BUDGET_CATEGORIES.map((c: string) => (
                 <option key={c} value={c}>
                   {c}
                 </option>

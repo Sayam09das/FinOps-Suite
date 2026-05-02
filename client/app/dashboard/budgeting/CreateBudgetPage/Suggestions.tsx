@@ -3,41 +3,56 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { Lightbulb, TrendingUp } from "lucide-react"
 import { formatCurrency } from "@/app/lib/utils/number"
-import { demoCategorySpends } from "../demo-data"
+import type { BudgetStatus } from "@/app/features/budgets"
 
 interface SuggestionsProps {
   category: string
   amount: string
+  budgetStatus?: BudgetStatus
 }
 
-export default function Suggestions({ category, amount }: SuggestionsProps) {
-  const data = demoCategorySpends.find((c) => c.category === category)
+export default function Suggestions({ category, amount, budgetStatus }: SuggestionsProps) {
+  const categoryData = budgetStatus?.[category]
   const enteredAmount = parseFloat(amount) || 0
 
   const suggestions: { text: string; type: "info" | "warn" | "success" }[] = []
 
-  if (data) {
-    const suggested = Math.round(data.avgSpend * 1.1)
-    suggestions.push({
-      text: `You usually spend ${formatCurrency(data.avgSpend, "INR", "en-IN")} → suggested ${formatCurrency(suggested, "INR", "en-IN")}`,
-      type: "info",
-    })
-    suggestions.push({
-      text: `Your highest spend was ${formatCurrency(data.highestSpend, "INR", "en-IN")}`,
-      type: "warn",
-    })
+  if (categoryData) {
+    // Show budget vs spending comparison
     if (enteredAmount > 0) {
-      if (enteredAmount < data.avgSpend) {
+      if (enteredAmount < categoryData.budget) {
+        const percentage = Math.round((1 - enteredAmount / categoryData.budget) * 100)
         suggestions.push({
-          text: `Budget is ${Math.round((1 - enteredAmount / data.avgSpend) * 100)}% below your average — ambitious!`,
+          text: `${percentage}% under budget - conservative but safe`,
           type: "success",
         })
-      } else if (enteredAmount > data.highestSpend) {
+      } else if (enteredAmount > categoryData.budget) {
         suggestions.push({
-          text: `Budget exceeds your highest recorded spend`,
+          text: `Budget exceeds your planned amount by ${formatCurrency(enteredAmount - categoryData.budget, "INR", "en-IN")}`,
           type: "warn",
         })
+      } else {
+        suggestions.push({
+          text: `Matches your budget exactly`,
+          type: "info",
+        })
       }
+    }
+
+    // Add info about current spending
+    if (categoryData.spent > 0) {
+      suggestions.push({
+        text: `You've already spent ${formatCurrency(categoryData.spent, "INR", "en-IN")} this month`,
+        type: "info",
+      })
+    }
+
+    // Check if over budget
+    if (categoryData.remaining < 0) {
+      suggestions.push({
+        text: `Warning: You've exceeded your budget by ${formatCurrency(Math.abs(categoryData.remaining), "INR", "en-IN")}`,
+        type: "warn",
+      })
     }
   }
 
@@ -86,4 +101,3 @@ export default function Suggestions({ category, amount }: SuggestionsProps) {
     </AnimatePresence>
   )
 }
-
