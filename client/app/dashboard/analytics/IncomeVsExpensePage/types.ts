@@ -23,4 +23,4 @@ export const dateRangeOptions = [
   { value: "last3Months", label: "Last 3 Months" },
   { value: "last6Months", label: "Last 6 Months" },
   { value: "thisYear", label: "This Year" },
-] as const
+]

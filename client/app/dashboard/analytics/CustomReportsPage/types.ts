@@ -49,4 +49,4 @@ export const filterOptions = {
     { value: "month", label: "Month" },
     { value: "category", label: "Category" },
   ],
-} as const
+}

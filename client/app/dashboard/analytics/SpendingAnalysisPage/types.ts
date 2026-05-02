@@ -42,4 +42,4 @@ export const filterOptions = {
     { value: "credit", label: "Credit Card" },
     { value: "wallet", label: "Wallet" },
   ],
-} as const
+}
