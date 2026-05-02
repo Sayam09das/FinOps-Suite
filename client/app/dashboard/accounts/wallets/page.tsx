@@ -1,31 +1,87 @@
 "use client"
 
-import { useState } from "react"
-
 import Header from "../WalletsPage/Header"
 import Summary from "../WalletsPage/Summary"
 import List from "../WalletsPage/List"
 import QuickUpdate from "../WalletsPage/QuickUpdate"
 
-import { demoWallets } from "../demo-data"
+import { useWalletAccounts, useUpdateBalance, useDeleteAccount } from "@/app/features/accounts"
+import { useToast } from "@/app/components/ui/use-toast"
+import type { Wallet } from "../types"
 
 export default function WalletsPage() {
-  const [wallets, setWallets] = useState(demoWallets)
+  const { data: walletsData, isLoading, refetch } = useWalletAccounts()
+  const updateBalance = useUpdateBalance()
+  const deleteAccount = useDeleteAccount()
+  const { toast } = useToast()
+
+  // Transform backend data to Wallet format
+  const wallets: Wallet[] = (walletsData || []).map((acc) => ({
+    id: acc.id,
+    name: acc.name,
+    type: acc.type as Wallet["type"],
+    balance: acc.balance,
+    currency: acc.currency,
+    lastUpdated: acc.asOfDate,
+    notes: acc.institution || undefined,
+  }))
 
   const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0)
 
-  const handleQuickUpdate = (id: string, newBalance: number) => {
-    setWallets((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, balance: newBalance, lastUpdated: new Date().toISOString() } : w))
+  const handleQuickUpdate = async (id: string, newBalance: number) => {
+    const wallet = wallets.find((w) => w.id === id)
+    if (!wallet) return
+
+    const diff = newBalance - wallet.balance
+    try {
+      await updateBalance.mutateAsync({
+        id,
+        amount: Math.abs(diff),
+        operation: diff > 0 ? "add" : "subtract",
+      })
+      toast({ title: "Wallet updated", description: `${wallet.name} balance updated successfully.` })
+    } catch {
+      toast({ title: "Update failed", description: "Could not update wallet balance.", variant: "destructive" })
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this wallet?")) return
+    try {
+      await deleteAccount.mutateAsync(id)
+      toast({ title: "Wallet deleted", description: "Wallet has been removed." })
+    } catch {
+      toast({ title: "Delete failed", description: "Could not delete wallet.", variant: "destructive" })
+    }
+  }
+
+  const handleRefresh = () => {
+    refetch()
+    toast({ title: "Data refreshed", description: "Wallets data updated from server." })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 p-4 md:p-6 xl:p-8">
+        <div className="animate-pulse">
+          <div className="h-16 w-64 rounded-2xl bg-muted" />
+          <div className="mt-6 h-24 rounded-2xl bg-muted" />
+          <div className="mt-6 grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2 space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-32 rounded-2xl bg-muted" />
+              ))}
+            </div>
+            <div className="h-64 rounded-2xl bg-muted" />
+          </div>
+        </div>
+      </div>
     )
   }
 
   return (
     <div className="space-y-6 p-4 md:p-6 xl:p-8">
-      <Header
-        onAddWallet={() => alert("Add Wallet — demo mode")}
-        onRefresh={() => window.location.reload()}
-      />
+      <Header onAddWallet={() => alert("Add wallet coming soon")} onRefresh={handleRefresh} />
 
       <Summary total={totalBalance} count={wallets.length} currency="INR" />
 
@@ -33,12 +89,8 @@ export default function WalletsPage() {
         <div className="lg:col-span-2">
           <List
             wallets={wallets}
-            onEdit={(w) => alert(`Edit ${w.name} — demo mode`)}
-            onDelete={(id) => {
-              if (confirm("Delete this wallet?")) {
-                setWallets((prev) => prev.filter((w) => w.id !== id))
-              }
-            }}
+            onEdit={(w) => alert(`Edit ${w.name} - coming soon`)}
+            onDelete={handleDelete}
           />
         </div>
         <div>
