@@ -15,6 +15,10 @@ export const getTransfer = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user.id
   const { id } = req.params
   
+  if (!id || Array.isArray(id)) {
+    throw new AppError("BAD_REQUEST", 400, "Invalid transfer ID")
+  }
+  
   const transfer = await transfersRepository.findById(id, userId)
   if (!transfer) {
     throw new AppError("NOT_FOUND", 404, "Transfer not found")
@@ -42,7 +46,7 @@ export const createTransfer = asyncHandler(async (req: Request, res: Response) =
 
 export const updateTransfer = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user.id
-  const { id } = req.params
+  const id = req.params.id as string
   const updateData: UpdateTransferDTO = req.body
   
   try {
@@ -58,7 +62,7 @@ export const updateTransfer = asyncHandler(async (req: Request, res: Response) =
 
 export const deleteTransfer = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user.id
-  const { id } = req.params
+  const id = req.params.id as string
   
   try {
     await transfersRepository.delete(id, userId)
