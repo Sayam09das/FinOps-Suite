@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useAnalytics } from "@/app/features/dashboard/hooks/use-analytics"
-import type { IncomeExpenseSeries, InsightItem } from "./IncomeVsExpensePage/types"
+import type { IncomeExpenseSeries, InsightItem } from "../IncomeVsExpensePage/types"
 
 import {
   Header,
@@ -11,7 +11,7 @@ import {
   ComparisonChart,
   SavingsRate,
   Insights,
-} from "./IncomeVsExpensePage"
+} from "../IncomeVsExpensePage"
 
 // Month abbreviation from "YYYY-MM"
 function monthLabel(ym: string) {
