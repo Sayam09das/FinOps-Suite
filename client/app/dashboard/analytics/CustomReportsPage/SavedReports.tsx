@@ -5,7 +5,7 @@ import { Play, Pencil, Trash2, FileText, Clock } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { cn } from "@/app/lib/utils/cn"
-import type { SavedReport } from "./demo-data"
+import type { SavedReport } from "./types"
 
 interface SavedReportsProps {
   reports: SavedReport[]

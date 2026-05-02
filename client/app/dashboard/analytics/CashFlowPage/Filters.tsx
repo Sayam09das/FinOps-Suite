@@ -7,7 +7,7 @@ import { useState, useRef, useCallback } from "react"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { cn } from "@/app/lib/utils/cn"
 import { useClickOutside } from "@/app/hooks/use-click-outside"
-import { dateRangeOptions } from "./demo-data"
+import { dateRangeOptions } from "./types"
 
 interface FiltersProps {
   dateRange: string

@@ -15,7 +15,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
 import { cn } from "@/app/lib/utils/cn"
-import type { CategorySpend } from "./demo-data"
+import type { CategorySpend } from "./types"
 
 const iconMap: Record<string, React.ElementType> = {
   UtensilsCrossed,

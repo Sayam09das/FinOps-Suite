@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
-import type { CategorySpend } from "./demo-data"
+import type { CategorySpend } from "./types"
 
 interface CategoryChartProps {
   categories: CategorySpend[]

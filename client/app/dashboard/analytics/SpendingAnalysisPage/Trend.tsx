@@ -9,7 +9,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
 import { cn } from "@/app/lib/utils/cn"
-import type { TrendSeries } from "./demo-data"
+import type { TrendSeries } from "./types"
 
 type RangeKey = "daily" | "weekly" | "monthly"
 

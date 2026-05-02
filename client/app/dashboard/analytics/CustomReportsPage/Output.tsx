@@ -11,7 +11,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
 import { cn } from "@/app/lib/utils/cn"
-import type { ReportRow } from "./demo-data"
+import type { ReportRow } from "./types"
 
 type ViewMode = "table" | "chart"
 

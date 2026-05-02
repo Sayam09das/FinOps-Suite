@@ -4,5 +4,5 @@ export { default as Summary } from "./Summary"
 export { default as CategoryChart } from "./CategoryChart"
 export { default as TopList } from "./TopList"
 export { default as Trend } from "./Trend"
-export * from "./demo-data"
+export * from "./types"
 

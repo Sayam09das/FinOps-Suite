@@ -6,7 +6,7 @@ import { Wallet, TrendingUp, TrendingDown, Landmark } from "lucide-react"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
 import { cn } from "@/app/lib/utils/cn"
-import type { CashFlowSummaryData } from "./demo-data"
+import type { CashFlowSummaryData } from "./types"
 
 interface SummaryProps {
   data: CashFlowSummaryData

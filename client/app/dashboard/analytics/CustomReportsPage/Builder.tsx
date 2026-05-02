@@ -6,7 +6,7 @@ import { useState } from "react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { cn } from "@/app/lib/utils/cn"
-import { filterOptions } from "./demo-data"
+import { filterOptions } from "./types"
 
 interface BuilderProps {
   dateRange: string
