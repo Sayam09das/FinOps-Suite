@@ -1,9 +1,14 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { CreditCard, Landmark } from "lucide-react"
-import { demoCreditCards } from "../../accounts/demo-data"
+import { Landmark, Trash2 } from "lucide-react"
 import { formatCurrency } from "@/app/lib/utils/number"
+import type { CreditCard as CreditCardType } from "../../accounts/types"
+
+interface CardsListProps {
+  cards: CreditCardType[]
+  onDelete?: (id: string) => void
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -20,7 +25,7 @@ const cardVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 }
 
-export default function CardsList() {
+export default function CardsList({ cards, onDelete }: CardsListProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -28,10 +33,22 @@ export default function CardsList() {
       transition={{ duration: 0.5, delay: 0.2 }}
     >
       <div className="mb-4 flex items-center gap-2">
-        <CreditCard className="h-5 w-5 text-foreground/70" />
+        <svg
+          className="h-5 w-5 text-foreground/70"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+          />
+        </svg>
         <h2 className="text-lg font-semibold text-foreground">Your Cards</h2>
         <span className="ml-2 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-          {demoCreditCards.length}
+          {cards.length}
         </span>
       </div>
 
@@ -41,7 +58,7 @@ export default function CardsList() {
         animate="show"
         className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2"
       >
-        {demoCreditCards.map((card) => {
+        {cards.map((card) => {
           const available = card.limit - card.used
           const utilization = (card.used / card.limit) * 100
 
@@ -121,6 +138,16 @@ export default function CardsList() {
                   </span>
                 </div>
               </div>
+
+              {/* Delete Button */}
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(card.id)}
+                  className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-xl text-foreground/50 opacity-0 transition hover:bg-rose-50 hover:text-rose-600 group-hover:opacity-100"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
             </motion.div>
           )
         })}
@@ -128,4 +155,3 @@ export default function CardsList() {
     </motion.div>
   )
 }
-

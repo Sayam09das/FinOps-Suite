@@ -1,16 +1,77 @@
 "use client"
 
 import { useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import { motion } from "framer-motion"
 
 import Header from "../CreditCardsPage/Header"
 import Utilization from "../CreditCardsPage/Utilization"
 import CardsList from "../CreditCardsPage/CardsList"
 import Billing from "../CreditCardsPage/Billing"
 import Payments from "../CreditCardsPage/Payments"
+import AddCardModal from "../CreditCardsPage/AddCardModal"
+
+import { useCreditCardAccounts, useUpdateBalance, useDeleteAccount } from "@/app/features/accounts"
+import { useToast } from "@/app/components/ui/use-toast"
+import type { CreditCard } from "../types"
 
 export default function CreditCardsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+
+  const { data: cardsData, isLoading, refetch } = useCreditCardAccounts()
+  const updateBalance = useUpdateBalance()
+  const deleteAccount = useDeleteAccount()
+  const { toast } = useToast()
+
+  // Transform backend data to CreditCard format
+  const cards: CreditCard[] = (cardsData || []).map((acc) => ({
+    id: acc.id,
+    cardName: acc.name,
+    bankName: acc.institution || "Unknown Bank",
+    cardNumberLast4: acc.accountNumber || "0000",
+    limit: acc.balance + (acc.balance > 0 ? 100000 : 0), // Approximate limit if balance = used
+    used: acc.balance,
+    currency: acc.currency,
+    dueDate: acc.asOfDate.split("T")[0],
+    minimumDue: acc.balance * 0.05, // 5% minimum
+    status: "active" as const,
+  }))
+
+  const totalLimit = cards.reduce((sum, c) => sum + c.limit, 0)
+  const totalUsed = cards.reduce((sum, c) => sum + c.used, 0)
+  const totalAvailable = totalLimit - totalUsed
+  const overallUtilization = totalLimit > 0 ? (totalUsed / totalLimit) * 100 : 0
+
+  const handleRefresh = () => {
+    refetch()
+    toast({ title: "Data refreshed", description: "Credit cards data updated from server." })
+  }
+
+  const handleDeleteCard = async (id: string) => {
+    if (!confirm("Delete this credit card?")) return
+    try {
+      await deleteAccount.mutateAsync(id)
+      toast({ title: "Card deleted", description: "Credit card has been removed." })
+    } catch {
+      toast({ title: "Delete failed", description: "Could not delete card.", variant: "destructive" })
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="space-y-6 p-4 md:p-6 xl:p-8">
+          <div className="animate-pulse">
+            <div className="h-16 w-64 rounded-2xl bg-muted" />
+            <div className="mt-6 h-32 rounded-2xl bg-muted" />
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <div className="h-48 rounded-2xl bg-muted" />
+              <div className="h-48 rounded-2xl bg-muted" />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -18,17 +79,23 @@ export default function CreditCardsPage() {
         {/* Header */}
         <Header
           onAddCard={() => setIsAddModalOpen(true)}
-          onRefresh={() => window.location.reload()}
+          onRefresh={handleRefresh}
         />
 
         {/* Utilization Summary */}
-        <Utilization />
+        <Utilization
+          totalLimit={totalLimit}
+          totalUsed={totalUsed}
+          totalAvailable={totalAvailable}
+          utilization={overallUtilization}
+          cardCount={cards.length}
+        />
 
         {/* Cards List */}
-        <CardsList />
+        <CardsList cards={cards} onDelete={handleDeleteCard} />
 
-        {/* Billing & Due Section */}
-        <Billing />
+{/* Billing & Due Section */}
+        {cards.length > 0 && <Billing cards={cards} />}
 
         {/* Payment Actions */}
         <Payments
@@ -38,39 +105,8 @@ export default function CreditCardsPage() {
         />
       </div>
 
-      {/* Add Card Modal Placeholder */}
-      <AnimatePresence>
-        {isAddModalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
-            onClick={() => setIsAddModalOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md rounded-3xl border border-border/60 bg-background p-6 shadow-xl"
-            >
-              <h2 className="text-xl font-semibold text-foreground">Add New Card</h2>
-              <p className="mt-1 text-sm text-foreground/60">
-                This feature will be implemented soon.
-              </p>
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="rounded-2xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Add Card Modal */}
+      <AddCardModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
     </div>
   )
 }

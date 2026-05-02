@@ -2,8 +2,12 @@
 
 import { motion } from "framer-motion"
 import { AlertTriangle, Calendar, Clock, CreditCard, Receipt } from "lucide-react"
-import { demoCreditCards } from "../../accounts/demo-data"
 import { formatCurrency } from "@/app/lib/utils/number"
+import type { CreditCard as CreditCardType } from "../../accounts/types"
+
+interface BillingProps {
+  cards: CreditCardType[]
+}
 
 function getDaysUntilDue(dueDate: string): number {
   const today = new Date()
@@ -23,8 +27,8 @@ function formatDueDate(dateStr: string): string {
   })
 }
 
-export default function Billing() {
-  const cardsWithDueInfo = demoCreditCards.map((card) => ({
+export default function Billing({ cards }: BillingProps) {
+  const cardsWithDueInfo = cards.map((card) => ({
     ...card,
     daysUntilDue: getDaysUntilDue(card.dueDate),
   }))
@@ -152,4 +156,3 @@ export default function Billing() {
     </motion.div>
   )
 }
-

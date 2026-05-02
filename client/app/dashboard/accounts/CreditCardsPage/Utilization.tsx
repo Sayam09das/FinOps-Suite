@@ -2,14 +2,23 @@
 
 import { motion } from "framer-motion"
 import { CreditCard, TrendingUp, Wallet } from "lucide-react"
-import { demoCreditCards } from "../../accounts/demo-data"
 import { formatCurrency } from "@/app/lib/utils/number"
 
-export default function Utilization() {
-  const totalLimit = demoCreditCards.reduce((sum, card) => sum + card.limit, 0)
-  const totalUsed = demoCreditCards.reduce((sum, card) => sum + card.used, 0)
-  const totalAvailable = totalLimit - totalUsed
-  const utilizationPercent = totalLimit > 0 ? (totalUsed / totalLimit) * 100 : 0
+interface UtilizationProps {
+  totalLimit: number
+  totalUsed: number
+  totalAvailable: number
+  utilization: number
+  cardCount: number
+}
+
+export default function Utilization({
+  totalLimit,
+  totalUsed,
+  totalAvailable,
+  utilization: utilizationPercent,
+  cardCount,
+}: UtilizationProps) {
 
   const getUtilizationColor = (percent: number) => {
     if (percent >= 80) return "bg-red-500"
