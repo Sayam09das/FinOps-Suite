@@ -1,8 +1,8 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { ArrowRight, ArrowRightLeft, CheckCircle2, Clock, XCircle } from "lucide-react"
-import { demoTransfers } from "../../accounts/demo-data"
+import { ArrowRight, ArrowRightLeft, CheckCircle2, Clock, XCircle, Loader2 } from "lucide-react"
+import { useRecentTransfers, type Transfer } from "@/app/features/transfers"
 import { formatCurrency } from "@/app/lib/utils/number"
 
 interface RecentTransfersProps {
@@ -16,7 +16,47 @@ const statusConfig = {
 }
 
 export default function RecentTransfers({ onSelectTransfer }: RecentTransfersProps) {
-  const sorted = [...demoTransfers].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  const { data: transfers, isLoading, error } = useRecentTransfers(10)
+
+  if (isLoading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <div className="mb-4 flex items-center gap-2">
+          <ArrowRightLeft className="h-5 w-5 text-foreground/70" />
+          <h2 className="text-lg font-semibold text-foreground">Recent Transfers</h2>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      </motion.div>
+    )
+  }
+
+  if (error || !transfers || transfers.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <div className="mb-4 flex items-center gap-2">
+          <ArrowRightLeft className="h-5 w-5 text-foreground/70" />
+          <h2 className="text-lg font-semibold text-foreground">Recent Transfers</h2>
+        </div>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 py-8 text-center">
+          <ArrowRightLeft className="h-8 w-8 text-foreground/20" />
+          <p className="mt-2 text-sm font-medium text-foreground/50">No transfers yet</p>
+          <p className="text-xs text-foreground/40">Create a transfer to see it here</p>
+        </div>
+      </motion.div>
+    )
+  }
+
+  const sorted = [...transfers].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   return (
     <motion.div
@@ -55,9 +95,9 @@ export default function RecentTransfers({ onSelectTransfer }: RecentTransfersPro
                 </div>
                 <div>
                   <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <span>{transfer.fromAccountName}</span>
+                    <span>{transfer.fromAccountName || "Unknown"}</span>
                     <ArrowRight className="h-3.5 w-3.5 text-foreground/30" />
-                    <span>{transfer.toAccountName}</span>
+                    <span>{transfer.toAccountName || "Unknown"}</span>
                   </div>
                   <p className="text-xs text-foreground/50">
                     {new Date(transfer.date).toLocaleDateString("en-US", {
@@ -92,4 +132,3 @@ export default function RecentTransfers({ onSelectTransfer }: RecentTransfersPro
     </motion.div>
   )
 }
-
