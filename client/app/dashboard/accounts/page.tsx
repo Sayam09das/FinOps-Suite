@@ -9,12 +9,14 @@ import TotalBalance from "./BankAccountsPage/TotalBalance"
 import AccountsList from "./BankAccountsPage/AccountsList"
 import Activity from "./BankAccountsPage/Activity"
 import DetailsDrawer from "./BankAccountsPage/DetailsDrawer"
+import AddAccountModal from "./BankAccountsPage/AddAccountModal"
 
 import type { BankAccount } from "./types"
 
 export default function BankAccountsPage() {
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const { toast } = useToast()
 
   // Fetch real data from backend
@@ -90,6 +92,7 @@ return (
     <div className="space-y-6 p-4 md:p-6 xl:p-8">
       <Header
         onRefresh={handleRefresh}
+        onAddAccount={() => setIsAddModalOpen(true)}
       />
 
       <TotalBalance
@@ -109,11 +112,16 @@ return (
       {/* Activity section would need API endpoint for transactions */}
       <Activity activities={[]} />
 
-      <DetailsDrawer
+<DetailsDrawer
         account={selectedAccount}
         activities={[]}
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
+      />
+
+      <AddAccountModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
       />
     </div>
   )
