@@ -28,6 +28,7 @@ export function useBankAccounts() {
     queryKey: accountKeys.banks(),
     queryFn: () => accountsApi.getBanks(),
     staleTime: QUERY.STALE_TIME,
+    refetchOnMount: true, // Fetch immediately when component mounts
   })
 }
 
@@ -36,6 +37,7 @@ export function useWalletAccounts() {
     queryKey: accountKeys.wallets(),
     queryFn: () => accountsApi.getWallets(),
     staleTime: QUERY.STALE_TIME,
+    refetchOnMount: true, // Fetch immediately when component mounts
   })
 }
 

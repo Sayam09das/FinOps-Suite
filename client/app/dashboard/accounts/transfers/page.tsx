@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
 import Header from "../TransfersPage/Header"
@@ -22,12 +22,18 @@ export default function TransfersPage() {
   })
   const { toast } = useToast()
 
-  // Fetch accounts from backend
-  const { data: bankAccounts, isLoading: banksLoading } = useBankAccounts()
-  const { data: walletAccounts, isLoading: walletsLoading } = useWalletAccounts()
+// Fetch accounts from backend - skip if data is cached to ensure fresh
+  const { data: bankAccounts, isLoading: banksLoading, refetch: refetchBanks } = useBankAccounts()
+  const { data: walletAccounts, isLoading: walletsLoading, refetch: refetchWallets } = useWalletAccounts()
   
   // Fetch recent transfers
   const { refetch: refetchTransfers } = useRecentTransfers(5)
+
+  // Ensure real-time data on first load by refetching accounts
+  useEffect(() => {
+    refetchBanks()
+    refetchWallets()
+  }, [])
 
   // Combine banks and wallets into single accounts list
   const accounts: TransferAccount[] = useMemo(() => {
