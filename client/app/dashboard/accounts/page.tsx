@@ -84,11 +84,27 @@ export default function BankAccountsPage() {
     }
   }
 
-  const handleRefresh = () => {
+const handleRefresh = () => {
     refetch()
   }
 
-return (
+  if (isLoading) {
+    return (
+      <div className="space-y-6 p-4 md:p-6 xl:p-8">
+        <div className="animate-pulse">
+          <div className="h-16 w-64 rounded-2xl bg-muted" />
+          <div className="mt-6 h-40 rounded-2xl bg-muted" />
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-48 rounded-2xl bg-muted" />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
     <div className="space-y-6 p-4 md:p-6 xl:p-8">
       <Header
         onRefresh={handleRefresh}
