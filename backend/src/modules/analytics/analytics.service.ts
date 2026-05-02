@@ -51,10 +51,12 @@ export const getAnalyticsData = async (userId: string): Promise<AnalyticsData> =
     const date = new Date();
     date.setMonth(date.getMonth() - i);
     const monthKey = date.toISOString().slice(0, 7);
+    const startDate = new Date(`${monthKey}-01`);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 1);
     const monthTx = await prisma.transaction.findMany({
-      where: { userId, date: { gte: new Date(`${monthKey}-01`) } },
+      where: { userId, date: { gte: startDate, lt: endDate } },
     });
-    // Similar income/expense calc...
     let mIncome = 0, mExpense = 0;
     monthTx.forEach((t) => {
       if (t.type === "income") mIncome += t.amount;
