@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
-import { clearAuthData, getGraceUser, setAuthData, setRefreshToken } from '../utils/auth-utils';
+import { clearAuthData, getAuthToken, getStoredUser, setAuthData, setRefreshToken } from '../utils/auth-utils';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLoginMutation, useRegisterMutation, useLogoutMutation, useAuthMeQuery } from '@/app/lib/api/queries';
@@ -30,18 +30,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: user, isLoading: meLoading } = useAuthMeQuery({ enabled: true });
+  const storedToken = getAuthToken();
+  const storedUser = getStoredUser<User>();
+  const { data: user, isLoading: meLoading } = useAuthMeQuery({ enabled: !!storedToken });
   const loginMutation = useLoginMutation();
   const registerMutation = useRegisterMutation();
   const logoutMutation = useLogoutMutation();
-  const graceUser = getGraceUser<User>();
-  const effectiveUser = user || graceUser || null;
+  const effectiveUser = user || storedUser || null;
 
   const isLoading =
     loginMutation.isPending ||
     registerMutation.isPending ||
     logoutMutation.isPending;
-  const isInitializing = meLoading && !effectiveUser;
+  const isInitializing = !!storedToken && meLoading && !user;
 
   const { toastPromise } = useToast();
 
@@ -126,7 +127,7 @@ const login = useCallback(async (email: string, password: string) => {
       await logoutMutation.mutateAsync();
       clearAuthData();
       queryClient.setQueryData(['auth', 'me'], null);
-      router.push("/login");
+      router.replace("/");
       router.refresh();
       
       return { name: 'Sonner' };

@@ -8,6 +8,7 @@ const DEFAULT_DURATION = 3000
 
 interface Toast {
   id: string
+  duration?: number
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastAction
@@ -37,6 +38,7 @@ function Toaster() {
 
 interface ToastProps {
   id: string
+  duration?: number
   title?: React.ReactNode
   description?: React.ReactNode
   variant?: "default" | "destructive" | "loading" | "success"
@@ -46,6 +48,7 @@ interface ToastProps {
 
 function Toast({
   id,
+  duration,
   className,
   variant = "default",
   title,
@@ -54,14 +57,17 @@ function Toast({
 }: ToastProps) {
   const { dismiss } = useToast()
 
-  // ✅ auto dismiss
   React.useEffect(() => {
+    if (duration === 0 || variant === "loading") {
+      return
+    }
+
     const timer = setTimeout(() => {
       dismiss(id)
-    }, DEFAULT_DURATION)
+    }, duration ?? DEFAULT_DURATION)
 
     return () => clearTimeout(timer)
-  }, [id, dismiss])
+  }, [dismiss, duration, id, variant])
 
   const variantStyles = {
     default: "bg-background border text-foreground",

@@ -3,7 +3,6 @@
 import * as React from "react"
 
 const TOAST_LIMIT = 5
-const TOAST_REMOVE_DELAY = 1000000
 const PROMISE_DURATION = 2000
 
 type ActionType = "ADD_TOAST" | "DISMISS_TOAST" | "REMOVE_TOAST"
@@ -20,6 +19,7 @@ interface State {
 
 export interface Toast {
   id: string
+  open?: boolean
   title?: React.ReactNode
   description?: React.ReactNode
   variant: "default" | "destructive" | "loading" | "success"
@@ -63,10 +63,10 @@ const updater = (state: State, action: Action): State => {
   switch (action.type) {
     case "ADD_TOAST":
       if (!action.toast) return state
-      const toastId = (Math.random() * 1_000_000).toString()
-      const newToast = { ...action.toast, id: toastId }
+      const toastId = action.toast.id || (Math.random() * 1_000_000).toString()
+      const newToast = { ...action.toast, id: toastId, open: true }
       
-      if (newToast.duration) {
+      if (newToast.duration && newToast.duration > 0) {
         const timeoutId = setTimeout(() => {
           dispatch({ type: "DISMISS_TOAST", toastId: toastId })
         }, newToast.duration)
@@ -79,21 +79,28 @@ const updater = (state: State, action: Action): State => {
       }
       
     case "DISMISS_TOAST":
-      toastTimeouts.forEach((timeout, id) => {
-        if (id === action.toastId) {
+      if (action.toastId) {
+        const timeout = toastTimeouts.get(action.toastId)
+        if (timeout) {
           clearTimeout(timeout)
-          toastTimeouts.delete(id)
+          toastTimeouts.delete(action.toastId)
         }
-      })
-      
+      }
+
       return {
         ...state,
-        toasts: state.toasts.map(t => 
-          t.id === action.toastId ? { ...t, open: false } : t
-        )
+        toasts: state.toasts.filter((t) => t.id !== action.toastId)
       }
       
     case "REMOVE_TOAST":
+      if (action.toastId) {
+        const timeout = toastTimeouts.get(action.toastId)
+        if (timeout) {
+          clearTimeout(timeout)
+          toastTimeouts.delete(action.toastId)
+        }
+      }
+
       return {
         ...state,
         toasts: state.toasts.filter(t => t.id !== action.toastId)
@@ -107,6 +114,7 @@ const updater = (state: State, action: Action): State => {
 function toast(options: ToastOptions) {
   const toastMsg = {
     ...options,
+    id: (Math.random() * 1_000_000).toString(),
     variant: (options.variant || "default") as Toast["variant"]
   } as Toast
   

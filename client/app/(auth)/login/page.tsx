@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Check, AlertCircle, Lock, TrendingUp, Users, BarChart3 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { useAuth } from "@/app/features/auth";
+import { AUTH } from "@/app/lib/constants/auth";
 
 const validateEmail = (value: string) => {
   if (!value) {
@@ -42,6 +44,7 @@ const validatePassword = (value: string) => {
 };
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -78,7 +81,13 @@ export default function LoginPage() {
     }
   };
 
-  const { login, isLoading: authLoading } = useAuth();
+  const { login, isLoading: authLoading, isAuthenticated, isInitializing } = useAuth();
+
+  useEffect(() => {
+    if (!isInitializing && isAuthenticated) {
+      router.replace(AUTH.DASHBOARD_PATH);
+    }
+  }, [isAuthenticated, isInitializing, router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -97,6 +106,10 @@ export default function LoginPage() {
   };
 
   const isFormValid = emailState.isValid && passwordState.isValid && !authLoading;
+
+  if (isInitializing || isAuthenticated) {
+    return null;
+  }
 
   return (
     <main className="relative overflow-hidden bg-background text-foreground">

@@ -1,12 +1,13 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 import DashNavbar from "./layout/DashNavbar"
 import DashSidebar from "./layout/DashSidebar"
 import FloatingAIButton from "./layout/Floatingaibutton"
 import { cn } from "@/app/lib/utils/cn"
+import { useAuth } from "@/app/features/auth"
 
 export default function DashboardLayout({
   children,
@@ -14,6 +15,8 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { isAuthenticated, isInitializing } = useAuth()
 
   // ✅ mobile drawer state
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -26,6 +29,12 @@ export default function DashboardLayout({
     setSidebarOpen(false)
   }, [pathname])
 
+  useEffect(() => {
+    if (!isInitializing && !isAuthenticated) {
+      router.replace("/")
+    }
+  }, [isAuthenticated, isInitializing, router])
+
   // ✅ single handler (mobile + desktop)
   const handleMenuClick = () => {
     const isDesktop = window.matchMedia("(min-width: 1024px)").matches
@@ -35,6 +44,10 @@ export default function DashboardLayout({
     } else {
       setSidebarOpen((v) => !v)
     }
+  }
+
+  if (isInitializing || !isAuthenticated) {
+    return null
   }
 
   return (
