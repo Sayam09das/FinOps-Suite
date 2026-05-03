@@ -46,7 +46,7 @@ export default function RecurringExpenses({ recurring }: RecurringExpensesProps)
         <div className="p-6 border-b border-border/50 bg-linear-to-r from-muted/50 to-muted/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold">₹{formatCurrency(monthlyTotal)}</p>
+              <p className="text-2xl font-bold">{formatCurrency(monthlyTotal)}</p>
               <p className="text-sm text-muted-foreground">Monthly recurring total</p>
             </div>
             <Badge variant="outline" className="gap-1">
@@ -94,7 +94,7 @@ export default function RecurringExpenses({ recurring }: RecurringExpensesProps)
                   </div>
                   
                   <div className="text-right">
-                    <p className="text-xl font-bold text-destructive">₹{formatCurrency(expense.amount)}</p>
+                    <p className="text-xl font-bold text-destructive">{formatCurrency(expense.amount)}</p>
                   </div>
                 </div>
               )
@@ -105,4 +105,3 @@ export default function RecurringExpenses({ recurring }: RecurringExpensesProps)
     </Card>
   )
 }
-

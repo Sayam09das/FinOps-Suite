@@ -114,7 +114,7 @@ export default function FutureProjection({
             <div className="rounded-xl border border-emerald-200/50 bg-emerald-50/40 p-3">
               <p className="text-xs text-foreground/50">Expected Growth</p>
               <p className="mt-0.5 text-sm font-bold text-emerald-700">
-                +{formatCurrency(growth, "INR", "en-IN").replace("₹", "")}
+                +{formatCurrency(growth, "INR", "en-IN")}
               </p>
             </div>
             <div className="rounded-xl border border-violet-200/50 bg-violet-50/40 p-3">
@@ -127,4 +127,3 @@ export default function FutureProjection({
     </motion.div>
   )
 }
-

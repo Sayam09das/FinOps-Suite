@@ -40,19 +40,19 @@ export default function IncomeExpenseChart({ income, expense, compare, chartData
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-4 rounded-2xl bg-muted/50 hover:bg-muted">
               <div className="text-2xl font-bold text-green-500">
-                ₹{formatCurrency(income)}
+                {formatCurrency(income)}
               </div>
               <div className="text-sm text-green-600 font-medium">Total Income</div>
             </div>
             <div className="text-center p-4 rounded-2xl bg-muted/50 hover:bg-muted">
               <div className="text-2xl font-bold text-destructive">
-                ₹{formatCurrency(expense)}
+                {formatCurrency(expense)}
               </div>
               <div className="text-sm text-destructive-600 font-medium">Total Expense</div>
             </div>
             <div className="text-center p-4 rounded-2xl bg-primary/10 border border-primary/20">
               <div className="text-2xl font-bold text-primary">
-                ₹{formatCurrency(netSavings)}
+                {formatCurrency(netSavings)}
               </div>
               <div className="text-sm text-primary font-medium">{savingsPercent}% Net Savings</div>
             </div>
@@ -101,4 +101,3 @@ export default function IncomeExpenseChart({ income, expense, compare, chartData
     </Card>
   )
 }
-

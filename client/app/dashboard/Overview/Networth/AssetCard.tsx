@@ -35,7 +35,7 @@ export default function AssetCard({ assets, totalAssets }: AssetCardProps) {
           <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/70 px-4 py-2 text-right">
             <p className="text-xs font-medium text-emerald-700/70">Total</p>
             <p className="text-lg font-bold tracking-tight text-emerald-700">
-              ₹{formatCurrency(totalAssets, "INR", "en-IN").replace("₹", "")}
+              {formatCurrency(totalAssets, "INR", "en-IN")}
             </p>
           </div>
         </div>
@@ -65,7 +65,7 @@ export default function AssetCard({ assets, totalAssets }: AssetCardProps) {
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-foreground">{asset.name}</p>
                     <p className="text-sm font-bold text-foreground">
-                      ₹{formatCurrency(asset.amount, "INR", "en-IN").replace("₹", "")}
+                      {formatCurrency(asset.amount, "INR", "en-IN")}
                     </p>
                   </div>
                   <div className="mt-1.5 flex items-center gap-2">
@@ -105,4 +105,3 @@ export default function AssetCard({ assets, totalAssets }: AssetCardProps) {
     </motion.div>
   )
 }
-

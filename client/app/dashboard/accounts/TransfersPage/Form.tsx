@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, Banknote, Landmark, MessageSquare, Wallet } from "lucide-react"
+import { formatCurrency } from "@/app/lib/utils/number"
 
 interface AccountOption {
   id: string
@@ -129,7 +130,7 @@ export default function Form({ accounts = [], onSubmit, isLoading }: FormProps) 
                   <optgroup label="Bank Accounts" className="text-foreground">
                     {bankAccounts.map((a) => (
                       <option key={a.id} value={a.id}>
-                        {a.name} (₹{a.balance.toLocaleString("en-IN")})
+                        {a.name} ({formatCurrency(a.balance, a.currency, "en-IN")})
                       </option>
                     ))}
                   </optgroup>
@@ -138,7 +139,7 @@ export default function Form({ accounts = [], onSubmit, isLoading }: FormProps) 
                   <optgroup label="Wallets" className="text-foreground">
                     {walletAccounts.map((a) => (
                       <option key={a.id} value={a.id}>
-                        {a.name} (₹{a.balance.toLocaleString("en-IN")})
+                        {a.name} ({formatCurrency(a.balance, a.currency, "en-IN")})
                       </option>
                     ))}
                   </optgroup>
@@ -176,7 +177,7 @@ export default function Form({ accounts = [], onSubmit, isLoading }: FormProps) 
                   <optgroup label="Bank Accounts" className="text-foreground">
                     {bankAccounts.map((a) => (
                       <option key={a.id} value={a.id}>
-                        {a.name} (₹{a.balance.toLocaleString("en-IN")})
+                        {a.name} ({formatCurrency(a.balance, a.currency, "en-IN")})
                       </option>
                     ))}
                   </optgroup>
@@ -185,7 +186,7 @@ export default function Form({ accounts = [], onSubmit, isLoading }: FormProps) 
                   <optgroup label="Wallets" className="text-foreground">
                     {walletAccounts.map((a) => (
                       <option key={a.id} value={a.id}>
-                        {a.name} (₹{a.balance.toLocaleString("en-IN")})
+                        {a.name} ({formatCurrency(a.balance, a.currency, "en-IN")})
                       </option>
                     ))}
                   </optgroup>

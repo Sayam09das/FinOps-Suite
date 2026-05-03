@@ -58,7 +58,7 @@ export default function SavingsGoals({ savingsRate, goals }: SavingsGoalsProps) 
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-lg leading-tight">{goal.name}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Target: ₹{formatCurrency(goal.target)}
+                        Target: {formatCurrency(goal.target)}
                       </p>
                     </div>
                     <div className="text-right">

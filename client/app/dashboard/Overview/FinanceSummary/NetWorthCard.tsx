@@ -48,9 +48,9 @@ export default function NetWorthCard({ netWorth, assets, liabilities, trend }: N
 
   return (
     <Card className="group relative overflow-hidden rounded-3xl border-2 border-border/50 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-background to-muted/30 backdrop-blur-xl">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-3xl font-black bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-lg">
-          ₹{formatCurrency(netWorth)}
+        <CardHeader className="pb-4">
+          <CardTitle className="text-3xl font-black bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-lg">
+          {formatCurrency(netWorth)}
         </CardTitle>
         <CardDescription className="text-lg font-semibold text-muted-foreground flex items-center gap-2">
           Total Net Worth
@@ -88,13 +88,13 @@ export default function NetWorthCard({ netWorth, assets, liabilities, trend }: N
         <div className="p-6 grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-500">
-              ₹{formatCurrency(assets)}
+              {formatCurrency(assets)}
             </div>
             <div className="text-sm text-muted-foreground">Assets</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-destructive">
-              -₹{formatCurrency(liabilities)}
+              -{formatCurrency(liabilities)}
             </div>
             <div className="text-sm text-muted-foreground">Liabilities</div>
           </div>
@@ -120,4 +120,3 @@ export default function NetWorthCard({ netWorth, assets, liabilities, trend }: N
     </Card>
   )
 }
-

@@ -79,7 +79,7 @@ export default function NetWorthCard({ data }: NetWorthCardProps) {
               )}
             >
               <ChangeIcon className="h-4 w-4" />
-              {isPositive ? "+" : "-"}₹{formatCurrency(data.changeAmount, "INR", "en-IN").replace("₹", "")}
+              {isPositive ? "+" : "-"}{formatCurrency(data.changeAmount, "INR", "en-IN")}
               <span className="text-foreground/50">({isPositive ? "↑" : "↓"} {data.changePercent}% this month)</span>
             </motion.div>
           </div>
@@ -99,7 +99,7 @@ export default function NetWorthCard({ data }: NetWorthCardProps) {
                 <span className="text-sm font-medium text-foreground/70">Assets</span>
               </div>
               <p className="mt-2 text-2xl font-bold tracking-tight text-emerald-700">
-                ₹{formatCurrency(data.totalAssets, "INR", "en-IN").replace("₹", "")}
+                {formatCurrency(data.totalAssets, "INR", "en-IN")}
               </p>
               <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-emerald-200/40">
                 <motion.div
@@ -124,7 +124,7 @@ export default function NetWorthCard({ data }: NetWorthCardProps) {
                 <span className="text-sm font-medium text-foreground/70">Liabilities</span>
               </div>
               <p className="mt-2 text-2xl font-bold tracking-tight text-rose-600">
-                -₹{formatCurrency(data.totalLiabilities, "INR", "en-IN").replace("₹", "")}
+                -{formatCurrency(data.totalLiabilities, "INR", "en-IN")}
               </p>
               <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-rose-200/40">
                 <motion.div
@@ -159,4 +159,3 @@ export default function NetWorthCard({ data }: NetWorthCardProps) {
     </motion.div>
   )
 }
-

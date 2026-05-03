@@ -3,6 +3,7 @@
 import { ResponsiveContainer } from "@/app/components/charts/MountedResponsiveContainer";
 import { motion } from "framer-motion"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { formatCompactCurrency, formatCurrency } from "@/app/lib/utils/number";
 import type { Budget } from "../types"
 
 interface ChartProps {
@@ -39,10 +40,10 @@ export default function Chart({ budgets }: ChartProps) {
               tick={{ fontSize: 12, fill: "#6b7280" }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v: number) => formatCompactCurrency(v, "INR", "en-IN")}
             />
             <Tooltip
-              formatter={(value) => [`₹${Number(value).toLocaleString("en-IN")}`, ""]}
+              formatter={(value) => [formatCurrency(Number(value ?? 0), "INR", "en-IN"), ""]}
               contentStyle={{ borderRadius: "1rem", border: "1px solid #e5e7eb" }}
             />
             <Legend
@@ -58,4 +59,3 @@ export default function Chart({ budgets }: ChartProps) {
     </motion.div>
   )
 }
-

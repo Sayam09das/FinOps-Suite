@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
 import { useAuth } from "@/app/features/auth";
+import { useDashboardCurrency } from "@/app/features/currency";
 import { cn } from "@/app/lib/utils/cn";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -58,8 +59,6 @@ const NOTIFICATIONS = [
   },
 ] as const;
 
-const CURRENCIES = ["USD", "INR", "EUR", "GBP"] as const;
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function dropdownCn(open: boolean) {
@@ -83,10 +82,16 @@ export default function DashNavbar({
   sidebarCollapsed = false,
 }: DashNavbarProps) {
   const { user, logout, isLoading } = useAuth();
+  const {
+    currencies,
+    selectedCurrency,
+    setSelectedCurrency,
+    isLoadingRates,
+    lastUpdated,
+  } = useDashboardCurrency()
 
   const [openPanel, setOpenPanel] = useState<PanelName>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>("USD");
 
   const navRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -283,14 +288,13 @@ export default function DashNavbar({
                 FX
               </span>
               <select
-                value={currency}
-                onChange={(e) =>
-                  setCurrency(e.target.value as (typeof CURRENCIES)[number])
-                }
+                value={selectedCurrency}
+                onChange={(e) => setSelectedCurrency(e.target.value as (typeof currencies)[number])}
+                disabled={isLoadingRates}
                 className="bg-transparent text-sm font-medium text-foreground outline-none"
                 aria-label="Display currency"
               >
-                {CURRENCIES.map((c) => (
+                {currencies.map((c) => (
                   <option key={c} value={c}>
                     {c}
                   </option>
@@ -358,22 +362,24 @@ export default function DashNavbar({
                         Currency
                       </span>
                       <select
-                        value={currency}
-                        onChange={(e) =>
-                          setCurrency(
-                            e.target.value as (typeof CURRENCIES)[number],
-                          )
-                        }
+                        value={selectedCurrency}
+                        onChange={(e) => setSelectedCurrency(e.target.value as (typeof currencies)[number])}
+                        disabled={isLoadingRates}
                         className="ml-auto bg-transparent text-sm font-medium text-foreground outline-none"
                         aria-label="Display currency"
                       >
-                        {CURRENCIES.map((c) => (
+                        {currencies.map((c) => (
                           <option key={c} value={c}>
                             {c}
                           </option>
                         ))}
                       </select>
                     </label>
+                    {lastUpdated ? (
+                      <p className="mt-2 text-[10px] text-foreground/45">
+                        Live FX rates synced on {lastUpdated}
+                      </p>
+                    ) : null}
                   </div>
 
                   {/* Menu actions */}

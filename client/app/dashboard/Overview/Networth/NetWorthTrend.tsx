@@ -8,7 +8,7 @@ import {
 
 import { Card } from "@/app/components/ui/card"
 import { cn } from "@/app/lib/utils/cn"
-import { formatCurrency } from "@/app/lib/utils/number"
+import { formatCompactCurrency, formatCurrency } from "@/app/lib/utils/number"
 
 import type { NetWorthTimeRange, TrendPoint } from "./types"
 
@@ -124,7 +124,7 @@ export default function NetWorthTrend({ series }: NetWorthTrendProps) {
                   fill: "rgba(33,49,43,0.55)",
                   fontSize: 12,
                 }}
-                tickFormatter={(value) => `₹${Math.round(value / 1000)}k`}
+                tickFormatter={(value) => formatCompactCurrency(Number(value ?? 0), "INR", "en-IN")}
               />
               <Tooltip content={<CustomTooltip />} />
               <Area
@@ -154,4 +154,3 @@ export default function NetWorthTrend({ series }: NetWorthTrendProps) {
     </motion.div>
   )
 }
-

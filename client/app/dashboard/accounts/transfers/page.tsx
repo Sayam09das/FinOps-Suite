@@ -11,6 +11,7 @@ import DetailsDrawer from "../TransfersPage/DetailsDrawer"
 import { useBankAccounts, useWalletAccounts } from "@/app/features/accounts"
 import { useCreateTransfer, useRecentTransfers } from "@/app/features/transfers"
 import { useToast } from "@/app/components/ui/use-toast"
+import { formatCurrency } from "@/app/lib/utils/number"
 import type { TransferAccount } from "../TransfersPage/BalancePreview"
 
 export default function TransfersPage() {
@@ -82,7 +83,7 @@ export default function TransfersPage() {
       
       toast({
         title: "Transfer successful",
-        description: `Successfully transferred ₹${transfer.amount.toLocaleString("en-IN")}`,
+        description: `Successfully transferred ${formatCurrency(transfer.amount, transfer.currency || "INR", "en-IN")}`,
       })
       
       // Refresh transfers list
@@ -151,4 +152,3 @@ export default function TransfersPage() {
     </div>
   )
 }
-

@@ -71,10 +71,10 @@ export default function SummaryTable({ budgetSummary }: SummaryTableProps) {
                 <TableRow key={index} className="hover:bg-muted/30 border-b border-border/20 h-14 group">
                   <TableCell className="font-medium">{row.category}</TableCell>
                   <TableCell className="text-right font-mono text-muted-foreground">
-                    ₹{formatCurrency(row.budget)}
+                    {formatCurrency(row.budget)}
                   </TableCell>
                   <TableCell className="text-right font-mono font-semibold">
-                    ₹{formatCurrency(row.actual)}
+                    {formatCurrency(row.actual)}
                   </TableCell>
                   <TableCell className="text-right">
                     <Badge 
@@ -105,7 +105,7 @@ export default function SummaryTable({ budgetSummary }: SummaryTableProps) {
                 ? "bg-destructive text-destructive-foreground" 
                 : "bg-green-500 text-green-foreground"
             )}>
-              {totalVariance < 0 ? '-' : '+'}₹{formatCurrency(Math.abs(totalVariance))}
+              {totalVariance < 0 ? '-' : '+'}{formatCurrency(Math.abs(totalVariance))}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
@@ -116,4 +116,3 @@ export default function SummaryTable({ budgetSummary }: SummaryTableProps) {
     </Card>
   )
 }
-

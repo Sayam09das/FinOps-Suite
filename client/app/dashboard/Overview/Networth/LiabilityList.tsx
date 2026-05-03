@@ -73,7 +73,7 @@ export default function LiabilityList({ liabilities }: LiabilityListProps) {
                   </div>
                   <div className="text-right">
                     <p className="text-base font-bold text-foreground">
-                      ₹{formatCurrency(liability.amount, "INR", "en-IN").replace("₹", "")}
+                      {formatCurrency(liability.amount, "INR", "en-IN")}
                     </p>
                     <p className="text-xs text-foreground/50">
                       {liability.percentage}% of liabilities
@@ -120,4 +120,3 @@ export default function LiabilityList({ liabilities }: LiabilityListProps) {
     </motion.div>
   )
 }
-

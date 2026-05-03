@@ -66,7 +66,7 @@ export default function CashFlowCards({ cashFlow }: CashFlowCardsProps) {
             </div>
             <div>
               <p className="font-bold text-lg">
-                Net Cash Flow: ₹{formatCurrency(netFlow)}
+                Net Cash Flow: {formatCurrency(netFlow)}
               </p>
               <p className="text-sm text-muted-foreground">
                 Positive cash flow this period
@@ -104,9 +104,8 @@ function CashFlowItem({ label, value, icon: Icon, color, className }: CashFlowIt
         </div>
       </div>
       <p className={cn("text-2xl font-bold", color)}>
-        ₹{formatCurrency(value)}
+        {formatCurrency(value)}
       </p>
     </div>
   )
 }
-

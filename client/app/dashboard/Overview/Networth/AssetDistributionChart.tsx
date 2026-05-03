@@ -27,7 +27,7 @@ function renderActiveShape(props: any) {
         {payload.name}
       </text>
       <text x={cx} y={cy + 14} dy={0} textAnchor="middle" fill="#5b6b64" className="text-xs">
-        ₹{formatCurrency(value, "INR", "en-IN").replace("₹", "")}
+        {formatCurrency(value, "INR", "en-IN")}
       </text>
       <text x={cx} y={cy + 32} dy={0} textAnchor="middle" fill="#5b6b64" className="text-xs">
         {(percent * 100).toFixed(0)}%
@@ -110,7 +110,7 @@ export default function AssetDistributionChart({ data }: AssetDistributionChartP
             <div className="text-center">
               <p className="text-sm font-bold text-foreground">{data[activeIndex]?.name}</p>
               <p className="text-xs text-foreground/60">
-                ₹{formatCurrency(data[activeIndex]?.value ?? 0, "INR", "en-IN").replace("₹", "")}
+                {formatCurrency(data[activeIndex]?.value ?? 0, "INR", "en-IN")}
               </p>
               <p className="text-xs text-foreground/50">{data[activeIndex]?.percentage}%</p>
             </div>
@@ -145,4 +145,3 @@ export default function AssetDistributionChart({ data }: AssetDistributionChartP
     </motion.div>
   )
 }
-

@@ -1,11 +1,12 @@
 import { formatCurrency, currencySymbol } from "./number"
+import { DEFAULT_SOURCE_CURRENCY, convertCurrencyAmount } from "@/app/features/currency/store"
 
 export function formatAmount(amount: number | string, options: {
   currency?: string
   locale?: string
   compact?: boolean
 } = {}) {
-  const { currency = "USD", locale = "en-US", compact = false } = options
+  const { currency = DEFAULT_SOURCE_CURRENCY, locale = "en-US", compact = false } = options
   
   if (compact) {
     return formatCurrency(amount, currency, locale)
@@ -16,8 +17,7 @@ export function formatAmount(amount: number | string, options: {
 }
 
 export function getCurrencyRate(from: string, to: string, amount: number = 1): Promise<number> {
-  // Placeholder for currency conversion API
-  return Promise.resolve(amount)
+  return Promise.resolve(convertCurrencyAmount(amount, from, to))
 }
 
 export function calculateConversion(amount: number, rate: number): number {
@@ -53,4 +53,3 @@ export type Currency = "USD" | "EUR" | "GBP" | "JPY" | "CAD" | "AUD" | "CHF" | "
 export const SUPPORTED_CURRENCIES: Currency[] = [
   "USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "INR", "CNY"
 ]
-

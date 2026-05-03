@@ -36,7 +36,7 @@ export default function AccountDistribution({ accounts }: AccountDistributionPro
           <Banknote className="h-6 w-6 text-primary" />
           Account Distribution
         </CardTitle>
-        <CardDescription>Total across all accounts: ₹{formatCurrency(totalBalance)}</CardDescription>
+        <CardDescription>Total across all accounts: {formatCurrency(totalBalance)}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 p-0">
         <ResponsiveContainer width="100%" height={220}>
@@ -76,7 +76,7 @@ export default function AccountDistribution({ accounts }: AccountDistributionPro
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-bold text-foreground">
-                    ₹{formatCurrency(account.balance)}
+                    {formatCurrency(account.balance)}
                   </p>
                 </div>
               </div>
@@ -87,4 +87,3 @@ export default function AccountDistribution({ accounts }: AccountDistributionPro
     </Card>
   )
 }
-

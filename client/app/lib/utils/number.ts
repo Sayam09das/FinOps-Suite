@@ -1,13 +1,46 @@
 import { cn } from "./cn"
+import {
+  DEFAULT_SOURCE_CURRENCY,
+  convertCurrencyAmount,
+  getDashboardCurrencyLocale,
+  getSelectedDashboardCurrency,
+} from "@/app/features/currency/store"
 
-export function formatCurrency(value: number | string, currency = "USD", locale = "en-US") {
+export function formatCurrency(
+  value: number | string,
+  currency: string = DEFAULT_SOURCE_CURRENCY,
+  locale?: string,
+) {
   const numValue = typeof value === "string" ? parseFloat(value) : value
-  return new Intl.NumberFormat(locale, { 
+  const targetCurrency = getSelectedDashboardCurrency()
+  const convertedValue = convertCurrencyAmount(numValue, currency, targetCurrency)
+  const effectiveLocale = locale || getDashboardCurrencyLocale(targetCurrency)
+
+  return new Intl.NumberFormat(effectiveLocale, {
     style: 'currency', 
-    currency,
+    currency: targetCurrency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2 
-  }).format(numValue)
+  }).format(convertedValue)
+}
+
+export function formatCompactCurrency(
+  value: number | string,
+  currency: string = DEFAULT_SOURCE_CURRENCY,
+  locale?: string,
+) {
+  const numValue = typeof value === "string" ? parseFloat(value) : value
+  const targetCurrency = getSelectedDashboardCurrency()
+  const convertedValue = convertCurrencyAmount(numValue, currency, targetCurrency)
+  const symbol = currencySymbol(targetCurrency)
+  const effectiveLocale = locale || getDashboardCurrencyLocale(targetCurrency)
+  const compactValue = new Intl.NumberFormat(effectiveLocale, {
+    notation: "compact",
+    compactDisplay: "short",
+    maximumFractionDigits: 1,
+  }).format(Math.abs(convertedValue))
+
+  return `${convertedValue < 0 ? "-" : ""}${symbol}${compactValue}`
 }
 
 export function formatNumber(value: number | string, options: Intl.NumberFormatOptions = {}) {
@@ -35,8 +68,8 @@ export function abbreviateNumber(value: number | string): string {
   return formatNumber(Math.round(current * 10) / 10, {}) + suffixes[suffixIndex]
 }
 
-export function currencySymbol(currency = "USD"): string {
-  return new Intl.NumberFormat("en-US", { 
+export function currencySymbol(currency = getSelectedDashboardCurrency()): string {
+  return new Intl.NumberFormat(getDashboardCurrencyLocale(currency), {
     style: 'currency', 
     currency,
     minimumFractionDigits: 0 
@@ -56,4 +89,3 @@ export function roundTo(value: number, decimals: number): number {
   const factor = Math.pow(10, decimals)
   return Math.round(value * factor) / factor
 }
-

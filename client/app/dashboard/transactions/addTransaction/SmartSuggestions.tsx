@@ -5,6 +5,7 @@ import { Copy, Lightbulb, Receipt } from "lucide-react"
 
 import { cn } from "@/app/lib/utils/cn"
 import { useTransactionsQuery } from "@/app/lib/api/queries"
+import { formatCurrency } from "@/app/lib/utils/number"
 import { mapApiTransaction } from "../AllTransactions/view-model"
 import type { Transaction } from "../AllTransactions/types"
 
@@ -65,7 +66,7 @@ export default function SmartSuggestions({ onDuplicate }: SmartSuggestionsProps)
                 "text-sm font-semibold",
                 txn.type === "income" ? "text-emerald-600" : "text-rose-600"
               )}>
-                {txn.type === "income" ? "+" : "-"}₹{txn.amount.toLocaleString("en-IN")}
+                {txn.type === "income" ? "+" : "-"}{formatCurrency(txn.amount, "INR", "en-IN")}
               </p>
             </div>
             <motion.button

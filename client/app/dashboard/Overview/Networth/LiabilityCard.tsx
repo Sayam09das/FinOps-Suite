@@ -35,7 +35,7 @@ export default function LiabilityCard({ liabilities, totalLiabilities }: Liabili
           <div className="rounded-2xl border border-rose-200/60 bg-rose-50/70 px-4 py-2 text-right">
             <p className="text-xs font-medium text-rose-700/70">Total</p>
             <p className="text-lg font-bold tracking-tight text-rose-600">
-              ₹{formatCurrency(totalLiabilities, "INR", "en-IN").replace("₹", "")}
+              {formatCurrency(totalLiabilities, "INR", "en-IN")}
             </p>
           </div>
         </div>
@@ -65,7 +65,7 @@ export default function LiabilityCard({ liabilities, totalLiabilities }: Liabili
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-foreground">{liability.name}</p>
                     <p className="text-sm font-bold text-foreground">
-                      ₹{formatCurrency(liability.amount, "INR", "en-IN").replace("₹", "")}
+                      {formatCurrency(liability.amount, "INR", "en-IN")}
                     </p>
                   </div>
                   <div className="mt-1.5 flex items-center gap-2">
@@ -105,4 +105,3 @@ export default function LiabilityCard({ liabilities, totalLiabilities }: Liabili
     </motion.div>
   )
 }
-

@@ -14,6 +14,7 @@ import { Button } from "@/app/components/ui/button"
 import { toast } from "@/app/components/ui/use-toast"
 import { api } from "@/app/lib/api/client"
 import { ENDPOINTS } from "@/app/lib/api/endpoints"
+import { formatCurrency } from "@/app/lib/utils/number"
 
 import TransactionTypeToggle, { type TransactionType } from "./TransactionTypeToggle"
 import CategorySelect from "./CategorySelect"
@@ -77,7 +78,7 @@ export default function TransactionForm() {
 
         toast({
           title: "Transaction saved",
-          description: `${type === "income" ? "+" : "-"}₹${Number(amount).toLocaleString("en-IN")} - ${description}`,
+          description: `${type === "income" ? "+" : "-"}${formatCurrency(Number(amount), "INR", "en-IN")} - ${description}`,
           variant: "success",
         })
 
