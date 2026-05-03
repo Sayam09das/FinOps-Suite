@@ -6,14 +6,14 @@ import { CreditCard, Wallet, TrendingDown, Percent } from "lucide-react"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
 import { cn } from "@/app/lib/utils/cn"
-import type { DebtSummaryData } from "./demo-data"
+import type { DebtSummaryData } from "@/app/features/goals"
 
 interface SummaryProps {
   data: DebtSummaryData
 }
 
 export default function Summary({ data }: SummaryProps) {
-  const paidPercent = Math.round((data.totalPaid / data.totalDebt) * 100)
+  const paidPercent = data.totalDebt > 0 ? Math.round((data.totalPaid / data.totalDebt) * 100) : 0
 
   const cards = [
     {
@@ -115,4 +115,3 @@ export default function Summary({ data }: SummaryProps) {
     </motion.div>
   )
 }
-

@@ -6,7 +6,7 @@ import { Wallet, TrendingUp, TrendingDown, Percent } from "lucide-react"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
 import { cn } from "@/app/lib/utils/cn"
-import type { InvestmentSummaryData } from "./demo-data"
+import type { InvestmentSummaryData } from "@/app/features/goals"
 
 interface SummaryProps {
   data: InvestmentSummaryData
@@ -14,7 +14,7 @@ interface SummaryProps {
 
 export default function Summary({ data }: SummaryProps) {
   const profitLoss = data.currentValue - data.totalInvested
-  const returnPercent = Math.round((profitLoss / data.totalInvested) * 100)
+  const returnPercent = data.totalInvested > 0 ? Math.round((profitLoss / data.totalInvested) * 100) : 0
   const isProfit = profitLoss >= 0
 
   const cards = [

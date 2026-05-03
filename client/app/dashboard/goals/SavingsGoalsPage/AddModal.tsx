@@ -6,7 +6,6 @@ import { X, Target, Calculator } from "lucide-react"
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
-import { accountOptions } from "./demo-data"
 
 interface AddModalProps {
   open: boolean
@@ -19,14 +18,15 @@ interface AddModalProps {
     linkedAccount: string
   }) => void
   currency: string
+  accountOptions: Array<{ value: string; label: string }>
 }
 
-export default function AddModal({ open, onClose, onAdd, currency }: AddModalProps) {
+export default function AddModal({ open, onClose, onAdd, currency, accountOptions }: AddModalProps) {
   const [name, setName] = useState("")
   const [targetAmount, setTargetAmount] = useState("")
   const [currentAmount, setCurrentAmount] = useState("")
   const [deadline, setDeadline] = useState("")
-  const [linkedAccount, setLinkedAccount] = useState(accountOptions[0].label)
+  const [linkedAccount, setLinkedAccount] = useState(accountOptions[0]?.label || "")
 
   const monthlyRequired = useMemo(() => {
     const target = parseFloat(targetAmount) || 0
@@ -50,7 +50,7 @@ export default function AddModal({ open, onClose, onAdd, currency }: AddModalPro
     setTargetAmount("")
     setCurrentAmount("")
     setDeadline("")
-    setLinkedAccount(accountOptions[0].label)
+    setLinkedAccount(accountOptions[0]?.label || "")
     onClose()
   }
 
@@ -152,6 +152,9 @@ export default function AddModal({ open, onClose, onAdd, currency }: AddModalPro
                         onChange={(e) => setLinkedAccount(e.target.value)}
                         className="w-full rounded-xl border border-border/80 bg-background/60 px-4 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
                       >
+                        {accountOptions.length === 0 ? (
+                          <option value="">No linked accounts</option>
+                        ) : null}
                         {accountOptions.map((opt) => (
                           <option key={opt.value} value={opt.label}>{opt.label}</option>
                         ))}
@@ -196,4 +199,3 @@ export default function AddModal({ open, onClose, onAdd, currency }: AddModalPro
     </AnimatePresence>
   )
 }
-

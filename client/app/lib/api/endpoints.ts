@@ -45,6 +45,12 @@ DASHBOARD: {
     BALANCE: "/api/accounts/balance",
     ACTIVITY: "/api/accounts/activity",
   },
+  GOALS: {
+    SAVINGS: "/api/goals/savings",
+    DEBTS: "/api/goals/debts",
+    DEBT_PAYMENT: (id: string) => `/api/goals/debts/${id}/payments`,
+    INVESTMENTS: "/api/goals/investments",
+  },
   UPLOAD: {
     SINGLE: "/api/uploads/single",
     MULTIPLE: "/api/uploads/multiple",
@@ -52,4 +58,3 @@ DASHBOARD: {
 } as const
 
 export type ApiEndpoints = typeof ENDPOINTS
-

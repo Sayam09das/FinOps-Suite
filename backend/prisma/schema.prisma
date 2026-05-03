@@ -21,6 +21,9 @@ model User {
   transactions  Transaction[]
   accounts     Account[]
   transfers    Transfer[]
+  savingsGoals  SavingsGoal[]
+  debts         Debt[]
+  investments   Investment[]
 }
 
 model Transaction {
@@ -108,6 +111,103 @@ model Transfer {
   @@index([userId, createdAt(sort: Desc)])
   @@index([fromAccountId])
   @@index([toAccountId])
+}
+
+model SavingsGoal {
+  id             String               @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String               @db.ObjectId
+  name           String
+  targetAmount   Float
+  currentAmount  Float                @default(0)
+  deadline       DateTime
+  linkedAccount  String
+  color          String               @default("#3B82F6")
+  icon           String               @default("Shield")
+  currency       String               @default("INR")
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  user           User                 @relation(fields: [userId], references: [id])
+  contributions  SavingsContribution[]
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model SavingsContribution {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  goalId         String      @db.ObjectId
+  date           DateTime    @default(now())
+  amount         Float
+  createdAt      DateTime    @default(now())
+
+  goal           SavingsGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId, date(sort: Desc)])
+}
+
+model Debt {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String        @db.ObjectId
+  name             String
+  type             String
+  totalAmount      Float
+  remainingBalance Float
+  interestRate     Float
+  emi              Float
+  color            String        @default("#F59E0B")
+  currency         String        @default("INR")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user             User          @relation(fields: [userId], references: [id])
+  payments         DebtPayment[]
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model DebtPayment {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  debtId      String   @db.ObjectId
+  date       DateTime @default(now())
+  amount     Float
+  type       String
+  createdAt  DateTime @default(now())
+
+  debt       Debt     @relation(fields: [debtId], references: [id], onDelete: Cascade)
+
+  @@index([debtId, date(sort: Desc)])
+}
+
+model Investment {
+  id              String              @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String              @db.ObjectId
+  name            String
+  type            String
+  investedAmount  Float
+  currentValue    Float
+  quantity        Float
+  buyPrice        Float
+  color           String              @default("#2563EB")
+  currency        String              @default("INR")
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  user            User                @relation(fields: [userId], references: [id])
+  history         InvestmentHistory[]
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model InvestmentHistory {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  investmentId  String      @db.ObjectId
+  date          DateTime    @default(now())
+  value         Float
+  createdAt     DateTime    @default(now())
+
+  investment    Investment  @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+
+  @@index([investmentId, date(sort: Desc)])
 }
 
 enum Role {

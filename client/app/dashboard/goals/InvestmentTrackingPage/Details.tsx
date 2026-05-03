@@ -6,7 +6,7 @@ import { X, BarChart3, PieChart, TrendingUp, TrendingDown, Hash, IndianRupee } f
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
 import { cn } from "@/app/lib/utils/cn"
-import type { Holding } from "./demo-data"
+import type { Holding } from "@/app/features/goals"
 
 interface DetailsProps {
   holding: Holding | null
@@ -18,7 +18,7 @@ export default function Details({ holding, onClose, currency }: DetailsProps) {
   if (!holding) return null
 
   const gainLoss = holding.currentValue - holding.investedAmount
-  const returnPct = Math.round((gainLoss / holding.investedAmount) * 100)
+  const returnPct = holding.investedAmount > 0 ? Math.round((gainLoss / holding.investedAmount) * 100) : 0
   const isProfit = gainLoss >= 0
 
   return (
@@ -132,4 +132,3 @@ function StatCard(props: { icon: React.ElementType; label: string; value: string
     </div>
   )
 }
-

@@ -5,7 +5,7 @@ import { Shield, Plane, Car, Home, CalendarDays, Wallet } from "lucide-react"
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
-import type { SavingsGoal } from "./demo-data"
+import type { SavingsGoal } from "@/app/features/goals"
 
 const iconMap: Record<string, React.ElementType> = {
   Shield,
@@ -21,6 +21,16 @@ interface GoalsListProps {
 }
 
 export default function GoalsList({ goals, currency, onSelectGoal }: GoalsListProps) {
+  if (goals.length === 0) {
+    return (
+      <Card variant="surface" className="rounded-[1.95rem] border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.3))]">
+        <CardContent className="px-6 py-10 text-center text-foreground/60">
+          No savings goals yet. Create your first goal to start tracking progress.
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -32,7 +42,7 @@ export default function GoalsList({ goals, currency, onSelectGoal }: GoalsListPr
         const progress = Math.round((goal.currentAmount / goal.targetAmount) * 100)
         const remaining = goal.targetAmount - goal.currentAmount
         const monthsLeft = Math.max(1, Math.ceil((new Date(goal.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30)))
-        const monthlyRequired = Math.ceil(remaining / monthsLeft)
+        const monthlyRequired = Math.max(0, Math.ceil(remaining / monthsLeft))
         const Icon = iconMap[goal.icon] || Shield
 
         return (
@@ -106,4 +116,3 @@ export default function GoalsList({ goals, currency, onSelectGoal }: GoalsListPr
     </motion.div>
   )
 }
-

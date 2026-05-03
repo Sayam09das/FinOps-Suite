@@ -16,7 +16,7 @@ import {
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
-import type { SavingsGoal } from "./demo-data"
+import type { SavingsGoal } from "@/app/features/goals"
 
 const iconMap: Record<string, React.ElementType> = {
   Shield,
@@ -37,7 +37,7 @@ export default function DetailsDrawer({ goal, onClose, currency }: DetailsDrawer
   const progress = Math.round((goal.currentAmount / goal.targetAmount) * 100)
   const remaining = goal.targetAmount - goal.currentAmount
   const monthsLeft = Math.max(1, Math.ceil((new Date(goal.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30)))
-  const monthlyRequired = Math.ceil(remaining / monthsLeft)
+  const monthlyRequired = Math.max(0, Math.ceil(remaining / monthsLeft))
   const Icon = iconMap[goal.icon] || Shield
 
   return (
@@ -167,4 +167,3 @@ function StatCard(props: { icon: React.ElementType; label: string; value: string
     </div>
   )
 }
-

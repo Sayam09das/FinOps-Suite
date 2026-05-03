@@ -6,7 +6,7 @@ import { TrendingUp, TrendingDown, BarChart3, PieChart } from "lucide-react"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
 import { cn } from "@/app/lib/utils/cn"
-import type { Holding } from "./demo-data"
+import type { Holding } from "@/app/features/goals"
 
 interface HoldingsListProps {
   holdings: Holding[]
@@ -15,6 +15,16 @@ interface HoldingsListProps {
 }
 
 export default function HoldingsList({ holdings, currency, onSelectHolding }: HoldingsListProps) {
+  if (holdings.length === 0) {
+    return (
+      <Card variant="surface" className="rounded-[1.95rem] border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.3))]">
+        <CardContent className="px-6 py-10 text-center text-foreground/60">
+          No investments added yet. Add a holding to track your portfolio in real time.
+        </CardContent>
+      </Card>
+    )
+  }
+
   const totalInvested = holdings.reduce((s, h) => s + h.investedAmount, 0)
   const stockAllocation = holdings.filter(h => h.type === "stock").reduce((s, h) => s + h.investedAmount, 0)
   const fundAllocation = holdings.filter(h => h.type === "mutual-fund").reduce((s, h) => s + h.investedAmount, 0)
@@ -66,7 +76,7 @@ export default function HoldingsList({ holdings, currency, onSelectHolding }: Ho
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {holdings.map((holding, index) => {
               const gainLoss = holding.currentValue - holding.investedAmount
-              const returnPct = Math.round((gainLoss / holding.investedAmount) * 100)
+              const returnPct = holding.investedAmount > 0 ? Math.round((gainLoss / holding.investedAmount) * 100) : 0
               const isProfit = gainLoss >= 0
               const allocation = Math.round((holding.investedAmount / totalInvested) * 100)
 
@@ -147,4 +157,3 @@ export default function HoldingsList({ holdings, currency, onSelectHolding }: Ho
     </motion.div>
   )
 }
-

@@ -5,7 +5,7 @@ import { Landmark, CreditCard, CalendarDays, Percent } from "lucide-react"
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
-import type { Debt } from "./demo-data"
+import type { Debt } from "@/app/features/goals"
 
 interface DebtListProps {
   debts: Debt[]
@@ -14,6 +14,16 @@ interface DebtListProps {
 }
 
 export default function DebtList({ debts, currency, onSelectDebt }: DebtListProps) {
+  if (debts.length === 0) {
+    return (
+      <Card variant="surface" className="rounded-[1.95rem] border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.3))]">
+        <CardContent className="px-6 py-10 text-center text-foreground/60">
+          No debts added yet. Add a debt to start tracking payoff progress.
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -108,4 +118,3 @@ export default function DebtList({ debts, currency, onSelectDebt }: DebtListProp
     </motion.div>
   )
 }
-

@@ -6,14 +6,14 @@ import { Target, Wallet, TrendingUp } from "lucide-react"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
 import { cn } from "@/app/lib/utils/cn"
-import type { SavingsSummaryData } from "./demo-data"
+import type { SavingsSummaryData } from "@/app/features/goals"
 
 interface SummaryProps {
   data: SavingsSummaryData
 }
 
 export default function Summary({ data }: SummaryProps) {
-  const overallProgress = Math.round((data.totalSaved / data.totalTarget) * 100)
+  const overallProgress = data.totalTarget > 0 ? Math.round((data.totalSaved / data.totalTarget) * 100) : 0
 
   const cards = [
     {
@@ -112,4 +112,3 @@ export default function Summary({ data }: SummaryProps) {
     </motion.div>
   )
 }
-

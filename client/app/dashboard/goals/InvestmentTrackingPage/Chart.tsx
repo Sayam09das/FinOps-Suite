@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Area, AreaChart } from 'recharts';
 
 import { Card, CardContent } from "@/app/components/ui/card"
-import { formatCurrency } from "@/app/lib/utils/number"
+import { formatCompactCurrency, formatCurrency } from "@/app/lib/utils/number"
 
 interface ChartProps {
   data: { date: string; value: number }[]
@@ -45,7 +45,7 @@ export default function Chart({ data, currency }: ChartProps) {
                   fontSize={12}
                 />
                 <YAxis
-                  tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}K`}
+                  tickFormatter={(v) => formatCompactCurrency(Number(v ?? 0), currency)}
                   stroke="rgba(0,0,0,0.2)"
                   fontSize={12}
                 />

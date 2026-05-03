@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recha
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
-import type { Debt } from "./demo-data"
+import type { Debt } from "@/app/features/goals"
 
 interface TimelineProps {
   debts: Debt[]

@@ -6,7 +6,7 @@ import { Receipt, Zap, Calculator, IndianRupee } from "lucide-react"
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { formatCurrency } from "@/app/lib/utils/number"
-import type { Debt } from "./demo-data"
+import type { Debt } from "@/app/features/goals"
 
 interface PaymentsProps {
   debts: Debt[]
@@ -15,6 +15,16 @@ interface PaymentsProps {
 }
 
 export default function Payments({ debts, currency, onRecordPayment }: PaymentsProps) {
+  if (debts.length === 0) {
+    return (
+      <Card variant="surface" className="rounded-[1.95rem] border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.3))]">
+        <CardContent className="px-6 py-10 text-center text-foreground/60">
+          Add a debt first to record payments and view payoff impact.
+        </CardContent>
+      </Card>
+    )
+  }
+
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null)
   const [extraAmount, setExtraAmount] = useState("")
 
@@ -96,15 +106,14 @@ export default function Payments({ debts, currency, onRecordPayment }: PaymentsP
           </div>
 
           <button
-            onClick={() => onRecordPayment(selected.id, selected.emi)}
+            onClick={() => onRecordPayment(selected.id, extra > 0 ? extra : selected.emi)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-[0_10px_30px_rgba(33,49,43,0.1)] transition-all hover:bg-primary/90"
           >
             <Receipt className="h-4 w-4" />
-            Record Regular Payment
+            Record {extra > 0 ? "Extra" : "Regular"} Payment
           </button>
         </CardContent>
       </Card>
     </motion.div>
   )
 }
-
