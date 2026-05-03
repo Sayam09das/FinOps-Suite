@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from './client'
 import { ENDPOINTS } from './endpoints'
 import { API } from '../constants'
-import { getAuthToken } from '@/app/features/auth/utils/auth-utils'
+import { getAuthToken, getStoredUser } from '@/app/features/auth/utils/auth-utils'
 import type { Budget, DashboardOverview, Transaction } from '@/app/features/dashboard/types/dashboard'
 
 type AuthUser = {
@@ -50,14 +50,23 @@ export const useRegisterMutation = () => {
 
 // SSR-safe useAuthMeQuery - localStorage only client-side
 export const useAuthMeQuery = ({ enabled }: { enabled?: boolean } = {}) => {
+  const hasStoredSession = !!getAuthToken() || !!getStoredUser()
+
   return useQuery<AuthUser>({
     queryKey: ['auth', 'me'],
     queryFn: () => api.get<AuthUser>(ENDPOINTS.AUTH.ME, { timeoutMs: API.AUTH_TIMEOUT }),
-    enabled: enabled ?? !!getAuthToken(), // Wait for token!
+    enabled: enabled ?? hasStoredSession,
     initialData: undefined,
     staleTime: 10 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: 3,
+    retry: (failureCount, error) => {
+      const status = (error as Error & { status?: number })?.status
+      if (status === 401) {
+        return false
+      }
+
+      return failureCount < 2
+    },
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
     refetchOnWindowFocus: false,
     refetchOnMount: true,

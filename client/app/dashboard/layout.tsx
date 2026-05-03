@@ -32,7 +32,7 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (!isInitializing && !isAuthenticated) {
-      router.replace("/")
+      router.replace("/login")
     }
   }, [isAuthenticated, isInitializing, router])
 

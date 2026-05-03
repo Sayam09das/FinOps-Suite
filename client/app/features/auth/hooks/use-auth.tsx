@@ -32,17 +32,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const storedToken = getAuthToken();
   const storedUser = getStoredUser<User>();
-  const { data: user, isLoading: meLoading } = useAuthMeQuery({ enabled: !!storedToken });
+  const hasStoredSession = !!storedToken || !!storedUser;
+  const { data: user, isLoading: meLoading, isFetched: meFetched } = useAuthMeQuery({ enabled: hasStoredSession });
   const loginMutation = useLoginMutation();
   const registerMutation = useRegisterMutation();
   const logoutMutation = useLogoutMutation();
-  const effectiveUser = user || storedUser || null;
+  const effectiveUser = user || (!meFetched && storedUser) || null;
 
   const isLoading =
     loginMutation.isPending ||
     registerMutation.isPending ||
     logoutMutation.isPending;
-  const isInitializing = !!storedToken && meLoading && !user;
+  const isInitializing = hasStoredSession && meLoading;
 
   const { toastPromise } = useToast();
 
