@@ -24,6 +24,10 @@ model User {
   savingsGoals  SavingsGoal[]
   debts         Debt[]
   investments   Investment[]
+  teamInvites   TeamInvite[]
+  teamMembers   TeamMember[]
+  sharedAccounts SharedAccount[]
+  expenseGroups ExpenseGroup[]
 }
 
 model Transaction {
@@ -208,6 +212,146 @@ model InvestmentHistory {
   investment    Investment  @relation(fields: [investmentId], references: [id], onDelete: Cascade)
 
   @@index([investmentId, date(sort: Desc)])
+}
+
+model TeamInvite {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  email      String
+  role       String
+  status     String   @default("pending")
+  sentAt     DateTime @default(now())
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model TeamMember {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  name       String
+  email      String
+  role       String
+  status     String   @default("active")
+  joinedAt   DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model SharedAccount {
+  id           String                @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String                @db.ObjectId
+  name         String
+  description  String
+  totalBalance Float                 @default(0)
+  currency     String                @default("INR")
+  color        String                @default("#3b82f6")
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  user         User                  @relation(fields: [userId], references: [id])
+  members      SharedAccountMember[]
+  activities   SharedAccountActivity[]
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model SharedAccountMember {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  sharedAccountId String        @db.ObjectId
+  name            String
+  email           String
+  role            String
+  joinedAt        DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  sharedAccount   SharedAccount @relation(fields: [sharedAccountId], references: [id], onDelete: Cascade)
+
+  @@index([sharedAccountId, createdAt(sort: Desc)])
+}
+
+model SharedAccountActivity {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  sharedAccountId String        @db.ObjectId
+  userName        String
+  action          String
+  amount          Float?
+  description     String
+  timestamp       DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+
+  sharedAccount   SharedAccount @relation(fields: [sharedAccountId], references: [id], onDelete: Cascade)
+
+  @@index([sharedAccountId, timestamp(sort: Desc)])
+}
+
+model ExpenseGroup {
+  id           String              @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String              @db.ObjectId
+  name         String
+  description  String
+  color        String              @default("#3b82f6")
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  user         User                @relation(fields: [userId], references: [id])
+  members      ExpenseGroupMember[]
+  expenses     GroupExpense[]
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model ExpenseGroupMember {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  expenseGroupId String       @db.ObjectId
+  name           String
+  email          String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  expenseGroup   ExpenseGroup @relation(fields: [expenseGroupId], references: [id], onDelete: Cascade)
+
+  @@index([expenseGroupId, createdAt(sort: Desc)])
+}
+
+model GroupExpense {
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
+  expenseGroupId String             @db.ObjectId
+  description    String
+  amount         Float
+  currency       String             @default("INR")
+  paidBy         String
+  splitType      String
+  tags           String[]
+  date           DateTime
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  expenseGroup   ExpenseGroup       @relation(fields: [expenseGroupId], references: [id], onDelete: Cascade)
+  splits         GroupExpenseSplit[]
+
+  @@index([expenseGroupId, createdAt(sort: Desc)])
+}
+
+model GroupExpenseSplit {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  groupExpenseId String      @db.ObjectId
+  userId        String
+  amount        Float
+  createdAt     DateTime     @default(now())
+
+  groupExpense  GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Cascade)
+
+  @@index([groupExpenseId, createdAt(sort: Desc)])
 }
 
 enum Role {

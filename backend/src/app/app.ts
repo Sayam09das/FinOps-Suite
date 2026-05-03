@@ -18,6 +18,7 @@ import healthIndex from "../modules/health";
 import accountsIndex from "../modules/accounts";
 import transfersIndex from "../modules/transfers";
 import goalsIndex from "../modules/goals";
+import collaborationIndex from "../modules/collaboration";
 
 // Create app
 const app = express();
@@ -39,6 +40,7 @@ app.use("/api/user", userIndex);
 app.use("/api/accounts", accountsIndex);
 app.use("/api/transfers", transfersIndex);
 app.use("/api/goals", goalsIndex);
+app.use("/api/collaboration", collaborationIndex);
 app.use("/api/transactions", transactionIndex);
 app.use("/api/dashboard", dashboardIndex);
 app.use("/api", budgetIndex);

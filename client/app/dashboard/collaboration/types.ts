@@ -11,7 +11,7 @@ export interface Member {
 
 export interface Activity {
   id: string
-  userId: string
+  userId?: string
   userName: string
   userAvatar?: string
   action: string
@@ -101,4 +101,3 @@ export interface TeamMember {
   joinedAt: string
   status: "active" | "inactive"
 }
-

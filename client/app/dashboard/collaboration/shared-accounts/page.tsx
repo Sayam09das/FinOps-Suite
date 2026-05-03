@@ -8,19 +8,35 @@ import Summary from "../shared-accounts-page/Summary"
 import AccountsList from "../shared-accounts-page/AccountsList"
 import Members from "../shared-accounts-page/Members"
 import ActivityFeed from "../shared-accounts-page/ActivityFeed"
-
-import { demoSharedAccounts } from "../../collaboration/demo-data"
+import CreateSharedAccountModal from "../shared-accounts-page/CreateSharedAccountModal"
 import type { SharedAccount } from "../../collaboration/types"
+import { useToast } from "@/app/components/ui/use-toast"
+import {
+  useCreateSharedAccount,
+  useLeaveSharedAccount,
+  useRemoveSharedAccountMember,
+  useSharedAccountsDashboard,
+  useUpdateSharedAccountMemberRole,
+} from "@/app/features/collaboration"
+import type { MemberRole } from "../../collaboration/types"
 
 export default function SharedAccountsPage() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)
-
-  const accounts = demoSharedAccounts
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const { toast } = useToast()
+  const { data, error } = useSharedAccountsDashboard()
+  const createSharedAccount = useCreateSharedAccount()
+  const updateMemberRole = useUpdateSharedAccountMemberRole()
+  const removeSharedAccountMember = useRemoveSharedAccountMember()
+  const leaveSharedAccount = useLeaveSharedAccount()
+  const accounts = data?.accounts ?? []
 
   const selectedAccount = useMemo(
-    () => accounts.find((a) => a.id === selectedAccountId) || null,
+    () => accounts.find((a) => a.id === selectedAccountId) || accounts[0] || null,
     [accounts, selectedAccountId]
   )
+
+  const summaryCurrency = selectedAccount?.currency || accounts[0]?.currency || "INR"
 
   const totalSharedBalance = useMemo(
     () => accounts.reduce((sum, a) => sum + a.totalBalance, 0),
@@ -33,12 +49,17 @@ export default function SharedAccountsPage() {
   )
 
   const yourShare = useMemo(
-    () => accounts.reduce((sum, a) => sum + a.totalBalance / a.members.length, 0),
+    () => accounts.reduce((sum, a) => sum + (a.members.length > 0 ? a.totalBalance / a.members.length : 0), 0),
     [accounts]
   )
 
-  const handleCreateAccount = () => {
-    alert("Create Shared Account — demo mode")
+  const handleCreateAccount = async (payload: { name: string; description: string }) => {
+    const account = await createSharedAccount.mutateAsync(payload)
+    setSelectedAccountId(account.id)
+    toast({
+      title: "Shared account created",
+      description: `${payload.name} is now live and synced from backend.`,
+    })
   }
 
   const handleViewAccount = (account: SharedAccount) => {
@@ -49,30 +70,57 @@ export default function SharedAccountsPage() {
     setSelectedAccountId(account.id)
   }
 
-  const handleLeaveAccount = (accountId: string) => {
-    if (confirm("Are you sure you want to leave this account?")) {
-      alert(`Left account ${accountId} — demo mode`)
+  const handleLeaveAccount = async (accountId: string) => {
+    if (!confirm("Are you sure you want to leave this account?")) return
+    await leaveSharedAccount.mutateAsync(accountId)
+    if (selectedAccountId === accountId) {
+      setSelectedAccountId(null)
     }
+    toast({
+      title: "Left shared account",
+      description: "Your membership was removed successfully.",
+    })
   }
 
-  const handleChangeRole = (memberId: string, newRole: string) => {
-    alert(`Changed role of ${memberId} to ${newRole} — demo mode`)
+  const handleChangeRole = async (memberId: string, newRole: string) => {
+    if (!selectedAccount) return
+    await updateMemberRole.mutateAsync({
+      accountId: selectedAccount.id,
+      memberId,
+      role: newRole as MemberRole,
+    })
+    toast({
+      title: "Member role updated",
+      description: `The member role is now ${newRole}.`,
+    })
   }
 
-  const handleRemoveUser = (memberId: string) => {
-    if (confirm("Remove this user from the account?")) {
-      alert(`Removed ${memberId} — demo mode`)
-    }
+  const handleRemoveUser = async (memberId: string) => {
+    if (!selectedAccount) return
+    if (!confirm("Remove this user from the account?")) return
+    await removeSharedAccountMember.mutateAsync({
+      accountId: selectedAccount.id,
+      memberId,
+    })
+    toast({
+      title: "Member removed",
+      description: "The user was removed from this shared account.",
+    })
   }
 
   return (
     <div className="space-y-6 p-4 md:p-6 xl:p-8">
-      <Header onCreateAccount={handleCreateAccount} />
+      <Header onCreateAccount={() => setShowCreateModal(true)} />
+      {error ? (
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          Failed to load shared accounts: {error.message}
+        </div>
+      ) : null}
       <Summary
         totalSharedBalance={totalSharedBalance}
         totalMembers={totalMembers}
         yourShare={yourShare}
-        currency="INR"
+        currency={summaryCurrency}
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -118,7 +166,12 @@ export default function SharedAccountsPage() {
           </AnimatePresence>
         </div>
       </div>
+
+      <CreateSharedAccountModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreate={handleCreateAccount}
+      />
     </div>
   )
 }
-

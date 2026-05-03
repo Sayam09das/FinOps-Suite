@@ -121,10 +121,10 @@ export default function Expenselist({ group, currentUserId, onViewSplit }: Expen
 
               <div className="shrink-0 text-right">
                 <p className="text-sm font-bold text-foreground">
-                  {formatCurrency(expense.amount, expense.currency, "en-IN")}
+                  {formatCurrency(expense.amount, expense.currency)}
                 </p>
                 <p className="text-[10px] text-foreground/40">
-                  your share {formatCurrency(yourSplit, expense.currency, "en-IN")}
+                  your share {formatCurrency(yourSplit, expense.currency)}
                 </p>
               </div>
 
@@ -136,4 +136,3 @@ export default function Expenselist({ group, currentUserId, onViewSplit }: Expen
     </motion.div>
   )
 }
-

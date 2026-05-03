@@ -6,7 +6,7 @@ import {
   Pencil,
   UserPlus,
   Settings,
-  IndianRupee,
+  BadgeInfo,
   Clock,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
@@ -41,6 +41,20 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   )
 
+  if (sorted.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="rounded-3xl border border-border/60 bg-background/60 p-5 text-center shadow-sm backdrop-blur-sm"
+      >
+        <h3 className="text-lg font-semibold tracking-[-0.02em] text-foreground">Activity Feed</h3>
+        <p className="mt-2 text-sm text-foreground/40">No activity yet for this shared account.</p>
+      </motion.div>
+    )
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -53,7 +67,7 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
           Activity Feed
         </h3>
         <div className="flex h-7 items-center gap-1 rounded-full bg-amber-50 px-2.5 text-xs font-medium text-amber-600">
-          <IndianRupee className="h-3 w-3" />
+          <BadgeInfo className="h-3 w-3" />
           Transparency
         </div>
       </div>
@@ -103,4 +117,3 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
     </motion.div>
   )
 }
-

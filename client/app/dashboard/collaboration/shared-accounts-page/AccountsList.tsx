@@ -34,6 +34,14 @@ export default function AccountsList({
   onManageMembers,
   onLeave,
 }: AccountsListProps) {
+  if (accounts.length === 0) {
+    return (
+      <div className="rounded-3xl border border-border/60 bg-background/60 p-8 text-center shadow-sm backdrop-blur-sm">
+        <p className="text-foreground/50">No shared accounts yet. Create one to start collaborating.</p>
+      </div>
+    )
+  }
+
   return (
     <motion.div
       variants={container}
@@ -91,7 +99,7 @@ export default function AccountsList({
 
               <div className="mt-4 pl-2">
                 <p className="text-2xl font-bold text-foreground">
-                  {formatCurrency(account.totalBalance, account.currency, "en-IN")}
+                  {formatCurrency(account.totalBalance, account.currency)}
                 </p>
                 <p className="text-xs text-foreground/40">Total balance</p>
               </div>
@@ -135,4 +143,3 @@ export default function AccountsList({
     </motion.div>
   )
 }
-

@@ -22,6 +22,14 @@ const item = {
 }
 
 export default function GroupsList({ groups, selectedGroupId, onSelect }: GroupsListProps) {
+  if (groups.length === 0) {
+    return (
+      <div className="rounded-3xl border border-border/60 bg-background/60 p-8 text-center shadow-sm backdrop-blur-sm">
+        <p className="text-foreground/50">No groups yet. Create one to track shared expenses.</p>
+      </div>
+    )
+  }
+
   return (
     <motion.div
       variants={container}
@@ -79,4 +87,3 @@ export default function GroupsList({ groups, selectedGroupId, onSelect }: Groups
     </motion.div>
   )
 }
-

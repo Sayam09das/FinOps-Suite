@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { IndianRupee, Users, Wallet } from "lucide-react"
+import { Coins, Users, Wallet } from "lucide-react"
 import { formatCurrency } from "@/app/lib/utils/number"
 
 interface SummaryProps {
@@ -15,8 +15,8 @@ export default function Summary({ totalSharedBalance, totalMembers, yourShare, c
   const items = [
     {
       label: "Total Shared Balance",
-      value: formatCurrency(totalSharedBalance, currency, "en-IN"),
-      icon: IndianRupee,
+      value: formatCurrency(totalSharedBalance, currency),
+      icon: Coins,
       color: "bg-primary/10 text-primary",
     },
     {
@@ -27,7 +27,7 @@ export default function Summary({ totalSharedBalance, totalMembers, yourShare, c
     },
     {
       label: "Your Share",
-      value: formatCurrency(yourShare, currency, "en-IN"),
+      value: formatCurrency(yourShare, currency),
       icon: Wallet,
       color: "bg-emerald-100 text-emerald-600",
     },
@@ -64,4 +64,3 @@ export default function Summary({ totalSharedBalance, totalMembers, yourShare, c
     </motion.div>
   )
 }
-

@@ -41,7 +41,7 @@ export default function SplitDetails({ expense, members, onClose }: SplitDetails
       <div className="mb-4 rounded-2xl border border-border/40 bg-background/50 p-4">
         <p className="text-sm font-medium text-foreground">{expense.description}</p>
         <p className="mt-1 text-2xl font-bold text-foreground">
-          {formatCurrency(expense.amount, expense.currency, "en-IN")}
+          {formatCurrency(expense.amount, expense.currency)}
         </p>
         <p className="mt-1 text-xs text-foreground/50">
           Paid by <span className="font-medium text-foreground/70">{payer?.name || "Unknown"}</span>
@@ -88,12 +88,12 @@ export default function SplitDetails({ expense, members, onClose }: SplitDetails
               <div className="flex items-center gap-2">
                 {isPayer ? (
                   <span className="text-sm font-semibold text-emerald-600">
-                    +{formatCurrency(split.amount, expense.currency, "en-IN")}
+                    +{formatCurrency(split.amount, expense.currency)}
                   </span>
                 ) : (
                   <>
                     <span className="text-sm text-foreground/60">
-                      owes {formatCurrency(split.amount, expense.currency, "en-IN")}
+                      owes {formatCurrency(split.amount, expense.currency)}
                     </span>
                     <ArrowRight className="h-3.5 w-3.5 text-foreground/30" />
                     <span className="text-sm font-medium text-foreground/70">
@@ -109,4 +109,3 @@ export default function SplitDetails({ expense, members, onClose }: SplitDetails
     </motion.div>
   )
 }
-

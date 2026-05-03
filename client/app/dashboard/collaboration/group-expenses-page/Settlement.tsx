@@ -5,7 +5,6 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Scale,
-  HandCoins,
   CheckCircle2,
 } from "lucide-react"
 import { formatCurrency } from "@/app/lib/utils/number"
@@ -15,14 +14,12 @@ interface SettlementProps {
   youOwe: number
   youAreOwed: number
   currency: string
-  onSettleUp: () => void
 }
 
 export default function Settlement({
   youOwe,
   youAreOwed,
   currency,
-  onSettleUp,
 }: SettlementProps) {
   const netBalance = youAreOwed - youOwe
   const isPositive = netBalance > 0
@@ -77,7 +74,7 @@ export default function Settlement({
               youOwe > 0 ? "text-rose-600" : "text-foreground/30"
             )}
           >
-            {formatCurrency(youOwe, currency, "en-IN")}
+            {formatCurrency(youOwe, currency)}
           </p>
         </motion.div>
 
@@ -107,7 +104,7 @@ export default function Settlement({
               youAreOwed > 0 ? "text-emerald-600" : "text-foreground/30"
             )}
           >
-            {formatCurrency(youAreOwed, currency, "en-IN")}
+            {formatCurrency(youAreOwed, currency)}
           </p>
         </motion.div>
       </div>
@@ -140,7 +137,7 @@ export default function Settlement({
           )}
         >
           {isPositive ? "+" : ""}
-          {formatCurrency(Math.abs(netBalance), currency, "en-IN")}
+          {formatCurrency(Math.abs(netBalance), currency)}
         </p>
         <p className="text-xs text-foreground/40">
           {isPositive
@@ -151,22 +148,9 @@ export default function Settlement({
         </p>
       </motion.div>
 
-      {/* Actions */}
-      {youOwe > 0 && (
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={onSettleUp}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
-        >
-          <HandCoins className="h-4 w-4" />
-          Settle up
-        </motion.button>
-      )}
+      <p className="mt-4 text-center text-xs text-foreground/45">
+        Group balances refresh automatically from live data every few seconds.
+      </p>
     </motion.div>
   )
 }
-
