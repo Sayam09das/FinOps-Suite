@@ -15,6 +15,14 @@ model User {
   role          Role           @default(USER)
   isOAuth       Boolean        @default(false)
   provider     String?
+  preferredCurrency String     @default("INR")
+  locale        String         @default("en-IN")
+  timezone      String         @default("Asia/Kolkata")
+  emailNotifications Boolean   @default(true)
+  pushNotifications Boolean    @default(true)
+  weeklyDigest  Boolean        @default(false)
+  budgetAlerts  Boolean        @default(true)
+  securityAlerts Boolean       @default(true)
   createdAt    DateTime       @default(now())
   budgets       Budget[]
   notifications Notification[]

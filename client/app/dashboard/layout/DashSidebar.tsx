@@ -158,10 +158,10 @@ const NAV_SECTIONS: NavSection[] = [
     eyebrow: "System Setup",
     icon: Settings2,
     items: [
-      { title: "Profile Settings", description: "Personal information and identity", icon: Settings2, badge: "Soon", tone: "soon" },
-      { title: "Currency & Locale", description: "Regional finance preferences", icon: Globe2, badge: "Soon", tone: "soon" },
-      { title: "Notifications", description: "Alert channels and thresholds", icon: BellRing, badge: "Soon", tone: "soon" },
-      { title: "Integrations", description: "Banks, exports, and APIs", icon: PlugZap, badge: "Soon", tone: "soon" },
+      { title: "Profile Settings", description: "Personal information and identity", icon: Settings2, href: "/dashboard/Settings/profile", badge: "Live", tone: "live" },
+      { title: "Currency & Locale", description: "Regional finance preferences", icon: Globe2, href: "/dashboard/Settings/currency-locale", badge: "Live", tone: "live" },
+      { title: "Notifications", description: "Alert channels and thresholds", icon: BellRing, href: "/dashboard/Settings/notifications", badge: "Live", tone: "live" },
+      { title: "Integrations", description: "Banks, exports, and APIs", icon: PlugZap, href: "/dashboard/Settings/integrations", badge: "Live", tone: "live" },
     ],
   },
 ];

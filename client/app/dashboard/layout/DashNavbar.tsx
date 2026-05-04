@@ -72,6 +72,10 @@ const SEARCH_ITEMS = [
   { label: "Login Activity", description: "Security login events", href: "/dashboard/security/login-activity" },
   { label: "Audit Logs", description: "Security and admin activity trail", href: "/dashboard/security/audit-logs" },
   { label: "Permissions", description: "Roles and access control", href: "/dashboard/security/permissions" },
+  { label: "Profile Settings", description: "Personal profile and account details", href: "/dashboard/Settings/profile" },
+  { label: "Currency & Locale", description: "Display currency and regional preferences", href: "/dashboard/Settings/currency-locale" },
+  { label: "Notification Settings", description: "Alert feed and delivery preferences", href: "/dashboard/Settings/notifications" },
+  { label: "Integrations", description: "Realtime services and connected providers", href: "/dashboard/Settings/integrations" },
 ] as const;
 
 function dropdownCn(open: boolean) {

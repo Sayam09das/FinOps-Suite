@@ -10,6 +10,8 @@ export const ENDPOINTS = {
   },
   USER: {
     LIST: "/api/user",
+    ME: "/api/user/me",
+    UPDATE_ME: "/api/user/me",
     DETAIL: (id: string) => `/api/user/${id}`,
     UPDATE: (id: string) => `/api/user/${id}`,
     DELETE: (id: string) => `/api/user/${id}`,
