@@ -7,6 +7,7 @@ import {
   loginUser,
 } from './auth.service';
 import type { AuthenticatedSession } from './auth.types';
+import { securityRepository } from '../security/security.repository';
 
 export const sendAuthResponse = (
   session: AuthenticatedSession,
@@ -86,8 +87,25 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const session = await loginUser(req.body);
+    await securityRepository.recordLoginAttempt({
+      request: req,
+      email: req.body.email,
+      status: 'success',
+      user: {
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+      },
+      sessionToken: session.accessToken,
+    });
     sendAuthResponse(session, res, 200, 'Login successful');
   } catch (error) {
+    await securityRepository.recordLoginAttempt({
+      request: req,
+      email: req.body.email || 'unknown@local',
+      status: 'failed',
+      user: null,
+    });
     handleAuthError(error, res);
   }
 };

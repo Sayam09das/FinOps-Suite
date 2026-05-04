@@ -19,6 +19,7 @@ import accountsIndex from "../modules/accounts";
 import transfersIndex from "../modules/transfers";
 import goalsIndex from "../modules/goals";
 import collaborationIndex from "../modules/collaboration";
+import securityIndex from "../modules/security";
 
 // Create app
 const app = express();
@@ -41,6 +42,7 @@ app.use("/api/accounts", accountsIndex);
 app.use("/api/transfers", transfersIndex);
 app.use("/api/goals", goalsIndex);
 app.use("/api/collaboration", collaborationIndex);
+app.use("/api/security", securityIndex);
 app.use("/api/transactions", transactionIndex);
 app.use("/api/dashboard", dashboardIndex);
 app.use("/api", budgetIndex);

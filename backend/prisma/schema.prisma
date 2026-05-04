@@ -28,6 +28,8 @@ model User {
   teamMembers   TeamMember[]
   sharedAccounts SharedAccount[]
   expenseGroups ExpenseGroup[]
+  securityLoginEvents SecurityLoginEvent[]
+  securityAuditLogs SecurityAuditLog[]
 }
 
 model Transaction {
@@ -352,6 +354,49 @@ model GroupExpenseSplit {
   groupExpense  GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Cascade)
 
   @@index([groupExpenseId, createdAt(sort: Desc)])
+}
+
+model SecurityLoginEvent {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String?   @db.ObjectId
+  email           String
+  status          String
+  device          String
+  deviceType      String
+  browser         String
+  os              String
+  location        String
+  country         String
+  ipAddress       String
+  isUnknownDevice Boolean   @default(false)
+  sessionToken    String?
+  lastActive      DateTime?
+  createdAt       DateTime  @default(now())
+
+  user            User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([email, createdAt(sort: Desc)])
+}
+
+model SecurityAuditLog {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String?   @db.ObjectId
+  userName   String
+  userEmail  String
+  action     String
+  actionType String
+  entity     String
+  entityId   String
+  beforeJson String?
+  afterJson  String?
+  isCritical Boolean   @default(false)
+  timestamp  DateTime  @default(now())
+
+  user       User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId, timestamp(sort: Desc)])
+  @@index([userEmail, timestamp(sort: Desc)])
 }
 
 enum Role {

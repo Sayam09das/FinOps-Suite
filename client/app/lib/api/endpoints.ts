@@ -64,6 +64,12 @@ DASHBOARD: {
     SHARED_ACCOUNT_LEAVE: (accountId: string) => `/api/collaboration/shared-accounts/${accountId}/leave`,
     GROUP_EXPENSES: "/api/collaboration/group-expenses",
   },
+  SECURITY: {
+    LOGIN_ACTIVITY: "/api/security/login-activity",
+    AUDIT_LOGS: "/api/security/audit-logs",
+    PERMISSIONS: "/api/security/permissions",
+    USER_ROLE: (userId: string) => `/api/security/permissions/users/${userId}/role`,
+  },
   UPLOAD: {
     SINGLE: "/api/uploads/single",
     MULTIPLE: "/api/uploads/multiple",
