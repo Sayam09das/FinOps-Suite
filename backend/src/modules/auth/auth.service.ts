@@ -276,6 +276,16 @@ export const forgotPassword = async ({
           </p>
         </div>
       `,
+      text: `Reset your FinOps Suite password
+
+We received a request to reset your password.
+
+Create a new password using this secure link:
+${resetUrl}
+
+This link expires in ${expiresLabel} and can only be used once.
+
+If you did not request a password reset, you can ignore this email.`,
     });
   } catch (error) {
     logger.error({ error, email: normalizedEmail }, 'Password reset email failed');

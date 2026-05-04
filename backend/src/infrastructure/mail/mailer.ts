@@ -7,6 +7,7 @@ interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
+  text?: string;
 }
 
 const getSenderAddress = (): string => {
@@ -26,6 +27,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<any> {
       to: options.to,
       subject: options.subject,
       html: options.html,
+      ...(options.text
+        ? {
+            text: options.text,
+          }
+        : {}),
       ...(process.env.OWNER_EMAIL
         ? {
             replyTo: process.env.OWNER_EMAIL,
