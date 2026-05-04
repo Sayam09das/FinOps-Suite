@@ -75,7 +75,9 @@ const handleAuthError = (error: unknown, res: Response) => {
 
     if (
       error.message === 'Reset link is invalid or expired' ||
-      error.message === 'Email service is not configured'
+      error.message === 'Email service is not configured' ||
+      error.message === 'Verify your own sending domain in Resend before sending reset links to other users.' ||
+      error.message === 'Password reset email could not be sent'
     ) {
       ApiResponse.error(error.message, res, 400);
       return;

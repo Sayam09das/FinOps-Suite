@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import { JWT } from '../../config/constants';
+import { logger } from '../../config/logger';
 import { authRepository, type AuthRepositoryUser } from './auth.repository';
 import type { AppUserRole } from '../user/user.types';
 import type { AuthUser, AuthenticatedSession } from './auth.types';
@@ -206,12 +207,40 @@ export const forgotPassword = async ({
   const normalizedEmail = normalizeEmail(email);
   const user = await authRepository.findByEmail(normalizedEmail);
 
-  if (!user?.password) {
+  if (!user) {
+    logger.info({ email: normalizedEmail }, 'Password reset skipped because user was not found');
+    return;
+  }
+
+  if (!user.password) {
+    logger.info(
+      { email: normalizedEmail, isOAuth: user.isOAuth, provider: user.provider },
+      'Password reset skipped because account has no local password',
+    );
     return;
   }
 
   if (!process.env.RESEND_API_KEY) {
     throw new Error('Email service is not configured');
+  }
+
+  const senderAddress = process.env.EMAIL_FROM?.trim() || 'FinOps Suite <onboarding@resend.dev>';
+  const replyToAddress = process.env.OWNER_EMAIL?.trim().toLowerCase();
+
+  if (
+    senderAddress.includes('resend.dev') &&
+    replyToAddress &&
+    normalizedEmail !== replyToAddress
+  ) {
+    logger.warn(
+      {
+        email: normalizedEmail,
+        senderAddress,
+        replyToAddress,
+      },
+      'Password reset email blocked because resend.dev sender can only be used for limited testing',
+    );
+    throw new Error('Verify your own sending domain in Resend before sending reset links to other users.');
   }
 
   await authRepository.invalidatePasswordResetTokens(user.id);
@@ -224,29 +253,34 @@ export const forgotPassword = async ({
   const resetUrl = `${getFrontendBaseUrl()}/reset-password?token=${token}`;
   const expiresLabel = `${RESET_TOKEN_TTL_MINUTES} minutes`;
 
-  await sendEmail({
-    to: user.email,
-    subject: 'Reset your FinOps Suite password',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #0f172a;">
-        <h2 style="margin-bottom: 12px;">Reset your password</h2>
-        <p style="line-height: 1.6; color: #334155;">
-          We received a request to reset your FinOps Suite password. Use the button below to create a new password.
-        </p>
-        <p style="margin: 28px 0;">
-          <a href="${resetUrl}" style="background: #0f766e; color: #ffffff; text-decoration: none; padding: 14px 22px; border-radius: 10px; display: inline-block; font-weight: 600;">
-            Create new password
-          </a>
-        </p>
-        <p style="line-height: 1.6; color: #334155;">
-          This link expires in ${expiresLabel} and can only be used once.
-        </p>
-        <p style="line-height: 1.6; color: #64748b; font-size: 14px;">
-          If you did not request a password reset, you can safely ignore this email.
-        </p>
-      </div>
-    `,
-  });
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: 'Reset your FinOps Suite password',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #0f172a;">
+          <h2 style="margin-bottom: 12px;">Reset your password</h2>
+          <p style="line-height: 1.6; color: #334155;">
+            We received a request to reset your FinOps Suite password. Use the button below to create a new password.
+          </p>
+          <p style="margin: 28px 0;">
+            <a href="${resetUrl}" style="background: #0f766e; color: #ffffff; text-decoration: none; padding: 14px 22px; border-radius: 10px; display: inline-block; font-weight: 600;">
+              Create new password
+            </a>
+          </p>
+          <p style="line-height: 1.6; color: #334155;">
+            This link expires in ${expiresLabel} and can only be used once.
+          </p>
+          <p style="line-height: 1.6; color: #64748b; font-size: 14px;">
+            If you did not request a password reset, you can safely ignore this email.
+          </p>
+        </div>
+      `,
+    });
+  } catch (error) {
+    logger.error({ error, email: normalizedEmail }, 'Password reset email failed');
+    throw new Error('Password reset email could not be sent');
+  }
 };
 
 export const resetPassword = async ({
