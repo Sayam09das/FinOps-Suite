@@ -4,7 +4,9 @@ import { getUserProfile } from '../user/user.service';
 import {
   createAccount,
   createFreshSession,
+  forgotPassword,
   loginUser,
+  resetPassword,
 } from './auth.service';
 import type { AuthenticatedSession } from './auth.types';
 import { securityRepository } from '../security/security.repository';
@@ -70,6 +72,14 @@ const handleAuthError = (error: unknown, res: Response) => {
       ApiResponse.error(error.message, res, 401);
       return;
     }
+
+    if (
+      error.message === 'Reset link is invalid or expired' ||
+      error.message === 'Email service is not configured'
+    ) {
+      ApiResponse.error(error.message, res, 400);
+      return;
+    }
   }
 
   throw error;
@@ -114,6 +124,38 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
   try {
     const session = await createFreshSession(req.body.refreshToken);
     sendAuthResponse(session, res, 200, 'Session refreshed');
+  } catch (error) {
+    handleAuthError(error, res);
+  }
+};
+
+export const requestPasswordReset = async (req: Request, res: Response): Promise<void> => {
+  try {
+    await forgotPassword(req.body);
+    ApiResponse.success(
+      {
+        sent: true,
+      },
+      res,
+      200,
+      'If this email exists, reset link has been sent.',
+    );
+  } catch (error) {
+    handleAuthError(error, res);
+  }
+};
+
+export const confirmPasswordReset = async (req: Request, res: Response): Promise<void> => {
+  try {
+    await resetPassword(req.body);
+    ApiResponse.success(
+      {
+        reset: true,
+      },
+      res,
+      200,
+      'Password reset successful. Please log in again.',
+    );
   } catch (error) {
     handleAuthError(error, res);
   }

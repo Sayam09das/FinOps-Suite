@@ -1,14 +1,26 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import { JWT } from '../../config/constants';
 import { authRepository, type AuthRepositoryUser } from './auth.repository';
 import type { AppUserRole } from '../user/user.types';
 import type { AuthUser, AuthenticatedSession } from './auth.types';
+import { sendEmail } from '../../infrastructure/mail/mailer';
 
 type AuthInput = {
   name?: string;
   email: string;
   password: string;
+};
+
+type ForgotPasswordInput = {
+  email: string;
+};
+
+type ResetPasswordInput = {
+  token: string;
+  password: string;
+  confirmPassword: string;
 };
 
 type AuthTokenPayload = {
@@ -29,6 +41,25 @@ const accessSecret = process.env.JWT_ACCESS_SECRET || 'finops-access-secret';
 const refreshSecret = process.env.JWT_REFRESH_SECRET || 'finops-refresh-secret';
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
+const RESET_TOKEN_TTL_MINUTES = 20;
+
+const getFrontendBaseUrl = (): string => {
+  const frontendUrls = (process.env.FRONTEND_URLS ?? process.env.FRONTEND_URL ?? 'http://localhost:3000')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (process.env.NODE_ENV === 'production') {
+    return (
+      frontendUrls.find((value) => value.startsWith('https://')) ||
+      frontendUrls.find((value) => !value.includes('localhost')) ||
+      frontendUrls[0] ||
+      'https://fin-ops-suite.vercel.app'
+    );
+  }
+
+  return frontendUrls[0] || 'http://localhost:3000';
+};
 
 export const resolveRole = (
   email: string,
@@ -167,4 +198,76 @@ export const createFreshSession = async (
   } catch {
     throw new Error('Invalid refresh token');
   }
+};
+
+export const forgotPassword = async ({
+  email,
+}: ForgotPasswordInput): Promise<void> => {
+  const normalizedEmail = normalizeEmail(email);
+  const user = await authRepository.findByEmail(normalizedEmail);
+
+  if (!user?.password) {
+    return;
+  }
+
+  if (!process.env.RESEND_API_KEY || !process.env.OWNER_EMAIL) {
+    throw new Error('Email service is not configured');
+  }
+
+  await authRepository.invalidatePasswordResetTokens(user.id);
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MINUTES * 60 * 1000);
+
+  await authRepository.createPasswordResetToken(user.id, token, expiresAt);
+
+  const resetUrl = `${getFrontendBaseUrl()}/reset-password?token=${token}`;
+  const expiresLabel = `${RESET_TOKEN_TTL_MINUTES} minutes`;
+
+  await sendEmail({
+    to: user.email,
+    subject: 'Reset your FinOps Suite password',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #0f172a;">
+        <h2 style="margin-bottom: 12px;">Reset your password</h2>
+        <p style="line-height: 1.6; color: #334155;">
+          We received a request to reset your FinOps Suite password. Use the button below to create a new password.
+        </p>
+        <p style="margin: 28px 0;">
+          <a href="${resetUrl}" style="background: #0f766e; color: #ffffff; text-decoration: none; padding: 14px 22px; border-radius: 10px; display: inline-block; font-weight: 600;">
+            Create new password
+          </a>
+        </p>
+        <p style="line-height: 1.6; color: #334155;">
+          This link expires in ${expiresLabel} and can only be used once.
+        </p>
+        <p style="line-height: 1.6; color: #64748b; font-size: 14px;">
+          If you did not request a password reset, you can safely ignore this email.
+        </p>
+      </div>
+    `,
+  });
+};
+
+export const resetPassword = async ({
+  token,
+  password,
+}: ResetPasswordInput): Promise<void> => {
+  const passwordResetToken = await authRepository.findValidPasswordResetToken(token);
+
+  if (!passwordResetToken?.user?.id) {
+    throw new Error('Reset link is invalid or expired');
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 12);
+  const role = resolveRole(passwordResetToken.user.email, passwordResetToken.user.role);
+
+  await authRepository.setPassword(
+    passwordResetToken.user.id,
+    passwordResetToken.user.name ?? undefined,
+    hashedPassword,
+    role,
+  );
+  await authRepository.markPasswordResetTokenUsed(passwordResetToken.id);
+  await authRepository.invalidatePasswordResetTokens(passwordResetToken.user.id);
 };

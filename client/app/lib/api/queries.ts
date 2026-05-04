@@ -23,6 +23,16 @@ type RegisterCredentials = {
   password: string
 }
 
+type ForgotPasswordInput = {
+  email: string
+}
+
+type ResetPasswordInput = {
+  token: string
+  password: string
+  confirmPassword: string
+}
+
 // Auth queries/mutations
 export const useLoginMutation = () => {
   return useMutation({
@@ -45,6 +55,24 @@ export const useRegisterMutation = () => {
     onSuccess: () => {
       console.log('[QUERIES] Register success')
     },
+  })
+}
+
+export const useForgotPasswordMutation = () => {
+  return useMutation({
+    mutationFn: ({ email }: ForgotPasswordInput) =>
+      api.post<{ sent: boolean }>(ENDPOINTS.AUTH.FORGOT_PASSWORD, { email }, { timeoutMs: API.AUTH_TIMEOUT }),
+  })
+}
+
+export const useResetPasswordMutation = () => {
+  return useMutation({
+    mutationFn: ({ token, password, confirmPassword }: ResetPasswordInput) =>
+      api.post<{ reset: boolean }>(
+        ENDPOINTS.AUTH.RESET_PASSWORD,
+        { token, password, confirmPassword },
+        { timeoutMs: API.AUTH_TIMEOUT },
+      ),
   })
 }
 
