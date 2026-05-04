@@ -224,25 +224,6 @@ export const forgotPassword = async ({
     throw new Error('Email service is not configured');
   }
 
-  const senderAddress = process.env.EMAIL_FROM?.trim() || 'FinOps Suite <onboarding@resend.dev>';
-  const replyToAddress = process.env.OWNER_EMAIL?.trim().toLowerCase();
-
-  if (
-    senderAddress.includes('resend.dev') &&
-    replyToAddress &&
-    normalizedEmail !== replyToAddress
-  ) {
-    logger.warn(
-      {
-        email: normalizedEmail,
-        senderAddress,
-        replyToAddress,
-      },
-      'Password reset email blocked because resend.dev sender can only be used for limited testing',
-    );
-    throw new Error('Verify your own sending domain in Resend before sending reset links to other users.');
-  }
-
   await authRepository.invalidatePasswordResetTokens(user.id);
 
   const token = crypto.randomBytes(32).toString('hex');
