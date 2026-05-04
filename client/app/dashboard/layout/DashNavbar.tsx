@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   AlertTriangle,
   Bell,
@@ -43,6 +44,36 @@ type PanelName = "notifications" | "profile" | null;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+const SEARCH_ITEMS = [
+  { label: "Dashboard", description: "Overview and quick insights", href: "/dashboard" },
+  { label: "Finance Summary", description: "Cash flow and account distribution", href: "/dashboard/finance-summary" },
+  { label: "Net Worth", description: "Assets, liabilities, and health score", href: "/dashboard/networth" },
+  { label: "Accounts", description: "Bank accounts and balances", href: "/dashboard/accounts" },
+  { label: "Credit Cards", description: "Cards, billing, and utilization", href: "/dashboard/accounts/credit-cards" },
+  { label: "Transfers", description: "Move money between accounts", href: "/dashboard/accounts/transfers" },
+  { label: "Wallets", description: "Cash and wallet balances", href: "/dashboard/accounts/wallets" },
+  { label: "Transactions", description: "Browse all recorded transactions", href: "/dashboard/transactions/AllTransactions" },
+  { label: "Add Transaction", description: "Create a new income or expense", href: "/dashboard/transactions/add" },
+  { label: "Categories", description: "Manage transaction categories", href: "/dashboard/transactions/categories" },
+  { label: "Recurring", description: "Upcoming recurring transactions", href: "/dashboard/transactions/recurring" },
+  { label: "Monthly Budget", description: "Monthly budget tracking", href: "/dashboard/budgeting/monthly" },
+  { label: "Create Budget", description: "Build a new budget plan", href: "/dashboard/budgeting/create" },
+  { label: "Budget vs Actual", description: "Compare planned and actual spend", href: "/dashboard/budgeting/vs-actual" },
+  { label: "Cash Flow", description: "Analyze inflow and outflow", href: "/dashboard/analytics/cash-flow" },
+  { label: "Spending", description: "Spending trends and categories", href: "/dashboard/analytics/spending" },
+  { label: "Income vs Expense", description: "Compare earnings and expenses", href: "/dashboard/analytics/income-vs-expense" },
+  { label: "Custom Reports", description: "Build custom analytics reports", href: "/dashboard/analytics/custom-reports" },
+  { label: "Savings Goals", description: "Track savings targets", href: "/dashboard/goals/savings" },
+  { label: "Debt Tracker", description: "Track debt balances and payments", href: "/dashboard/goals/debt" },
+  { label: "Investments", description: "Monitor investment performance", href: "/dashboard/goals/investments" },
+  { label: "Shared Accounts", description: "Collaboration account balances", href: "/dashboard/collaboration/shared-accounts" },
+  { label: "Group Expenses", description: "Shared expenses and settlements", href: "/dashboard/collaboration/group-expenses" },
+  { label: "Invite Users", description: "Team invites and member access", href: "/dashboard/collaboration/invite-users" },
+  { label: "Login Activity", description: "Security login events", href: "/dashboard/security/login-activity" },
+  { label: "Audit Logs", description: "Security and admin activity trail", href: "/dashboard/security/audit-logs" },
+  { label: "Permissions", description: "Roles and access control", href: "/dashboard/security/permissions" },
+] as const;
+
 function dropdownCn(open: boolean) {
   return cn(
     "absolute right-0 top-[calc(100%+0.75rem)] z-40",
@@ -79,6 +110,8 @@ export default function DashNavbar({
   onMenuClick,
   sidebarCollapsed = false,
 }: DashNavbarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { user, logout, isLoading } = useAuth();
   const {
     currencies,
@@ -94,6 +127,8 @@ export default function DashNavbar({
 
   const [openPanel, setOpenPanel] = useState<PanelName>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSearchIndex, setSelectedSearchIndex] = useState(0);
 
   const navRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -119,6 +154,13 @@ export default function DashNavbar({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+        setOpenPanel(null);
+        return;
+      }
+
       if (e.key === "Escape") {
         setOpenPanel(null);
         setSearchOpen(false);
@@ -142,9 +184,31 @@ export default function DashNavbar({
   const envLabel = process.env.NODE_ENV === "production" ? "Prod" : "Dev";
   const notifications = notificationsData?.notifications ?? []
   const unreadCount = notificationsData?.unreadCount ?? 0
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      return SEARCH_ITEMS.slice(0, 8);
+    }
+
+    return SEARCH_ITEMS.filter((item) => {
+      const haystack = `${item.label} ${item.description} ${item.href}`.toLowerCase();
+      return haystack.includes(query);
+    }).slice(0, 8);
+  }, [searchQuery]);
 
   const togglePanel = (panel: Exclude<PanelName, null>) =>
     setOpenPanel((cur) => (cur === panel ? null : panel));
+
+  useEffect(() => {
+    setSelectedSearchIndex(0);
+  }, [searchQuery]);
+
+  const handleSearchSelect = (href: string) => {
+    setSearchOpen(false);
+    setSearchQuery("");
+    setSelectedSearchIndex(0);
+    router.push(href);
+  };
 
   /* ── Render ── */
 
@@ -489,12 +553,64 @@ export default function DashNavbar({
             <Input
               ref={searchRef}
               aria-label="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  setSelectedSearchIndex((cur) =>
+                    Math.min(cur + 1, Math.max(searchResults.length - 1, 0)),
+                  );
+                }
+
+                if (e.key === "ArrowUp") {
+                  e.preventDefault();
+                  setSelectedSearchIndex((cur) => Math.max(cur - 1, 0));
+                }
+
+                if (e.key === "Enter" && searchResults[selectedSearchIndex]) {
+                  e.preventDefault();
+                  handleSearchSelect(searchResults[selectedSearchIndex].href);
+                }
+              }}
               placeholder="Search transactions, accounts, budgets, users…"
               className="h-12 rounded-[1.35rem] border-border/70 bg-background/72 pl-11 pr-[4.5rem] text-sm placeholder:text-foreground/38"
             />
             <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded-lg border border-border/68 bg-white/60 px-2 py-1 text-[10px] font-semibold text-foreground/42 md:inline-flex">
               Ctrl K
             </kbd>
+          </div>
+
+          <div className="mt-2 overflow-hidden rounded-[1.35rem] border border-border/70 bg-background/72">
+            {searchResults.length > 0 ? (
+              searchResults.map((item, index) => (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => handleSearchSelect(item.href)}
+                  className={cn(
+                    "flex w-full items-start justify-between gap-3 border-b border-border/40 px-4 py-3 text-left transition last:border-b-0",
+                    index === selectedSearchIndex
+                      ? "bg-white/85"
+                      : "hover:bg-white/65",
+                  )}
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                    <p className="mt-0.5 text-xs text-foreground/50">{item.description}</p>
+                  </div>
+                  {pathname === item.href ? (
+                    <Badge variant="outline" className="shrink-0 text-[9px] uppercase tracking-wider">
+                      Here
+                    </Badge>
+                  ) : null}
+                </button>
+              ))
+            ) : (
+              <div className="px-4 py-4 text-sm text-foreground/50">
+                No dashboard pages match “{searchQuery}”.
+              </div>
+            )}
           </div>
         </div>
       </div>
