@@ -33,6 +33,15 @@ export const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("🟢 User connected:", socket.id);
 
+  socket.on("userOnline", (userId: string) => {
+    if (!userId) {
+      return;
+    }
+
+    socket.join(`user_${userId}`);
+    console.log(`👤 User ${userId} joined notification room`);
+  });
+
   socket.on("disconnect", () => {
     console.log("🔴 User disconnected");
   });

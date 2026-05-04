@@ -70,6 +70,11 @@ DASHBOARD: {
     PERMISSIONS: "/api/security/permissions",
     USER_ROLE: (userId: string) => `/api/security/permissions/users/${userId}/role`,
   },
+  NOTIFICATIONS: {
+    LIST: "/api/notifications",
+    MARK_READ: (id: string) => `/api/notifications/${id}/read`,
+    MARK_ALL_READ: "/api/notifications/read-all",
+  },
   UPLOAD: {
     SINGLE: "/api/uploads/single",
     MULTIPLE: "/api/uploads/multiple",

@@ -36,6 +36,16 @@ export const markAsRead = async (id: string, userId: string): Promise<void> => {
   });
 };
 
+export const markAllAsRead = async (userId: string): Promise<void> => {
+  await prisma.notification.updateMany({
+    where: {
+      userId,
+      read: false,
+    },
+    data: { read: true },
+  });
+};
+
 export const getUnreadCount = async (userId: string): Promise<number> => {
   const count = await prisma.notification.count({
     where: { 
@@ -45,4 +55,3 @@ export const getUnreadCount = async (userId: string): Promise<number> => {
   });
   return count;
 };
-

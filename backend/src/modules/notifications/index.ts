@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { protect } from '../../common/middleware/auth.middleware';
-import { getNotifications, markAsRead, getUnreadCount } from './notification.service';
+import { getNotifications, markAsRead, markAllAsRead, getUnreadCount } from './notification.service';
 
 const router = Router();
 
@@ -9,7 +9,7 @@ router.get('/', protect, async (req, res) => {
   const userId = (req as any).user.id;
   const notifications = await getNotifications(userId);
   const unreadCount = await getUnreadCount(userId);
-  res.json({ success: true, data: notifications, unreadCount });
+  res.json({ success: true, data: { notifications, unreadCount } });
 });
 
 router.patch('/:id/read', protect, async (req, res) => {
@@ -25,7 +25,13 @@ router.patch('/:id/read', protect, async (req, res) => {
   res.json({ success: true, message: 'Marked as read' });
 });
 
-export { createNotification, getNotifications, markAsRead, getUnreadCount } from './notification.service';
+router.patch('/read-all', protect, async (req, res) => {
+  const userId = (req as any).user.id;
+  await markAllAsRead(userId);
+  res.json({ success: true, message: 'All notifications marked as read' });
+});
+
+export { createNotification, getNotifications, markAsRead, markAllAsRead, getUnreadCount } from './notification.service';
 export { startNotificationWorker, stopNotificationWorker } from './notification.worker';
 export type { NotificationType, CreateNotificationInput, Notification } from './notification.types';
 

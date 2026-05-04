@@ -5,9 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   Bell,
-  Bot,
   ChevronDown,
-  CreditCard,
   LogOut,
   Menu,
   PanelLeftClose,
@@ -18,11 +16,18 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
 import { useAuth } from "@/app/features/auth";
 import { useDashboardCurrency } from "@/app/features/currency";
+import {
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotificationRealtime,
+  useNotifications,
+} from "@/app/features/notifications";
 import { cn } from "@/app/lib/utils/cn";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -35,29 +40,6 @@ type DashNavbarProps = {
 };
 
 type PanelName = "notifications" | "profile" | null;
-
-// ─── Static data ──────────────────────────────────────────────────────────────
-
-const NOTIFICATIONS = [
-  {
-    title: "Budget alert",
-    detail: "Marketing spend is at 88% of the monthly budget.",
-    icon: AlertTriangle,
-    accent: "text-amber-700 bg-amber-100/80",
-  },
-  {
-    title: "AI insight",
-    detail: "Food expenses are 13% above your four-week baseline.",
-    icon: Bot,
-    accent: "text-blue-700 bg-blue-100/80",
-  },
-  {
-    title: "Reminder",
-    detail: "Two recurring subscriptions renew in the next 48 hours.",
-    icon: CreditCard,
-    accent: "text-emerald-700 bg-emerald-100/80",
-  },
-] as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -75,6 +57,22 @@ function dropdownCn(open: boolean) {
   );
 }
 
+function getNotificationDisplay(type: string) {
+  switch (type) {
+    case "budget_exceeded":
+    case "budget_warning":
+      return { icon: AlertTriangle, accent: "text-amber-700 bg-amber-100/80" };
+    case "low_balance":
+      return { icon: Bell, accent: "text-rose-700 bg-rose-100/80" };
+    case "analytics_insight":
+      return { icon: Sparkles, accent: "text-blue-700 bg-blue-100/80" };
+    case "new_transaction":
+      return { icon: Bell, accent: "text-emerald-700 bg-emerald-100/80" };
+    default:
+      return { icon: Bell, accent: "text-slate-700 bg-slate-100/80" };
+  }
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function DashNavbar({
@@ -89,6 +87,10 @@ export default function DashNavbar({
     isLoadingRates,
     lastUpdated,
   } = useDashboardCurrency()
+  const { data: notificationsData } = useNotifications()
+  const markNotificationRead = useMarkNotificationRead()
+  const markAllNotificationsRead = useMarkAllNotificationsRead()
+  useNotificationRealtime()
 
   const [openPanel, setOpenPanel] = useState<PanelName>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -138,6 +140,8 @@ export default function DashNavbar({
   }, [user?.name]);
 
   const envLabel = process.env.NODE_ENV === "production" ? "Prod" : "Dev";
+  const notifications = notificationsData?.notifications ?? []
+  const unreadCount = notificationsData?.unreadCount ?? 0
 
   const togglePanel = (panel: Exclude<PanelName, null>) =>
     setOpenPanel((cur) => (cur === panel ? null : panel));
@@ -225,9 +229,11 @@ export default function DashNavbar({
                 aria-haspopup="true"
               >
                 <Bell className="h-[18px] w-[18px]" />
-                <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-bold leading-none text-accent-foreground">
-                  {NOTIFICATIONS.length}
-                </span>
+                {unreadCount > 0 ? (
+                  <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-bold leading-none text-accent-foreground">
+                    {unreadCount}
+                  </span>
+                ) : null}
               </button>
 
               <div
@@ -245,36 +251,75 @@ export default function DashNavbar({
                         Signals &amp; reminders
                       </h3>
                     </div>
-                    <Badge variant="accent" className="shrink-0 text-[10px]">
-                      {NOTIFICATIONS.length} new
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="accent" className="shrink-0 text-[10px]">
+                        {unreadCount} new
+                      </Badge>
+                      {unreadCount > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => markAllNotificationsRead.mutate()}
+                          className="text-[10px] font-semibold uppercase tracking-wider text-foreground/45 transition hover:text-foreground"
+                        >
+                          Mark all read
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="mt-4 space-y-2">
-                    {NOTIFICATIONS.map((item) => {
-                      const Icon = item.icon;
+                    {notifications.length === 0 ? (
+                      <div className="rounded-[1.1rem] border border-border/58 bg-background/65 p-4 text-center">
+                        <p className="text-[13px] font-semibold text-foreground">No notifications yet</p>
+                        <p className="mt-1 text-[11px] leading-[1.6] text-foreground/56">
+                          Live alerts from budgets, analytics, and transactions will appear here.
+                        </p>
+                      </div>
+                    ) : notifications.map((item) => {
+                      const { icon: Icon, accent } = getNotificationDisplay(item.type);
                       return (
-                        <div
-                          key={item.title}
-                          className="flex items-start gap-3 rounded-[1.1rem] border border-border/58 bg-background/65 p-3"
+                        <button
+                          type="button"
+                          key={item.id}
+                          onClick={() => {
+                            if (!item.read) {
+                              markNotificationRead.mutate(item.id)
+                            }
+                          }}
+                          className={cn(
+                            "flex w-full items-start gap-3 rounded-[1.1rem] border border-border/58 bg-background/65 p-3 text-left transition",
+                            item.read ? "opacity-75" : "ring-1 ring-accent/18",
+                          )}
                         >
                           <div
                             className={cn(
                               "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                              item.accent,
+                              accent,
                             )}
                           >
                             <Icon className="h-[14px] w-[14px]" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[13px] font-semibold text-foreground">
-                              {item.title}
-                            </p>
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-[13px] font-semibold text-foreground">
+                                {item.title}
+                              </p>
+                              {!item.read ? (
+                                <span className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent-foreground">
+                                  New
+                                </span>
+                              ) : null}
+                            </div>
                             <p className="mt-0.5 text-[11px] leading-[1.6] text-foreground/56">
-                              {item.detail}
+                              {item.message}
+                            </p>
+                            <p className="mt-1 text-[10px] text-foreground/40">
+                              {formatDistanceToNow(new Date(item.createdAt), {
+                                addSuffix: true,
+                              })}
                             </p>
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
