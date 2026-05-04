@@ -210,7 +210,7 @@ export const forgotPassword = async ({
     return;
   }
 
-  if (!process.env.RESEND_API_KEY || !process.env.OWNER_EMAIL) {
+  if (!process.env.RESEND_API_KEY) {
     throw new Error('Email service is not configured');
   }
 

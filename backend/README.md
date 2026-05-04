@@ -72,6 +72,9 @@ JWT_REFRESH_SECRET=replace-me
 FRONTEND_URL=http://localhost:3000
 FRONTEND_URLS=http://localhost:3000
 ADMIN_EMAILS=
+RESEND_API_KEY=
+EMAIL_FROM="FinOps Suite <onboarding@resend.dev>"
+OWNER_EMAIL=your-reply-to-email@example.com
 ```
 
 ## Setup

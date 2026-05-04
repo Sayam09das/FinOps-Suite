@@ -10,6 +10,7 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().url().optional(),
   FRONTEND_URLS: z.string().default('http://localhost:3000,https://finops-suite.vercel.app,https://fin-ops-suite.vercel.app'),
   RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
   OWNER_EMAIL: z.string().email().optional(),
   ADMIN_EMAILS: z.string().optional(),
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
